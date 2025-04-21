@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div style="overflow-x:auto">
+    <h1>Schedule</h1>
+    <table class="table table-hover">
+         <tr>
+	    <th>ID</th>
+	    <th>Game</th>
+	    <th>Stage</th>
+	    <th>Game Time</th>
+	    <th>Status</th>
+	    <th>Result</th>
+	  </tr>
+	 {% for game in games %}
+	  <tr style="white-space: nowrap">
+	    <td>{{game.id}}</td>
+	    <td>
+	    <img src={{ url_for('static', filename=game.team_a +'.png') }} width="20" height="20"/>
+	    {{game.team_a}} - {{game.team_b}}
+	    <img src={{ url_for('static', filename=game.team_b +'.png') }} width="20" height="20"/>
+	    </td>
+	    <td>{{game.stage}}</td>
+	    <td>{{ moment(game.starts_at).format('MMMM Do, h:mm a') }}</td>
+	    <td>{% if game.starts_at > current_time %} Upcoming - <a href="{{ url_for('games', idd=game.id) }}">Prediction</a> {% endif %}
+	    	{% if game.starts_at < current_time and game.starts_at > three_hours_earlier and game.score_a == None %} Started - <a href="{{ url_for('games', idd=game.id) }}">Game stats</a> {% endif %}
+	    	{% if game.starts_at < three_hours_earlier or game.score_a != None %} Finished - <a href="{{ url_for('games', idd=game.id) }}">Game stats</a> {% endif %}
+	    	</td>
+	    <td>
+	    	{% if game.first_goal==1 %}
+	    	<img src={{ url_for('static', filename='puck.png') }} width="10" height="10"/> {{game.score_a}}:{{game.score_b}}  
+	    	{% elif game.first_goal==2 %}
+	    	  {{game.score_a}}:{{game.score_b}} <img src={{ url_for('static', filename='puck.png') }} width="10" height="10"/>
+	    	{% elif game.first_goal==0 %}
+	    	  {{game.score_a}}:{{game.score_b}}
+	    	{% else %}
+	    	-
+	    	{% endif %}
+	    </td>
+	  </tr> 
+	  {% endfor %} 
+    </table>
+</div>
+{% endblock %}
+

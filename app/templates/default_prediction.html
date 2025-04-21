@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+<div>
+<h1>Default Game Prediction</h1>
+Place the default bet you want to use for the upcoming games. You can change that at any time and it will be applied for the upcoming games in case you forget to place a prediction before the game starts. The same rules apply as for placing predictions for games.
+	{% if form %}
+	<form action="" method="post">
+	{{ form.hidden_tag() }}			
+	<div class="bbgrid-container">
+	    <div class="bbTeam1">Home Team</div>
+	    <div class="bbTeam2">Away Team</div>
+	    <img class="bbFlag1" src={{ url_for('static', filename='TBD.png') }}>
+	    <img class="bbFlag2" src={{ url_for('static', filename='TBD.png') }}>
+	    <div class="bbScore1">{{ form.score_a(size=1) }}</div>
+	    <div class="bbScore2">{{ form.score_b(size=1) }}</div>
+	    <div class="bbdots">:</div>
+	    <div class="bbfirsttext">{{ form.first_goal }}</div>
+	    <div class="bbsubmit">{{ form.submit() }}</div>
+	</div>
+	</form>
+	 {% endif %}
+</div>
+{% endblock %}

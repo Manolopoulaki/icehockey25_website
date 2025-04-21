@@ -1,0 +1,255 @@
+{
+    box-sizing: border-box;
+}
+
+body{
+background-color: #faf7f7;
+}
+
+.banner {
+	padding-right: 0px;
+	padding-left: 0px;
+}
+
+.navbar {
+	background-color:#FFFFFF;
+	align-items: center;
+	border: 0;
+	font-size: 17px;
+	position: relative;
+  	transition: .5s;
+  	height: 80px;
+  	margin-top: 10px;
+  	margin-bottom: 10px;
+  	box-shadow: 0 0 30px rgba(0, 0, 0, .08);
+  	border-radius: 10px;
+}  
+
+.nav li a {
+	display: table-cell;
+  	vertical-align: middle;
+  	height: 80px;
+  	font-family: "Heebo",sans-serif;
+  	font-size: 1.5 rem;
+  	font-weight: 800;
+  	line-height: 2;
+  	color: #666565;
+}
+
+.content { background-image: url("background.png"); 
+background-repeat:repeat-y;
+background-size:100%;
+background-position: center top; }
+
+
+.column {
+    float: left;
+}
+
+.left {
+    width: 68%;
+}
+  
+.right {
+    width: 30%;
+}
+  
+  /* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+  
+  /* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
+  @media screen and (max-width: 800px) {
+    .column {
+      width: 100%;
+    }
+    .right {
+        display: none;
+    }
+  }
+
+svg > g > g:last-child { pointer-events: none }
+
+.statsRow:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.statsColumn {
+  position: relative;
+  float: left;
+  width: 16.6%; 
+  min-width:150px;
+}
+
+.centerLabel
+{
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 150px;
+    line-height: 150px;
+    text-align: center;
+    font-size: 22px;
+    background-color: transparent;
+}
+
+.statsTitle {
+  position:absolute;
+  width:150px;
+  text-align: center;
+  font-size:15px;
+  font-weight: bold;
+  }
+
+.statsValue
+{
+    line-height: 150px;
+    width: 150px;
+    text-align: center;
+    font-size: 52px;
+    font-weight: bold;
+    background-color: transparent;
+}
+
+
+.bbgrid-container {width: 100%; height: 100%; margin: 0; }
+
+.bbgrid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 0.5fr 1fr 1fr 1fr;
+  grid-template-rows: 0.5fr 0.5fr 0.5fr 0.75fr 2fr 1fr 1fr;
+  text-align:center;
+  gap: 1px 1px;
+  height: 250px;
+  max-width: 500px; 
+  min-width:400px; 
+  margin:auto;
+}
+
+.bbgame { grid-area: 1 / 3 / 2 / 6; }
+
+.bbdate_time { grid-area: 2 / 3 / 3 / 6; }
+
+.bbStatus { grid-area: 3 / 3 / 4 / 6; }
+
+.bbTeam1 { grid-area: 4 / 1 / 5 / 3; 
+font-size: 20px;
+font-weight: bold;}
+
+.bbTeam2 { grid-area: 4 / 6 / 5 / 8;
+font-size: 20px;
+font-weight: bold; }
+
+.bbFlag1 { grid-area: 5 / 1 / 6 / 3; 
+min-width:50px;
+margin:auto;
+width:auto;
+max-height:80px;}
+
+.bbFlag2 { grid-area: 5 / 6 / 6 / 8; 
+min-width:50px;
+margin:auto;
+width:auto;
+max-height:80px;}
+
+.bbScore1 { grid-area: 5 / 3 / 6 / 4;
+font-size:35px; 
+width:90%;
+text-align:center;
+margin: auto;}
+
+.bbinpp{
+font-size:40px; 
+width:50px;
+text-align:center;
+}
+
+.bbScore2 { grid-area: 5 / 5 / 6 / 6;
+font-size:35px; 
+width:90%;
+text-align:center;
+margin: auto;}
+
+.bbdots { grid-area: 5 / 4 / 6 / 5; 
+font-size:40px;
+margin: auto;}
+
+.bbfirsttext { grid-area: 6 / 3 / 7 / 6;}
+
+.bbsubmit { grid-area: 7 / 3 / 8 / 6; }
+
+
+tr:nth-child(even) {
+  background-color: #f0ede5
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap');
+
+
+
+.sticky-banner{
+    display:flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    top:0;
+    width:100%;
+    min-height: 80px;
+    background: #9600ffe0;
+    color:#fff;
+    box-shadow:rgba(0,0,0,0.24) 0px 3px 8px;
+    border-radius: 5px;
+}
+.s_banner_left,.s_banner_right{
+    display:flex;
+    align-items: center;
+    justify-content: center;
+}
+.s_icon{
+    background: #7b12c4;
+    padding:8px 12px;
+    margin:0 5px;
+    border-radius: 5px;
+    font-size: 24px;
+}
+button{
+    margin:5px;
+    padding:10px 16px;
+    background: #fff;
+    color:#7b12c4;
+    font-weight:600;
+    border:none;
+    outline:none;
+    cursor:pointer;
+    border-radius: 5px;
+    box-shadow:rgba(0,0,0,0.24) 0px 3px 8px;
+}
+.close1{
+    color:#fff;
+    background: #000;
+}
+
+.announcment{
+    font-family: "Poppins", sans-serif;
+    margin: 5px;
+    padding: 0;
+}
+
+
+.showHide { 
+   display:none;
+   font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0; }
+
+/* Desktop*/
+@media screen and (min-width: 768px) {
+  .showHide  { display: block; }
+}
+
+

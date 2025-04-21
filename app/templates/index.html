@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h1>Welcome to the game {{ current_user.username }}!</h1>
+    <!-- <p style="background-color:Orange;font-size:1.5em;"> <img src={{ url_for('static', filename='puck.png') }} width="20" height="20"/> Don't forget to predict the tournament winner from your profile page and put a default bet! </p> -->
+    
+    {% if current_user.default_score_a == None %}
+    <div class="sticky-banner" id="sticky-banner">
+         <div class="s_banner_left">
+             <div class="s_icon">
+                <i class="fa-solid fa-bullhorn"></i>
+             </div> 
+           <div>
+             <h3 class="announcment"> Set your Default Bet to avoid missing any games!  </h3> 
+             <p class="showHide" style="font-size: 14px;">Default Bet will be used only for the games that you forget to make a valid prediction otherwise. </p>
+           </div>
+         </div>
+         <div class="s_banner_right">
+         <div class="s_button">
+              <a href="{{url_for('default_prediction')}}">
+  <button>Set Deafult Bet</button>
+</a>        
+           <button onclick="Close()" class="close1"><i class="fa-solid fa-xmark"></i></button>
+         </div>
+        </div>
+     </div>
+     {% endif %}
+     
+     {% if current_user.final_winner == None %}
+     <div class="sticky-banner" id="sticky-banner1">
+         <div class="s_banner_left">
+             <div class="s_icon">
+                <i class="fa-solid fa-bullhorn"></i>
+             </div> 
+           <div>
+             <h3 class="announcment"> Predict the Tournament Winner! </h3> 
+             <p class="showHide" style="font-size: 14px;">Predict the correct Tournament Winner and score some valuable points at the end of the competition! </p>
+           </div>
+         </div>
+         <div class="s_banner_right">
+         <div class="s_button">
+              <a href="{{url_for('winner_prediction')}}" >
+  <button>Set Tournament Winner</button>
+</a>        
+           <button onclick="Close1()" class="close1"><i class="fa-solid fa-xmark"></i></button>
+         </div>
+        </div>
+     </div>
+     {% endif %}
+     
+     <p> Useful links: <a href="https://www.iihf.com/en/events/2025/wm">IIHF 2025 official page</a>
+     </p>
+        
+    {% if form %}
+    {{ wtf.quick_form(form) }}
+    <br>
+    {% endif %}
+    {% for post in posts %}
+        {% include '_post.html' %}
+    {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> Newer posts
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older posts <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <p align="right"><i><small>
+	Tested with: <br>
+	Microsoft Edge 135.0.3179.85
+    </small></i></p>
+{% endblock %}

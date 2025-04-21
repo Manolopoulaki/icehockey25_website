@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+	<h1>Player standings</h1>
+	<div style="overflow-x:auto">
+	<table class="table table-hover" id="myTable2">
+	<tr>
+	    <th onclick="sortTable(0)" style="cursor:pointer">Ranking &#8645;</th>
+	    <th>Player</th>
+	    <th onclick="sortTable(2)" style="cursor:pointer">First Goal &#8645;</th>
+	    <th onclick="sortTable(3)" style="cursor:pointer">Outcome &#8645;</th>
+	    <th onclick="sortTable(4)" style="cursor:pointer">Score Difference &#8645;</th>
+	    <th onclick="sortTable(5)" style="cursor:pointer">Score &#8645;</th>
+	    <th onclick="sortTable(6)" style="cursor:pointer">Game Points &#8645;</th>
+	    <th onclick="sortTable(7)" style="cursor:pointer">Winner Points &#8645;</th>
+	    <th onclick="sortTable(8)" style="cursor:pointer">Overall Points &#8645;</th>
+	</tr>
+	{% for user in results %}
+	<tr>
+	    <td> {{user.ranking}} </td>
+	    <td> <a href="{{ url_for('user', username=user.username) }}"> {{user.username}} </td>
+	    <td> {{user.total_first_goal}} </td>
+	    <td> {{user.total_winner}} </td>
+	    <td> {{user.total_score_diff}} </td>
+	    <td> {{user.total_score}} </td>
+	    <td> {{user.total_points}} </td>
+	    <td> {{user.final_winner_points}} </td>
+	    <td> {{user.overall_points}} </td>
+	</tr>
+	{% endfor %}
+	</table>
+	</div>
+{% endblock %}

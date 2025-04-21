@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h1>Predict Tournament Winner</h1>
+    Please select which team you think will be the overall winner of the tournament. <br> <br>
+    If you have already predicted the winner and you want to change your prediction, be wary that you might get less points, depending on when you are placing the prediction. Look at the table below for the points you will be getting for a successful prediction.<br><br>
+    <table class="table table-hover">
+         <tr>
+            <th> </th>
+	    <th>Final Date for Prediction</th>
+	    <th>Points for Successful Prediction</th>
+	  </tr>
+	  {% for points in winner_bet %}
+	  <tr style="white-space: nowrap">
+	    <th>{{points.description}}</th>
+	    <td>{{moment(points.last_bet).format('MMMM Do, h:mm a') }}</td>
+	    <th>{{points.bet_points}}</th>
+	  </tr> 
+	  {% endfor %}
+    </table>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+{% endblock %}

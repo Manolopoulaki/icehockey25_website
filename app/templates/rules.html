@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+	<h1>Rules</h1>
+
+	<div class="roww">
+		<div class="column left">
+		<dl>
+			<dt>Predictions:</dt>
+			<p></p> 
+			<dd>- Predict the outcome of each game before its scheduled start time.</dd>
+			<dd>- Prediction should be the final score (after overtime and penalty shots).</dd>
+			<dd>- There are no draws possible in play-offs.</dd>
+			<p></p>  
+			<dd>- For bonus point, predict which team will score first.</dd>
+			<dd>- Predictions can be altered until the scheduled start time.</dd>
+			<p></p> 
+			<dd>- After the game has started, predictions from all players will be locked and published.</dd>
+			<p></p> 
+			<dd>- After the game has finished, earned points for all players will be published and overall standings updated.</dd>
+			<p></p> 
+			<dd>- In your profile page you can predict the winner of the competition.</dd>
+			<dd>- Winner of the competition can be changed throughout the tournament.</dd>
+			<dd>- Points awarded for the correct prediction of the winner decrease as the tournament progresses.*</dd>
+			<p></p> 
+			<dd style="font-style: italic;">*Prediction made before the start of tournament are worth most points (15), predictions made before the final are worth least points (1). See full breakdown below.</dd>
+			<p></p> 
+			<p></p> 
+			<dt>Scoring:</dt>
+			<p></p> 
+			<dd>- Correctly predicted outcome – 2 points.</dd>
+			<dd>- Correctly predicted outcome with correct goal difference – 3 points (2 + 1).</dd>
+			<dd>- Correctly predicted score – 6 points (2 + 1 + 3).</dd>
+			<p></p> 
+			<dd>- Correctly predicted first goal – 1 point (no matter which team wins).</dd>
+			<p></p> 
+			<dd>- Winner prediction scoring breakdown:</dd>
+			<table class="table table-hover">
+         			<tr>
+         			        <th> </th>
+	    				<th>Final Date for Prediction</th>
+	    				<th>Points for Successful Prediction</th>
+	  			</tr>
+	  			{% for points in winner_bet %}
+	  			<tr style="white-space: nowrap">
+	  				<th>{{points.description}}</th>
+	    				<td>{{moment(points.last_bet).format('MMMM Do, h:mm a') }}</td>
+	    				<th>{{points.bet_points}}</th>
+	  			</tr> 
+	  			{% endfor %}
+    			</table>
+			<p></p> 
+			<dt>Standings:</dt>
+			<p></p> 
+			<dd>- Person with most overall points will be declared the winner.</dd>
+			<p></p> 
+			<dd>- Tie breakers in following order – most correctly predicted scores, most correctly predicted outcome with correct goal difference, most correctly predicted outcomes, most correctly predicted first goals.</dd>
+		</dl> 
+		</div>
+	<div class="column right"><img src={{ url_for('static', filename='referee.png')}} width=100%  /></div>
+{% endblock %}
