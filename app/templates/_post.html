@@ -2,7 +2,7 @@
         <tr>
             <td width="20px">
                 <a href="{{ url_for('user', username=post.author.username) }}">
-                    <img src="{{ post.author.avatar(50) }}" />
+                    <img src="/static/hektor_pics/{{ post.author.id }}.jpg" width="50"> <!--<img src="{{ post.author.avatar(50) }}" /> -->
                 </a>
             </td>
             <td>
