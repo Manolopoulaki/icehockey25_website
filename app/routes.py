@@ -6,7 +6,7 @@ from app.models import User, Post, Game, Bet, Winnerbet
 from werkzeug.urls import url_parse
 from app.email import send_password_reset_email
 from datetime import datetime, timedelta
-from sqlalchemy import or_, func, case
+from sqlalchemy import or_, and_, func, case
 from sqlalchemy.sql.functions import coalesce
 
 @app.before_request
@@ -67,6 +67,36 @@ def schedule():
     next_game = get_next_game()
     return render_template("schedule.html", title='Schedule', games=games, game_id=next_game.id, current_time=current_time, three_hours_earlier=three_hours_earlier)
     
+@app.route('/place_predictions', methods=['GET', 'POST'])
+@login_required
+def place_predictions():
+    current_time = datetime.utcnow()
+    games = Game.query.filter(and_(Game.team_a != 'TBD', Game.team_b != 'TBD', Game.starts_at > current_time)).order_by(Game.id.asc()).all()
+    forms = {}
+    
+    for game in games:
+        form = PlaceBetForm(prefix=str(game.id))
+        forms[game.id] = form
+        form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', f'Team {game.team_a}', f'Team {game.team_b}'])]
+        if form.validate_on_submit() and form.submit.data and request.form.get('game_id') == str(game.id):
+            if game.starts_at < current_time:
+                flash(f'This game ({game.team_a} vs {game.team_b}) has already started.', 'danger')
+            elif (form.score_a.data == 0 and form.score_b.data == 0 and int(form.first_goal.data) != 0) or \
+                 (form.score_a.data == 0 and form.score_b.data != 0 and int(form.first_goal.data) != 2) or \
+                 (form.score_a.data != 0 and form.score_b.data == 0 and int(form.first_goal.data) != 1) or \
+                 (form.score_a.data != 0 and form.score_b.data != 0 and int(form.first_goal.data) == 0):
+                flash('Your first goal prediction is not valid.', 'danger')
+            elif form.score_a.data == form.score_b.data:
+                flash('Your prediction is not valid.', 'danger')
+            else:
+                current_user.bets.filter_by(game_id=game.id).delete()
+                bet = Bet(game_id=game.id, score_a=form.score_a.data, score_b=form.score_b.data, first_goal=form.first_goal.data, user=current_user, is_default_bet=False)
+                db.session.add(bet)
+                db.session.commit()
+                flash(f'Prediction for game {game.id} saved!', 'success')
+    next_game = get_next_game()
+    return render_template("place_predictions.html", title='Place Predictions', games=games, forms=forms, game_id=next_game.id)
+
 @app.route('/games/<idd>', methods=['GET', 'POST'])
 @login_required
 def games(idd):

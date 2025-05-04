@@ -69,7 +69,7 @@
 		</div>
 	</div>
 </div>
-	
+
 <div id="teest">
 	{% if game_chosen==[] %}
 	    	<h1> Please choose game from list above</h1>
@@ -92,6 +92,13 @@
 			    <div class="bbdots">:</div>
 			    <div class="bbfirsttext">{{ form.first_goal }}</div>
 			    <div class="bbsubmit">{{ form.submit() }}</div>
+			</div>
+			<div id="place_all_predictions_button"
+				style="display: flex; justify-content: center; align-items: center; height: 10vh;">
+				<button onclick="window.location.href='{{ url_for("place_predictions") }}'"
+					class="button">
+				Place predictions for all scheduled games
+				</button>
 			</div>
 			</form>
 			 {% endif %}
