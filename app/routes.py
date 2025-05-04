@@ -78,6 +78,11 @@ def place_predictions():
         form = PlaceBetForm(prefix=str(game.id))
         forms[game.id] = form
         form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', f'Team {game.team_a}', f'Team {game.team_b}'])]
+        existing_bet = current_user.bets.filter_by(game_id=game.id).first()
+        if existing_bet:
+            form.score_a.data = existing_bet.score_a
+            form.score_b.data = existing_bet.score_b
+            form.first_goal.data = str(existing_bet.first_goal)
         if form.validate_on_submit() and form.submit.data and request.form.get('game_id') == str(game.id):
             if game.starts_at < current_time:
                 flash(f'This game ({game.team_a} vs {game.team_b}) has already started.', 'danger')
