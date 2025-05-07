@@ -75,30 +75,45 @@ def place_predictions():
     forms = {}
     
     for game in games:
-        form = PlaceBetForm(prefix=str(game.id))
+        form = PlaceBetForm()
         forms[game.id] = form
         form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', f'Team {game.team_a}', f'Team {game.team_b}'])]
-        existing_bet = current_user.bets.filter_by(game_id=game.id).first()
+        existing_bet = current_user.bets.filter(and_(Bet.game_id==game.id, Bet.is_default_bet==False)).first()
         if existing_bet:
             form.score_a.data = existing_bet.score_a
             form.score_b.data = existing_bet.score_b
             form.first_goal.data = str(existing_bet.first_goal)
-        if form.validate_on_submit() and form.submit.data and request.form.get('game_id') == str(game.id):
+
+    if request.method == 'POST':
+        for game in games:
+            try:
+                score_a = int(request.form.get(f'score_a_{game.id}', 0))
+                score_b = int(request.form.get(f'score_b_{game.id}', 0))
+                first_goal = int(request.form.get(f'first_goal_{game.id}', 0))
+            except (ValueError, TypeError):
+                flash(f'Invalid input for game {game.id}.', 'danger')
+                continue
             if game.starts_at < current_time:
                 flash(f'This game ({game.team_a} vs {game.team_b}) has already started.', 'danger')
-            elif (form.score_a.data == 0 and form.score_b.data == 0 and int(form.first_goal.data) != 0) or \
-                 (form.score_a.data == 0 and form.score_b.data != 0 and int(form.first_goal.data) != 2) or \
-                 (form.score_a.data != 0 and form.score_b.data == 0 and int(form.first_goal.data) != 1) or \
-                 (form.score_a.data != 0 and form.score_b.data != 0 and int(form.first_goal.data) == 0):
-                flash('Your first goal prediction is not valid.', 'danger')
-            elif form.score_a.data == form.score_b.data:
-                flash('Your prediction is not valid.', 'danger')
+                continue
+            elif (score_a == 0 and score_b == 0 and int(first_goal) != 0) or \
+                 (score_a == 0 and score_b != 0 and int(first_goal) != 2) or \
+                 (score_a != 0 and score_b == 0 and int(first_goal) != 1) or \
+                 (score_a != 0 and score_b != 0 and int(first_goal) == 0):
+                flash(f'Your first goal prediction is not valid for game {game.id}.', 'danger')
+                continue
+            elif (score_a == 0 and score_b == 0 and first_goal == 0):
+                continue
+            elif score_a == score_b:
+                flash(f'Your prediction for game {game.id} cannot be a draw.', 'danger')
+                continue
             else:
                 current_user.bets.filter_by(game_id=game.id).delete()
-                bet = Bet(game_id=game.id, score_a=form.score_a.data, score_b=form.score_b.data, first_goal=form.first_goal.data, user=current_user, is_default_bet=False)
+                bet = Bet(game_id=game.id, score_a=score_a, score_b=score_b, first_goal=first_goal, user=current_user, is_default_bet=False)
                 db.session.add(bet)
-                db.session.commit()
-                flash(f'Prediction for game {game.id} saved!', 'success')
+        db.session.commit()
+        flash('Your predictions have been saved!', 'success')
+        return redirect(url_for('place_predictions'))
     next_game = get_next_game()
     return render_template("place_predictions.html", title='Place Predictions', games=games, forms=forms, game_id=next_game.id)
 
