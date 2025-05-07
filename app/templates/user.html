@@ -5,18 +5,18 @@
         <tr>
             <td width="148px"><img src="/static/hektor_pics/{{ user.id }}.jpg" width="148"></td><!--<img src="{{ user.avatar(148) }}"></td>-->
             <td>
-                <h2>User: {{ user.username }}</h2>
+                <h2>{{ _('User: %(username)s!', username=user.username) }}</h2>
                 {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
-                {% if user.last_seen %}<p>Last seen on: {{ moment(user.last_seen).format('LLL') }}</p>{% endif %}
+                {% if user.last_seen %}<p>{{ _('Last seen on: %(when)s', when=moment(user.last_seen).format('LLL')) }}</p>{% endif %}
                 {% if user == current_user %}
-			<p><a href="{{ url_for('edit_profile') }}">Edit your profile</a> |
-			<a href="{{ url_for('winner_prediction') }}">Predict the tournament winner</a> |
-			<a href="{{ url_for('default_prediction') }}">Place your default prediction</a>
+			<p><a href="{{ url_for('edit_profile') }}">{{ _('Edit your profile') }}</a> |
+			<a href="{{ url_for('winner_prediction') }}">{{ _('Predict the tournament winner') }}</a> |
+			<a href="{{ url_for('default_prediction') }}">{{ _('Place your default prediction') }}</a>
 			{% if user.final_winner %} 
-				<br> You predicted {{ user.final_winner }} for winner! This prediction is worth {{winner_bet_points}} points. 
+				<br> {{ _('You predicted %(winner)s for winner! This prediction is worth %(points)s points.', winner=user.final_winner, points=winner_bet_points) }}
 			{% endif %} 
 			{% if user.default_score_a!=None %} 
-				<br> You default prediction is 
+				<br> {{ _('You default prediction is' ) }}
 				{% if user.default_first_goal==1 %}
 			    	<img src={{ url_for('static', filename='puck.png') }} width="10" height="10"/> {{user.default_score_a}}:{{user.default_score_b}}
 			    	{% elif user.default_first_goal==2 %}
@@ -27,7 +27,7 @@
 			{% endif %}
 			</p>
 		{% else %} {% if user.final_winner %} 
-			<p> {{ user.username }} predicted the winner! Have you? </p> {% endif %}
+			<p> {{ _('%(user)s predicted the winner! Have you?', user=user.username ) }} </p> {% endif %}
 		{% endif %}
             </td>
         </tr>
@@ -50,7 +50,7 @@
         </ul>
     </nav>  //-->
     
-    <h1>Statistics</h1>
+    <h1>{{ _('Statistics') }}</h1>
     {% for user_here in stats %} {% if user.username==user_here.username %} 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
@@ -87,49 +87,49 @@
     </script>
     	<div class="statsRow">
 		<div class="statsColumn">
-			<div class="statsTitle"> Ranking </div>
+			<div class="statsTitle"> {{ _('Ranking') }} </div>
 			<div class="statsValue"> {{user_here.ranking}} </div>
 		</div>
 		<div class="statsColumn">
-			<div class="statsTitle"> Points </div>
+			<div class="statsTitle"> {{ _('Points') }} </div>
 			<div class="statsValue"> {{user_here.overall_points}} </div>
 		</div>
 		<div class="statsColumn">
-			<div class="statsTitle"> First Goal </div>
+			<div class="statsTitle"> {{ _('First Goal') }} </div>
 			<div class="centerLabel">{{user_here.total_first_goal}}/{{user_here.total_closed_bets}}</div>
 			<div id="donutchart1" class="donutDiv"></div>
 		</div>
 		<div class="statsColumn">
-			<div class="statsTitle"> Outcome </div>
+			<div class="statsTitle"> {{ _('Outcome') }} </div>
 			<div class="centerLabel">{{user_here.total_winner}}/{{user_here.total_closed_bets}}</div>
 			<div id="donutchart2" class="donutDiv"></div>
 		</div>
 		<div class="statsColumn">
-			<div class="statsTitle"> Score Difference </div>
+			<div class="statsTitle"> {{ _('Score Difference') }} </div>
 			<div class="centerLabel">{{user_here.total_score_diff}}/{{user_here.total_closed_bets}}</div>
 			<div id="donutchart3" class="donutDiv"></div>
 		</div>
 		<div class="statsColumn">
-			<div class="statsTitle"> Score </div>
+			<div class="statsTitle"> {{ _('Score') }} </div>
 			<div class="centerLabel">{{user_here.total_score}}/{{user_here.total_closed_bets}}</div>
 			<div id="donutchart4" class="donutDiv"></div>
 		</div>
     	</div>
     	{% endif %} {% endfor %}
 	<div style="overflow-x:auto">
-	 <h1>Predictions</h1>
+	 <h1>{{ _('Predictions') }}</h1>
 	    <table class="table table-hover">
 		 <tr>
 		    <th>ID</th>
-		    <th>Game</th>
-		    <th>Game Time</th>
-		    <th>Prediction</th>
-		    <th>Result</th>
-		    <th>First Goal Correct</th>
-		    <th>Outcome Correct</th>
-		    <th>Score Difference Correct</th>
-		    <th>Score Correct</th>
-		    <th>Points</th>
+		    <th>{{ _('Game') }}</th>
+		    <th>{{ _('Game Time') }}</th>
+		    <th>{{ _('Prediction') }}</th>
+		    <th>{{ _('Result') }}</th>
+		    <th>{{ _('First Goal Correct') }}</th>
+		    <th>{{ _('Outcome Correct') }}</th>
+		    <th>{{ _('Score Difference Correct') }}</th>
+		    <th>{{ _('Score Correct') }}</th>
+		    <th>{{ _('Points') }}</th>
 		  </tr>
 		 {% for result in bets %}
 		 	{% if result.is_default_bet==True %}

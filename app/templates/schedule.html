@@ -2,15 +2,15 @@
 
 {% block app_content %}
 <div style="overflow-x:auto">
-    <h1>Schedule</h1>
+    <h1>{{ _('Schedule') }}</h1>
     <table class="table table-hover">
          <tr>
 	    <th>ID</th>
-	    <th>Game</th>
-	    <th>Stage</th>
-	    <th>Game Time</th>
-	    <th>Status</th>
-	    <th>Result</th>
+	    <th>{{ _('Game') }}</th>
+	    <th>{{ _('Stage') }}</th>
+	    <th>{{ _('Game Time') }}</th>
+	    <th>{{ _('Status') }}</th>
+	    <th>{{ _('Result') }}</th>
 	  </tr>
 	 {% for game in games %}
 	  <tr style="white-space: nowrap">
@@ -22,9 +22,9 @@
 	    </td>
 	    <td>{{game.stage}}</td>
 	    <td>{{ moment(game.starts_at).format('MMMM Do, h:mm a') }}</td>
-	    <td>{% if game.starts_at > current_time %} Upcoming - <a href="{{ url_for('games', idd=game.id) }}">Prediction</a> {% endif %}
-	    	{% if game.starts_at < current_time and game.starts_at > three_hours_earlier and game.score_a == None %} Started - <a href="{{ url_for('games', idd=game.id) }}">Game stats</a> {% endif %}
-	    	{% if game.starts_at < three_hours_earlier or game.score_a != None %} Finished - <a href="{{ url_for('games', idd=game.id) }}">Game stats</a> {% endif %}
+	    <td>{% if game.starts_at > current_time %} {{ _('Upcoming -') }} <a href="{{ url_for('games', idd=game.id) }}">{{ _('Prediction') }}</a> {% endif %}
+	    	{% if game.starts_at < current_time and game.starts_at > three_hours_earlier and game.score_a == None %} {{ _('Started -') }} <a href="{{ url_for('games', idd=game.id) }}">{{ _('Game stats') }}</a> {% endif %}
+	    	{% if game.starts_at < three_hours_earlier or game.score_a != None %} {{ _('Finished -') }} <a href="{{ url_for('games', idd=game.id) }}">{{ _('Game stats') }}</a> {% endif %}
 	    	</td>
 	    <td>
 	    	{% if game.first_goal==1 %}

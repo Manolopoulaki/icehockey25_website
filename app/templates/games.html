@@ -2,7 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-<div class="container content example1">
+<div class="container example1">
 	<div class="pagespan">
 		<div class="wrap">
 			<div class="scrollbar">
@@ -54,9 +54,9 @@
 							<div class="date_time">{{ moment(game.starts_at).format('ddd DD/MM, H:mm') }}</div>
 							<div class="game_id">{{game.id}}</div>
 							<div class="status">
-								{% if game.starts_at > current_time %} Upcoming {% endif %}
-								{% if game.starts_at < current_time and game.starts_at > three_hours_earlier and game.score_a == None %} Started {% endif %}
-								{% if game.starts_at < three_hours_earlier or game.score_a != None %} Finished {% endif %}
+								{% if game.starts_at > current_time %} {{ _('Upcoming') }} {% endif %}
+								{% if game.starts_at < current_time and game.starts_at > three_hours_earlier and game.score_a == None %} {{ _('Started') }} {% endif %}
+								{% if game.starts_at < three_hours_earlier or game.score_a != None %} {{ _('Finished') }} {% endif %}
 							</div>
 						</div>
 					</li>   
@@ -64,25 +64,25 @@
 				</ul>
 			</div>
 			<div class="controls center">
-				<button class="btn prev"><i class="icon-chevron-left"></i> prev</button>
-				<button class="btn next">next <i class="icon-chevron-right"></i></button>
+				<button class="btn prev"><i class="icon-chevron-left"></i> {{ _('prev') }}</button>
+				<button class="btn next">{{ _('next') }}<i class="icon-chevron-right"></i></button>
 		</div>
 	</div>
 </div>
 
 <div id="teest">
 	{% if game_chosen==[] %}
-	    	<h1> Please choose game from list above</h1>
+	    	<h1> {{ _('Please choose game from list above') }}</h1>
 	{% else %}	
 		{% if game_chosen.starts_at > current_time %}
 			{% if form %}
-			<h1 style="text-align:center;">Place your prediction </h1>
+			<h1 style="text-align:center;">{{ _('Place your prediction') }} </h1>
 			<form action="" method="post">
 			{{ form.hidden_tag() }}			
 			<div class="bbgrid-container">
-			    <div class="bbgame">Game {{game_chosen.id}} {{game_chosen.stage}}</div>
+			    <div class="bbgame">{{ _('Game') }} {{game_chosen.id}} {{game_chosen.stage}}</div>
 			    <div class="bbdate_time">{{ moment(game_chosen.starts_at).format('MMMM Do, h:mm a') }}</div>
-			    <div class="bbStatus"> Upcoming </div>
+			    <div class="bbStatus"> {{ _('Upcoming') }} </div>
 			    <div class="bbTeam1">{{game_chosen.team_a}}</div>
 			    <div class="bbTeam2">{{game_chosen.team_b}}</div>
 			    <img class="bbFlag1" src={{ url_for('static', filename=game_chosen.team_a +'.png') }}>
@@ -97,27 +97,27 @@
 				style="display: flex; justify-content: center; align-items: center; height: 10vh;">
 				<button onclick="window.location.href='{{ url_for("place_predictions") }}'"
 					class="button">
-				Place predictions for all scheduled games
+					{{ _('Place predictions for all scheduled games') }}
 				</button>
 			</div>
 			</form>
 			 {% endif %}
 		{% else %}
-			<h1>Predictions for Game {{game_chosen.id}}: 
+			<h1>{{ _('Predictions for Game') }} {{game_chosen.id}}: 
 			    <img src={{ url_for('static', filename=game_chosen.team_a +'.png') }} width="40" height="40"/>
 			    {{game_chosen.team_a}} - {{game_chosen.team_b}}
 			    <img src={{ url_for('static', filename=game_chosen.team_b +'.png') }} width="40" height="40"/>
 			</h1>
 			<div> 
-			{{correct_winners}}/{{all_bets}} of bets found the correct winner! <br>
-			{{correct_first_goals}}/{{all_bets}} of bets found the correct first goal team! <br>
-			{{default_bets}}/{{all_bets}} were default bets.
+			{{correct_winners}}/{{all_bets}} {{ _('of bets found the correct winner!') }} <br>
+			{{correct_first_goals}}/{{all_bets}} {{ _('of bets found the correct first goal team!') }} <br>
+			{{default_bets}}/{{all_bets}} {{ _('were default bets.') }}
 			</div>
 			<table class="table table-hover">
 			<tr>
-			    <th>Player</th>
-			    <th>Prediction</th>
-			    <th>Points</th>
+			    <th>{{ _('Player') }}</th>
+			    <th>{{ _('Prediction') }}</th>
+			    <th>{{ _('Points') }}</th>
 			  </tr>
 			  {% for bet in bets_to_show %}
 				  {% if bet.is_default_bet==True %}

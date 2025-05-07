@@ -2,14 +2,14 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>Predict Tournament Winner</h1>
-    Please select which team you think will be the overall winner of the tournament. <br> <br>
-    If you have already predicted the winner and you want to change your prediction, be wary that you might get less points, depending on when you are placing the prediction. Look at the table below for the points you will be getting for a successful prediction.<br><br>
+    <h1>{{ _('Predict Tournament Winner') }}</h1>
+    {{ _('Please select which team you think will be the overall winner of the tournament.') }} <br> <br>
+    {{ _('If you have already predicted the winner and you want to change your prediction, be wary that you might get less points, depending on when you are placing the prediction. Look at the table below for the points you will be getting for a successful prediction.') }}<br><br>
     <table class="table table-hover">
          <tr>
             <th> </th>
-	    <th>Final Date for Prediction</th>
-	    <th>Points for Successful Prediction</th>
+	    <th>{{ _('Final Date for Prediction') }}</th>
+	    <th>{{ _('Points for Successful Prediction') }}</th>
 	  </tr>
 	  {% for points in winner_bet %}
 	  <tr style="white-space: nowrap">

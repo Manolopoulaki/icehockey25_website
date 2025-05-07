@@ -1,0 +1,617 @@
+# Translations template for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-05-05 21:28+0200\n"
+"PO-Revision-Date: 2025-05-06 23:21+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: lv_LV\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+"X-Generator: Poedit 3.6\n"
+
+#: app/forms.py:8 app/forms.py:14 app/forms.py:33
+msgid "Username"
+msgstr "Lietotājvārds"
+
+#: app/forms.py:9 app/forms.py:17 app/forms.py:84
+msgid "Password"
+msgstr "Parole"
+
+#: app/forms.py:10
+msgid "Remember Me"
+msgstr "Atcerēties mani"
+
+#: app/forms.py:11 app/templates/login.html:5
+msgid "Sign In"
+msgstr "Ienākt"
+
+#: app/forms.py:15
+msgid "Name"
+msgstr "Vārds"
+
+#: app/forms.py:16 app/forms.py:80
+msgid "Email"
+msgstr "E-pasts"
+
+#: app/forms.py:19 app/forms.py:86
+msgid "Repeat Password"
+msgstr "Parole vēlreiz"
+
+#: app/forms.py:20
+msgid "Register"
+msgstr "Reģistrēties"
+
+#: app/forms.py:25 app/forms.py:45
+msgid "Please use a different username."
+msgstr "Lūdzu, izmantojiet citu lietotājvārdu."
+
+#: app/forms.py:30
+msgid "Please use a different email address."
+msgstr "Lūdzu, izmantojiet citu e-pasta adresi."
+
+#: app/forms.py:34
+msgid "About me"
+msgstr "Par mani"
+
+#: app/forms.py:35 app/forms.py:50 app/forms.py:70
+msgid "Submit"
+msgstr "Iesniegt"
+
+#: app/forms.py:48
+msgid "Say something"
+msgstr "Sakiet kaut ko"
+
+#: app/forms.py:66
+msgid "Place Prediction"
+msgstr "Veikt prognozi"
+
+#: app/forms.py:69
+msgid "Tournament Winner"
+msgstr "Turnīra uzvarētājs"
+
+#: app/forms.py:81 app/forms.py:87
+msgid "Request Password Reset"
+msgstr "Pieprasīt paroles atiestatīšanu"
+
+#: app/routes.py:89 app/routes.py:128 app/templates/user.html:98
+msgid "First Goal"
+msgstr "Pirmie vārti"
+
+#: app/routes.py:89
+#, python-format
+msgid "Team %(teama)s"
+msgstr "Komanda %(teama)s"
+
+#: app/routes.py:89
+#, python-format
+msgid "Team %(teamb)s"
+msgstr "Komanda %(teamb)s"
+
+#: app/routes.py:113
+#, python-format
+msgid "Team %(team)s"
+msgstr "Komanda %(team)s"
+
+#: app/routes.py:128
+msgid "Team A"
+msgstr "Komanda A"
+
+#: app/routes.py:128
+msgid "Team B"
+msgstr "Komanda B"
+
+#: app/templates/_post.html:14
+#, python-format
+msgid "%(username)s said %(when)s"
+msgstr "%(username)s teica %(when)s"
+
+#: app/templates/base.html:19
+msgid "Toggle navigation"
+msgstr "Pārslēgt navigāciju"
+
+#: app/templates/base.html:30
+msgid "HOME"
+msgstr "SĀKUMS"
+
+#: app/templates/base.html:32
+msgid "RULES"
+msgstr "NOTEIKUMI"
+
+#: app/templates/base.html:33
+msgid "SCHEDULE"
+msgstr "GRAFIKS"
+
+#: app/templates/base.html:34
+msgid "GAMES"
+msgstr "SPĒLES"
+
+#: app/templates/base.html:35
+msgid "STANDINGS"
+msgstr "KOPVĒRTĒJUMS"
+
+#: app/templates/base.html:45
+msgid "Login"
+msgstr "Pieslēgties"
+
+#: app/templates/default_prediction.html:6
+msgid "Default Game Prediction"
+msgstr "Rezerves prognoze"
+
+#: app/templates/default_prediction.html:7
+msgid ""
+"Place the default bet you want to use for the upcoming games. You can change "
+"that at any time and it will be applied for the upcoming games in case you "
+"forget to place a prediction before the game starts. The same rules apply as "
+"for placing predictions for games."
+msgstr ""
+"Uzlieciet rezerves prognozi, ko var izmantot nākamajām spēlēm. Rezerves "
+"prognozi varat mainīt jebkurā laikā, un tā tiks piemērota spēlēm, kurām "
+"pirms spēles sākuma ir aizmirsts uzlikt prognozi. Rezerves prognozēm ir "
+"spēkā tie paši noteikumi, kas attiecas uz parastajām spēļu prognozēm."
+
+#: app/templates/default_prediction.html:12
+msgid "Home Team"
+msgstr "Mājas komanda"
+
+#: app/templates/default_prediction.html:13
+msgid "Away Team"
+msgstr "Izbraukuma komanda"
+
+#: app/templates/edit_profile.html:5
+msgid "Edit Profile"
+msgstr "Profils"
+
+#: app/templates/games.html:57 app/templates/games.html:85
+msgid "Upcoming"
+msgstr "Ieplānota"
+
+#: app/templates/games.html:58
+msgid "Started"
+msgstr "Sākusies"
+
+#: app/templates/games.html:59
+msgid "Finished"
+msgstr "Beigusies"
+
+#: app/templates/games.html:67
+msgid "prev"
+msgstr "iepriekšējā"
+
+#: app/templates/games.html:68
+msgid "next"
+msgstr "nākamā"
+
+#: app/templates/games.html:75
+msgid "Please choose game from list above"
+msgstr "Lūdzu, izvēlieties spēli no saraksta"
+
+#: app/templates/games.html:79
+msgid "Place your prediction"
+msgstr "Veikt prognozi"
+
+#: app/templates/games.html:83 app/templates/schedule.html:9
+#: app/templates/user.html:124
+msgid "Game"
+msgstr "Spēle"
+
+#: app/templates/games.html:99
+msgid "Predictions for Game"
+msgstr "Prognoze spēlei"
+
+#: app/templates/games.html:105
+msgid "of bets found the correct winner!"
+msgstr "no prognozēm bija ar pareizo uzvarētāju!"
+
+#: app/templates/games.html:106
+msgid "of bets found the correct first goal team!"
+msgstr "no prognozēm bija ar pareizajiem pirmajiem vārtiem!"
+
+#: app/templates/games.html:107
+msgid "were default bets."
+msgstr "bija rezerves prognozes."
+
+#: app/templates/games.html:111 app/templates/standings.html:9
+msgid "Player"
+msgstr "Lietotājs"
+
+#: app/templates/games.html:112 app/templates/schedule.html:25
+#: app/templates/user.html:126
+msgid "Prediction"
+msgstr "Prognoze"
+
+#: app/templates/games.html:113 app/templates/user.html:94
+#: app/templates/user.html:132
+msgid "Points"
+msgstr "Punkti"
+
+#: app/templates/index.html:5
+#, python-format
+msgid "Welcome to the game %(username)s!"
+msgstr "Laipni lūgti spēlē %(username)s!"
+
+#: app/templates/index.html:15
+msgid "Set your Default Bet to avoid missing any games!"
+msgstr "Izveido rezerves prognozi, lai neaizmirstu nevienu spēli!"
+
+#: app/templates/index.html:16
+msgid ""
+"Default Bet will be used only for the games that you forget to make a valid "
+"prediction otherwise."
+msgstr ""
+"Rezerves prognoze tiek izmantota tikai spēlēm, kurām ir aizmirsts uzlikt "
+"prognozes."
+
+#: app/templates/index.html:22
+msgid "Set Deafult Bet"
+msgstr "Izveidot rezerves prognozi"
+
+#: app/templates/index.html:37
+msgid "Predict the Tournament Winner!"
+msgstr "Paredzi turnīra uzvarētāju!"
+
+#: app/templates/index.html:38
+msgid ""
+"Predict the correct Tournament Winner and score some valuable points at the "
+"end of the competition!"
+msgstr ""
+"Paredzi turnīra uzvarētāju pareizi un nopelni vērtīgus punktus kopvērtējumam!"
+
+#: app/templates/index.html:44
+msgid "Set Tournament Winner"
+msgstr "Izvēlies turnīra uzvarētāju"
+
+#: app/templates/index.html:52
+msgid "Useful links:"
+msgstr "Noderīgas mājaslapas:"
+
+#: app/templates/index.html:52
+msgid "IIHF 2025 official page"
+msgstr "IIHF 2025 oficiālā mājaslapa"
+
+#: app/templates/index.html:66
+msgid "Newer posts"
+msgstr "Jaunākas ziņas"
+
+#: app/templates/index.html:71
+msgid "Older posts"
+msgstr "Vecākas ziņas"
+
+#: app/templates/index.html:77
+msgid "Tested with:"
+msgstr "Testēts ar:"
+
+#: app/templates/login.html:12
+msgid "New User?"
+msgstr "Jauns lietotājs?"
+
+#: app/templates/login.html:12
+msgid "Click to Register!"
+msgstr "Reģistrēties!"
+
+#: app/templates/login.html:14
+msgid "Forgot Your Password?"
+msgstr "Aizmirsi paroli?"
+
+#: app/templates/login.html:15
+msgid "Click to Reset It"
+msgstr "Spied šeit, lai atjaunotu"
+
+#: app/templates/reset_password.html:5
+msgid "Reset Your Password"
+msgstr "Atjaunot Jūsu paroli"
+
+#: app/templates/reset_password_request.html:5
+msgid "Reset Password"
+msgstr "Atjaunot paroli"
+
+#: app/templates/rules.html:4
+msgid "Rules"
+msgstr "Notiekumi"
+
+#: app/templates/rules.html:9
+msgid "Predictions:"
+msgstr "Prognozes:"
+
+#: app/templates/rules.html:11
+msgid "- Predict the outcome of each game before its scheduled start time."
+msgstr "- Veic prognozes spēlēm pirms paredzētā sākuma laika."
+
+#: app/templates/rules.html:12
+msgid ""
+"- Prediction should be the final score (after overtime and penalty shots)."
+msgstr ""
+"- Prognoze ir spēles gala rezultātam (pēc papildlaika un soda metieniem)."
+
+#: app/templates/rules.html:13
+msgid "- There are no draws possible in play-offs."
+msgstr "- Neizšķirts nav iespējams."
+
+#: app/templates/rules.html:15
+msgid "- For bonus point, predict which team will score first."
+msgstr "- Nopelni bonusa punktu par pareizi paredzētiem pirmajiem vārtiem."
+
+#: app/templates/rules.html:16
+msgid "- Predictions can be altered until the scheduled start time."
+msgstr "- Prognozes var tikt mainītas līdz spēles sākumam."
+
+#: app/templates/rules.html:18
+msgid ""
+"- After the game has started, predictions from all players will be locked "
+"and published."
+msgstr ""
+"- Līdz ar spēles sākšanos, prognozes no visiem spēlētājiem tiks slēgtas un "
+"publicētas."
+
+#: app/templates/rules.html:20
+msgid ""
+"- After the game has finished, earned points for all players will be "
+"published and overall standings updated."
+msgstr ""
+"- Pēc spēles beigām, nopelnītie punkti visiem spēlētājiem tiks publicēti un "
+"kopvērtējums atjaunināts."
+
+#: app/templates/rules.html:22
+msgid "- In your profile page you can predict the winner of the competition."
+msgstr "- Jūsu profilā ir iespējams paredzēt turnīra uzvarētāju."
+
+#: app/templates/rules.html:23
+msgid "- Winner of the competition can be changed throughout the tournament."
+msgstr "- Turnīra uzvarētāju var mainīt turnīra gaitā."
+
+#: app/templates/rules.html:24
+msgid ""
+"- Points awarded for the correct prediction of the winner decrease as the "
+"tournament progresses.*"
+msgstr ""
+"- Punkti par pareizi paredzētu turnīra uzvarētāju samazinās turnīra gaitā.*"
+
+#: app/templates/rules.html:26
+msgid ""
+"*Prediction made before the start of tournament are worth most points (15), "
+"predictions made before the final are worth least points (1). See full "
+"breakdown below."
+msgstr ""
+"*Prognoze veikta pirms turnīra ir vērta visvairāk punktus (15), prognoze "
+"veikta neilgi pirms fināla ir vērta vismazāk punktus (1). Pilnu sadalījumu "
+"skatīt tabulā."
+
+#: app/templates/rules.html:29
+msgid "Scoring:"
+msgstr "Vērtēšana:"
+
+#: app/templates/rules.html:31
+msgid "- Correctly predicted outcome – 2 points."
+msgstr "- Pareizi prognozēts iznākums - 2 punkti."
+
+#: app/templates/rules.html:32
+msgid ""
+"- Correctly predicted outcome with correct goal difference – 3 points (2 + "
+"1)."
+msgstr ""
+"- Pareizi prognozēts rezultāts ar pareizu vārtu starpību - 3 punkti (2 + 1)."
+
+#: app/templates/rules.html:33
+msgid "- Correctly predicted score – 6 points (2 + 1 + 3)."
+msgstr "- Pareizi prognozētais rezultāts - 6 punkti (2 + 1 + 3)."
+
+#: app/templates/rules.html:35
+msgid "- Correctly predicted first goal – 1 point (no matter which team wins)."
+msgstr ""
+"- Pareizi prognozēti pirmie vārti - 1 punkts (neatkarīgi no tā, kura komanda "
+"uzvar)."
+
+#: app/templates/rules.html:37
+msgid "- Winner prediction scoring breakdown:"
+msgstr "- Uzvarētāja prognozes punktu vērtība:"
+
+#: app/templates/rules.html:41 app/templates/winner_prediction.html:11
+msgid "Final Date for Prediction"
+msgstr "Prognozes galīgais datums"
+
+#: app/templates/rules.html:42 app/templates/winner_prediction.html:12
+msgid "Points for Successful Prediction"
+msgstr "Punkti par veiksmīgu prognozi"
+
+#: app/templates/rules.html:57
+msgid "Standings:"
+msgstr "Kopvērtējums:"
+
+#: app/templates/rules.html:59
+msgid "- Person with most overall points will be declared the winner."
+msgstr ""
+"- Par uzvarētāju tiks atzīts spēlētājs, kurš būs ieguvis visvairāk "
+"kopvērtējuma punktu."
+
+#: app/templates/rules.html:61
+msgid ""
+"- Tie breakers in following order – most correctly predicted scores, most "
+"correctly predicted outcome with correct goal difference, most correctly "
+"predicted outcomes, most correctly predicted first goals."
+msgstr ""
+"- Neizšķirti tiek šķirti šādā secībā - vispareizāk prognozētie vārti, "
+"vispareizāk prognozētais rezultāts ar pareizu vārtu starpību, vispareizāk "
+"prognozētie rezultāti, vispareizāk prognozētie pirmie vārti."
+
+#: app/templates/schedule.html:5
+msgid "Schedule"
+msgstr "Grafiks"
+
+#: app/templates/schedule.html:10
+msgid "Stage"
+msgstr "Posms"
+
+#: app/templates/schedule.html:11 app/templates/user.html:125
+msgid "Game Time"
+msgstr "Spēles laiks"
+
+#: app/templates/schedule.html:12
+msgid "Status"
+msgstr "Statuss"
+
+#: app/templates/schedule.html:13 app/templates/user.html:127
+msgid "Result"
+msgstr "Rezultāts"
+
+#: app/templates/schedule.html:25
+msgid "Upcoming -"
+msgstr "Ieplānota -"
+
+#: app/templates/schedule.html:26
+msgid "Started -"
+msgstr "Sākusies -"
+
+#: app/templates/schedule.html:26
+msgid "Game stats"
+msgstr "Spēles statistika"
+
+#: app/templates/schedule.html:27
+msgid "Finished -"
+msgstr "Beigusies -"
+
+#: app/templates/standings.html:4
+msgid "Player standings"
+msgstr "Spēlētāju klasifikācija"
+
+#: app/templates/standings.html:8
+msgid "Ranking &#8645;"
+msgstr "Vieta &#8645;"
+
+#: app/templates/standings.html:10
+msgid "First Goal &#8645;"
+msgstr "Pirmie vārti &#8645;"
+
+#: app/templates/standings.html:11
+msgid "Outcome &#8645;"
+msgstr "Iznākums &#8645;"
+
+#: app/templates/standings.html:12
+msgid "Score Difference &#8645;"
+msgstr "Rezultāta starpība &#8645;"
+
+#: app/templates/standings.html:13
+msgid "Score &#8645;"
+msgstr "Rezultāts &#8645;"
+
+#: app/templates/standings.html:14
+msgid "Game Points &#8645;"
+msgstr "Prognožu Punkti &#8645;"
+
+#: app/templates/standings.html:15
+msgid "Winner Points &#8645;"
+msgstr "Uzvarētāja punkti &#8645;"
+
+#: app/templates/standings.html:16
+msgid "Overall Points &#8645;"
+msgstr "Punkti kopā &#8645;"
+
+#: app/templates/user.html:8
+#, python-format
+msgid "User: %(username)s!"
+msgstr "Lietotājs: %(username)s!"
+
+#: app/templates/user.html:10
+#, python-format
+msgid "Last seen on: %(when)s"
+msgstr "Pēdējo reizi redzēts: %(when)s"
+
+#: app/templates/user.html:12
+msgid "Edit your profile"
+msgstr "Rediģēt savu profilu"
+
+#: app/templates/user.html:13
+msgid "Predict the tournament winner"
+msgstr "Prognozēt turnīra uzvarētāju"
+
+#: app/templates/user.html:14
+msgid "Place your default prediction"
+msgstr "Izveidojiet rezerves prognozi"
+
+#: app/templates/user.html:16
+#, python-format
+msgid ""
+"You predicted %(winner)s for winner! This prediction is worth %(points)s "
+"points."
+msgstr ""
+"Jūs prognozējāt %(winner)s par uzvarētāju! Šī prognoze ir vērta %(points)s "
+"punktu."
+
+#: app/templates/user.html:19
+msgid "You default prediction is"
+msgstr "Jūsu rezerves prognoze ir"
+
+#: app/templates/user.html:30
+#, python-format
+msgid "%(user)s predicted the winner! Have you?"
+msgstr "%(user)s prognozēja uzvarētāju! Vai jūs esat?"
+
+#: app/templates/user.html:53
+msgid "Statistics"
+msgstr "Statistika"
+
+#: app/templates/user.html:90
+msgid "Ranking"
+msgstr "Vieta"
+
+#: app/templates/user.html:103
+msgid "Outcome"
+msgstr "Iznākums"
+
+#: app/templates/user.html:108
+msgid "Score Difference"
+msgstr "Rezultāta starpība"
+
+#: app/templates/user.html:113
+msgid "Score"
+msgstr "Rezultāts"
+
+#: app/templates/user.html:120
+msgid "Predictions"
+msgstr "Prognozes"
+
+#: app/templates/user.html:128
+msgid "First Goal Correct"
+msgstr "Pareizi pirmie vārti"
+
+#: app/templates/user.html:129
+msgid "Outcome Correct"
+msgstr "Pareizs iznākums"
+
+#: app/templates/user.html:130
+msgid "Score Difference Correct"
+msgstr "Pareiza vārtu starpība"
+
+#: app/templates/user.html:131
+msgid "Score Correct"
+msgstr "Pareizs rezultāts"
+
+#: app/templates/winner_prediction.html:5
+msgid "Predict Tournament Winner"
+msgstr "Paredzi turnīra uzvarētāju"
+
+#: app/templates/winner_prediction.html:6
+msgid ""
+"Please select which team you think will be the overall winner of the "
+"tournament."
+msgstr ""
+"Lūdzu, izvēlieties komandu, kas, jūsuprāt, kļūs par turnīra uzvarētāju."
+
+#: app/templates/winner_prediction.html:7
+msgid ""
+"If you have already predicted the winner and you want to change your "
+"prediction, be wary that you might get less points, depending on when you "
+"are placing the prediction. Look at the table below for the points you will "
+"be getting for a successful prediction."
+msgstr ""
+"Ja jau esat paredzējis uzvarētāju un vēlaties mainīt savu prognozi, ņemiet "
+"vērā, ka atkarībā no tā, kad izsakāt prognozi, varat saņemt mazāk punktu. "
+"Apskatiet tabulu, kurā norādīti punkti, ko saņemsiet par veiksmīgu prognozi."

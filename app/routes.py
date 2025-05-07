@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, request, url_for
+from flask import render_template, flash, redirect, request, url_for, g, session
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm
 from flask_login import current_user, login_user, logout_user, login_required
@@ -8,12 +8,16 @@ from app.email import send_password_reset_email
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, func, case
 from sqlalchemy.sql.functions import coalesce
+from flask_babel import get_locale
+from flask_babel import _, lazy_gettext as _l
+from config import Config
 
 @app.before_request
 def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
+        g.locale = str(get_locale())
         
 def get_next_game():
     is_next_game = Game.query.filter(Game.starts_at > datetime.utcnow()).order_by(Game.starts_at.asc(), Game.id.asc()).first()
@@ -77,7 +81,7 @@ def place_predictions():
     for game in games:
         form = PlaceBetForm()
         forms[game.id] = form
-        form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', f'Team {game.team_a}', f'Team {game.team_b}'])]
+        form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], [_('First Goal'), f'Team {game.team_a}', f'Team {game.team_b}'])]
         existing_bet = current_user.bets.filter(and_(Bet.game_id==game.id, Bet.is_default_bet==False)).first()
         if existing_bet:
             form.score_a.data = existing_bet.score_a
@@ -91,28 +95,28 @@ def place_predictions():
                 score_b = int(request.form.get(f'score_b_{game.id}', 0))
                 first_goal = int(request.form.get(f'first_goal_{game.id}', 0))
             except (ValueError, TypeError):
-                flash(f'Invalid input for game {game.id}.', 'danger')
+                flash(_('Invalid input for game %(game)s.', game=game.id), 'danger')
                 continue
             if game.starts_at < current_time:
-                flash(f'This game ({game.team_a} vs {game.team_b}) has already started.', 'danger')
+                flash(_('This game (%(gamea)s vs %(gameb)s) has already started.', gamea=game.team_a, gameb=game.team_b), 'danger')
                 continue
             elif (score_a == 0 and score_b == 0 and int(first_goal) != 0) or \
                  (score_a == 0 and score_b != 0 and int(first_goal) != 2) or \
                  (score_a != 0 and score_b == 0 and int(first_goal) != 1) or \
                  (score_a != 0 and score_b != 0 and int(first_goal) == 0):
-                flash(f'Your first goal prediction is not valid for game {game.id}.', 'danger')
+                flash(_('Your first goal prediction is not valid for game %(game)s.', game=game.id), 'danger')
                 continue
             elif (score_a == 0 and score_b == 0 and first_goal == 0):
                 continue
             elif score_a == score_b:
-                flash(f'Your prediction for game {game.id} cannot be a draw.', 'danger')
+                flash(_('Your prediction for game %(game)s cannot be a draw.', game=game.id), 'danger')
                 continue
             else:
                 current_user.bets.filter_by(game_id=game.id).delete()
                 bet = Bet(game_id=game.id, score_a=score_a, score_b=score_b, first_goal=first_goal, user=current_user, is_default_bet=False)
                 db.session.add(bet)
         db.session.commit()
-        flash('Your predictions have been saved!', 'success')
+        flash(_('Your predictions have been saved!'), 'success')
         return redirect(url_for('place_predictions'))
     next_game = get_next_game()
     return render_template("place_predictions.html", title='Place Predictions', games=games, forms=forms, game_id=next_game.id)
@@ -133,22 +137,22 @@ def games(idd):
     current_time = datetime.utcnow()
     three_hours_earlier = datetime.utcnow() - timedelta(hours=3)
     form = PlaceBetForm()
-    form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', f'Team {game_chosen.team_a}', f'Team {game_chosen.team_b}'])]
+    form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], [_('First Goal'), _('Team %(teama)s', teama=game_chosen.team_a), _('Team %(teamb)s', teamb=game_chosen.team_b)])]
     if form.validate_on_submit():
     	if game_chosen.starts_at < current_time: 
-    		flash('This game has started')
+    		flash(_('This game has started'))
     		return redirect(url_for('games', idd=idd))
     	if ((form.score_a.data == 0 and form.score_b.data == 0 and int(form.first_goal.data)!=0) or (form.score_a.data == 0 and form.score_b.data != 0 and int(form.first_goal.data)!=2) or     	(form.score_a.data != 0 and form.score_b.data == 0 and int(form.first_goal.data)!=1) or (form.score_a.data!=0 and form.score_b.data!=0 and int(form.first_goal.data)==0)): 
-    		flash('Your first goal prediction is not valid.')
+    		flash(_('Your first goal prediction is not valid.'))
     		return redirect(url_for('games', idd=idd))
     	if form.score_a.data == form.score_b.data: ##the next 3 lines are for hockey only
-            flash('Your prediction is not valid.')
+            flash(_('Your prediction is not valid.'))
             return redirect(url_for('games', idd=idd))
     	current_user.bets.filter_by(game_id=idd).delete()
     	bet = Bet(game_id=idd, score_a = form.score_a.data, score_b = form.score_b.data, first_goal = form.first_goal.data, user=current_user, is_default_bet=False)
     	db.session.add(bet)
     	db.session.commit()
-    	flash('Your prediction has been saved.')
+    	flash(_('Your prediction has been saved.'))
     	return redirect(url_for('games', idd=idd))
     next_game = get_next_game()
     return render_template("games.html", title='Games', games=games, bets=bets, form=form, bets_to_show=bets_to_show, correct_winners=correct_winners, correct_first_goals=correct_first_goals, default_bets=default_bets, all_bets=all_bets, game_chosen=game_chosen, users=users, current_time=current_time, three_hours_earlier=three_hours_earlier, game_id=next_game.id)  
@@ -157,13 +161,13 @@ def games(idd):
 @login_required
 def winner_prediction():
     form = PlaceWinnerForm()
-    form.final_winner.choices = [(g.team, f'Team {g.team}') for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
+    form.final_winner.choices = [(g.team, _('Team %(team)s', team=g.team)) for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
     winner_bet = Winnerbet.query.all()
     if form.validate_on_submit():
     	current_user.final_winner = form.final_winner.data
     	current_user.final_winner_timestamp = datetime.utcnow()
     	db.session.commit()
-    	flash('Your prediction has been saved.')
+    	flash(_('Your prediction has been saved.'))
     	return redirect(url_for('user', username=current_user.username))
     next_game = get_next_game()
     return render_template("winner_prediction.html", title='Winner Prediction', form=form, winner_bet=winner_bet, game_id=next_game.id)
@@ -172,13 +176,13 @@ def winner_prediction():
 @login_required
 def default_prediction():
     form = PlaceBetForm()
-    form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
+    form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], [_('First Goal'), _('Team A'), _('Team B')])]
     if form.validate_on_submit():
     	if ((form.score_a.data == 0 and form.score_b.data == 0 and int(form.first_goal.data)!=0) or (form.score_a.data == 0 and form.score_b.data != 0 and int(form.first_goal.data)!=2) or     	(form.score_a.data != 0 and form.score_b.data == 0 and int(form.first_goal.data)!=1) or (form.score_a.data!=0 and form.score_b.data!=0 and int(form.first_goal.data)==0)): 
-    		flash('Your first goal prediction is not valid.')
+    		flash(_('Your first goal prediction is not valid.'))
     		return redirect(url_for('default_prediction'))
     	if form.score_a.data == form.score_b.data: ##the next three lines are for hockey only
-            flash('Your prediction is not valid.')
+            flash(_('Your prediction is not valid.'))
             return redirect(url_for('default_prediction'))
     	current_user.default_score_a = form.score_a.data
     	current_user.default_score_b = form.score_b.data
@@ -191,7 +195,7 @@ def default_prediction():
     			bet = Bet(game_id=game.id, score_a = form.score_a.data, score_b = form.score_b.data, first_goal = form.first_goal.data, user=current_user, is_default_bet=True)
 	    		db.session.add(bet)
     	db.session.commit()    	
-    	flash('Your default prediction has been set.')
+    	flash(_('Your default prediction has been set.'))
     	return redirect(url_for('user', username=current_user.username))
     next_game = get_next_game()
     return render_template("default_prediction.html", title='Default Prediction', form=form, game_id=next_game.id)
@@ -204,7 +208,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
-            flash('Invalid username or password')
+            flash(_('Invalid username or password'))
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
@@ -218,6 +222,12 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+@app.route('/language/<language>')
+def set_language(language):
+    if language in app.config['LANGUAGES']:
+        session['lang'] = language
+    return redirect(request.referrer or url_for('index'))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -228,7 +238,7 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('Congratulations, you are now a registered user!')
+        flash(_('Congratulations, you are now a registered user!'))
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -266,7 +276,7 @@ def edit_profile():
         current_user.username = form.username.data
         current_user.about_me = form.about_me.data
         db.session.commit()
-        flash('Your changes have been saved.')
+        flash(_('Your changes have been saved.'))
         return redirect(url_for('user', username=current_user.username))
     elif request.method == 'GET':
         form.username.data = current_user.username
@@ -283,7 +293,7 @@ def reset_password_request():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
             send_password_reset_email(user)
-        flash('Check your email for the instructions to reset your password.')
+        flash(_('Check your email for the instructions to reset your password.'))
         return redirect(url_for('login'))
     return render_template('reset_password_request.html', title='Reset Password', form=form)
 
@@ -298,7 +308,7 @@ def reset_password(token):
     if form.validate_on_submit():
         user.set_password(form.password.data)
         db.session.commit()
-        flash('Your password has been reset.')
+        flash(_('Your password has been reset.'))
         return redirect(url_for('login'))
     return render_template('reset_password.html', title='Reset Password', form=form)
     
@@ -334,7 +344,7 @@ def upload_game_results():
     		u.overall_points = u.total_points
     		u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(datetime.utcnow()-timedelta(hours=3))
     	db.session.commit()
-    	flash('The results have been saved.')
+    	flash(_('The results have been saved.'))
     next_game = get_next_game()
     return render_template("upload_game_results.html", title='Upload Results', form=form, game_id=next_game.id)
     
@@ -354,7 +364,7 @@ def set_winner():
     					break
     			u.overall_points += u.final_winner_points
     	db.session.commit()
-    	flash('The winner have been set.')
+    	flash(_('The winner have been set.'))
     	return redirect(url_for('index'))
     next_game = get_next_game()
     return render_template("set_winner.html", title='Set Winner', form=form, game_id=next_game.id)

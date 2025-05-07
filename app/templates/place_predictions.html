@@ -3,14 +3,14 @@
 {% block app_content %}
 <form method="POST" action="{{ url_for('place_predictions') }}">
     <div style="overflow-x:auto">
-        <h1>Place Predictions for all Scheduled Games</h1>
+        <h1>{{ _('Place Predictions for all Scheduled Games') }}</h1>
         <table class="table table-hover">
             <tr>
-                <th>ID</th>
-                <th>Game</th>
-                <th>Stage</th>
-                <th>Game Time</th>
-                <th>Your Prediction</th>
+                <th>{{ _('ID') }}</th>
+                <th>{{ _('Game') }}</th>
+                <th>{{ _('Stage') }}</th>
+                <th>{{ _('Game Time') }}</th>
+                <th>{{ _('Your Prediction') }}</th>
             </tr>
             {% for game in games %}
             <tr style="white-space: nowrap">
@@ -39,7 +39,7 @@
             {% endfor %}
         </table>
         <div style="display: flex; justify-content: center;">
-            <button type="submit" class="button">Place Predictions</button>
+            <button type="submit" class="button">{{ _('Place Predictions') }}</button>
         </div>
     </div>
 </form>
