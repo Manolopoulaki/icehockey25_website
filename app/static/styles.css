@@ -18,7 +18,6 @@ background-color: #faf7f7;
 	font-size: 17px;
 	position: relative;
   	transition: .5s;
-  	height: 80px;
   	margin-top: 10px;
   	margin-bottom: 10px;
   	box-shadow: 0 0 30px rgba(0, 0, 0, .08);
@@ -34,6 +33,7 @@ background-color: #faf7f7;
   	font-weight: 800;
   	line-height: 2;
   	color: #666565;
+    padding: 5px;
 }
 
 .content { background-image: url("background.png"); 
@@ -127,7 +127,6 @@ svg > g > g:last-child { pointer-events: none }
   gap: 1px 1px;
   height: 250px;
   max-width: 500px; 
-  min-width:400px; 
   margin:auto;
 }
 
@@ -146,15 +145,15 @@ font-size: 20px;
 font-weight: bold; }
 
 .bbFlag1 { grid-area: 5 / 1 / 6 / 3; 
-min-width:50px;
+max-width:106px;
 margin:auto;
-width:auto;
+width:-webkit-fill-available;
 max-height:80px;}
 
 .bbFlag2 { grid-area: 5 / 6 / 6 / 8; 
-min-width:50px;
+max-width:106px;
 margin:auto;
-width:auto;
+width:-webkit-fill-available;
 max-height:80px;}
 
 .bbScore1 { grid-area: 5 / 3 / 6 / 4;
@@ -162,6 +161,12 @@ font-size:35px;
 width:90%;
 text-align:center;
 margin: auto;}
+
+input#score_a { 
+  width:60px;}
+
+  input#score_b { 
+  width:60px;}
 
 .bbinpp{
 font-size:40px; 
