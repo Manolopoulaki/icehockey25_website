@@ -33,7 +33,7 @@
 				<li><a href="{{ url_for('schedule') }}">{{ _('SCHEDULE') }}</a></li>
 				<li><a href="{{ url_for('games', idd=game_id) }}">{{ _('GAMES') }}</a></li>
 				<li><a href="{{ url_for('standings') }}">{{ _('STANDINGS') }}</a></li>
-				{% if current_user.username=='kikiss' or current_user.username=='Lazarihno' %}
+				{% if current_user.username=='kikiss' %}
 				<li><a href="{{ url_for('upload_game_results') }}">Upl_Res</a></li>
 				{% endif %}
 				{% if current_user.username=='kikiss' %}
