@@ -50,19 +50,31 @@ def index():
     # leaders
     leader_first_goals = User.query.order_by(
         User.total_first_goal.desc(),
-        User.total_points.desc()
+        User.total_points.desc(),
+        User.total_score.desc(),
+        User.total_score_diff.desc(),
+        User.total_winner.desc()
     ).first()
     leader_points = User.query.order_by(
         User.total_points.desc(),
-        User.total_first_goal.desc()  # optional: tie-break by first goals
+        User.total_score.desc(),
+        User.total_score_diff.desc(),
+        User.total_winner.desc(),
+        User.total_first_goal.desc()
     ).first()
     leader_outcomes = User.query.order_by(
         User.total_winner.desc(),
-        User.total_points.desc()
+        User.total_points.desc(),
+        User.total_score.desc(),
+        User.total_score_diff.desc(),
+        User.total_first_goal.desc()
     ).first()
     leader_correct_scores = User.query.order_by(
         User.total_score.desc(),
-        User.total_points.desc()
+        User.total_points.desc(),
+        User.total_score_diff.desc(),
+        User.total_winner.desc(),
+        User.total_first_goal.desc()
     ).first()
     leaders_dict = {'leader_first_goals':leader_first_goals,
                     'leader_points':leader_points,
