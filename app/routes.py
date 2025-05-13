@@ -30,6 +30,8 @@ def get_next_game():
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
+
+    # chat form
     form = PostForm()
     if form.validate_on_submit():
         post = Post(body=form.post.data, author=current_user)
@@ -44,9 +46,32 @@ def index():
         if posts.has_next else None
     prev_url = url_for('index', page=posts.prev_num) \
         if posts.has_prev else None
+    
+    # leaders
+    leader_first_goals = User.query.order_by(
+        User.total_first_goal.desc(),
+        User.total_points.desc()
+    ).first()
+    leader_points = User.query.order_by(
+        User.total_points.desc(),
+        User.total_first_goal.desc()  # optional: tie-break by first goals
+    ).first()
+    leader_outcomes = User.query.order_by(
+        User.total_winner.desc(),
+        User.total_points.desc()
+    ).first()
+    leader_correct_scores = User.query.order_by(
+        User.total_score.desc(),
+        User.total_points.desc()
+    ).first()
+    leaders_dict = {'leader_first_goals':leader_first_goals,
+                    'leader_points':leader_points,
+                    'leader_outcomes':leader_outcomes,
+                    'leader_correct_scores':leader_correct_scores}
+
     next_game = get_next_game()
     return render_template("index.html", title='Home', form=form, posts=posts.items,
-    			    next_url=next_url, prev_url=prev_url, game_id=next_game.id)
+    			    next_url=next_url, prev_url=prev_url, leaders=leaders_dict, game_id=next_game.id)
 
 @app.route('/rules', methods=['GET', 'POST'])
 @login_required
