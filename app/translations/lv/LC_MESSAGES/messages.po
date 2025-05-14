@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-05-05 21:28+0200\n"
-"PO-Revision-Date: 2025-05-06 23:21+0200\n"
+"POT-Creation-Date: 2025-05-14 23:02+0200\n"
+"PO-Revision-Date: 2025-05-14 23:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: lv_LV\n"
@@ -83,32 +83,106 @@ msgstr "Turnīra uzvarētājs"
 msgid "Request Password Reset"
 msgstr "Pieprasīt paroles atiestatīšanu"
 
-#: app/routes.py:89 app/routes.py:128 app/templates/user.html:98
+#: app/routes.py:121 app/routes.py:177 app/routes.py:216
+#: app/templates/user.html:98
 msgid "First Goal"
 msgstr "Pirmie vārti"
 
-#: app/routes.py:89
+#: app/routes.py:135
+#, python-format
+msgid "Invalid input for game %(game)s."
+msgstr "Spēlei %(game)s ir nederīgs rezultāts."
+
+#: app/routes.py:138
+#, python-format
+msgid "This game (%(gamea)s vs %(gameb)s) has already started."
+msgstr "Spēle (%(gamea)s vs %(gameb)s) jau ir sākusies."
+
+#: app/routes.py:144
+#, python-format
+msgid "Your first goal prediction is not valid for game %(game)s."
+msgstr "Prognoze pirmajiem vārtiem spēlē %(game)s nav derīga."
+
+#: app/routes.py:149
+#, python-format
+msgid "Your prediction for game %(game)s cannot be a draw."
+msgstr "Prognoze spēlē %(game)s nevar būt neizšķirts."
+
+#: app/routes.py:156
+msgid "Your predictions have been saved!"
+msgstr "Jūsu prognozes ir saglabātas!"
+
+#: app/routes.py:177
 #, python-format
 msgid "Team %(teama)s"
 msgstr "Komanda %(teama)s"
 
-#: app/routes.py:89
+#: app/routes.py:177
 #, python-format
 msgid "Team %(teamb)s"
 msgstr "Komanda %(teamb)s"
 
-#: app/routes.py:113
+#: app/routes.py:180
+msgid "This game has started"
+msgstr "Šī spēle ir sākusies"
+
+#: app/routes.py:183 app/routes.py:219
+msgid "Your first goal prediction is not valid."
+msgstr "Jūsu pirmo vārtu prognoze nav pareiza."
+
+#: app/routes.py:186 app/routes.py:222
+msgid "Your prediction is not valid."
+msgstr "Jūsu prognoze nav pareiza."
+
+#: app/routes.py:192 app/routes.py:207
+msgid "Your prediction has been saved."
+msgstr "Jūsu prognoze ir saglabāta."
+
+#: app/routes.py:201
 #, python-format
 msgid "Team %(team)s"
 msgstr "Komanda %(team)s"
 
-#: app/routes.py:128
+#: app/routes.py:216
 msgid "Team A"
 msgstr "Komanda A"
 
-#: app/routes.py:128
+#: app/routes.py:216
 msgid "Team B"
 msgstr "Komanda B"
+
+#: app/routes.py:235
+msgid "Your default prediction has been set."
+msgstr "Jūsu rezerves prognoze ir saglabāta."
+
+#: app/routes.py:248
+msgid "Invalid username or password"
+msgstr "Nederīgs lietotājvārds vai parole"
+
+#: app/routes.py:278
+msgid "Congratulations, you are now a registered user!"
+msgstr "Apsveicam, tagad esat reģistrēts lietotājs!"
+
+#: app/routes.py:316
+msgid "Your changes have been saved."
+msgstr "Jūsu izmaiņas tika saglabātas."
+
+#: app/routes.py:333
+msgid "Check your email for the instructions to reset your password."
+msgstr ""
+"Pārbaudiet savu e-pastu, lai saņemtu norādījumus paroles atiestatīšanai."
+
+#: app/routes.py:348
+msgid "Your password has been reset."
+msgstr "Jūsu parole tika atjaunināta."
+
+#: app/routes.py:384
+msgid "The results have been saved."
+msgstr "Rezultāti ir saglabāti."
+
+#: app/routes.py:404
+msgid "The winner have been set."
+msgstr "Uzvarētājs ir noteikts."
 
 #: app/templates/_post.html:14
 #, python-format
@@ -119,7 +193,7 @@ msgstr "%(username)s teica %(when)s"
 msgid "Toggle navigation"
 msgstr "Pārslēgt navigāciju"
 
-#: app/templates/base.html:30
+#: app/templates/base.html:31
 msgid "HOME"
 msgstr "SĀKUMS"
 
@@ -199,37 +273,41 @@ msgstr "Lūdzu, izvēlieties spēli no saraksta"
 msgid "Place your prediction"
 msgstr "Veikt prognozi"
 
-#: app/templates/games.html:83 app/templates/schedule.html:9
-#: app/templates/user.html:124
+#: app/templates/games.html:83 app/templates/place_predictions.html:10
+#: app/templates/schedule.html:9 app/templates/user.html:124
 msgid "Game"
 msgstr "Spēle"
 
-#: app/templates/games.html:99
+#: app/templates/games.html:100
+msgid "Place predictions for all scheduled games"
+msgstr "Veic prognozes visām plānotajām spēlēm"
+
+#: app/templates/games.html:106
 msgid "Predictions for Game"
 msgstr "Prognoze spēlei"
 
-#: app/templates/games.html:105
+#: app/templates/games.html:112
 msgid "of bets found the correct winner!"
 msgstr "no prognozēm bija ar pareizo uzvarētāju!"
 
-#: app/templates/games.html:106
+#: app/templates/games.html:113
 msgid "of bets found the correct first goal team!"
 msgstr "no prognozēm bija ar pareizajiem pirmajiem vārtiem!"
 
-#: app/templates/games.html:107
+#: app/templates/games.html:114
 msgid "were default bets."
 msgstr "bija rezerves prognozes."
 
-#: app/templates/games.html:111 app/templates/standings.html:9
+#: app/templates/games.html:118 app/templates/standings.html:9
 msgid "Player"
 msgstr "Lietotājs"
 
-#: app/templates/games.html:112 app/templates/schedule.html:25
+#: app/templates/games.html:119 app/templates/schedule.html:25
 #: app/templates/user.html:126
 msgid "Prediction"
 msgstr "Prognoze"
 
-#: app/templates/games.html:113 app/templates/user.html:94
+#: app/templates/games.html:120 app/templates/user.html:94
 #: app/templates/user.html:132
 msgid "Points"
 msgstr "Punkti"
@@ -278,15 +356,35 @@ msgstr "Noderīgas mājaslapas:"
 msgid "IIHF 2025 official page"
 msgstr "IIHF 2025 oficiālā mājaslapa"
 
-#: app/templates/index.html:66
+#: app/templates/index.html:55
+msgid "Leaderboard"
+msgstr "Līderi"
+
+#: app/templates/index.html:59
+msgid "Number of Points"
+msgstr "Punktu skaits"
+
+#: app/templates/index.html:64
+msgid "Correct Scores"
+msgstr "Pareizi rezultāti"
+
+#: app/templates/index.html:69
+msgid "Correct Outcomes"
+msgstr "Pareizi iznākumi"
+
+#: app/templates/index.html:74
+msgid "First Goals"
+msgstr "Pirmie vārti"
+
+#: app/templates/index.html:92
 msgid "Newer posts"
 msgstr "Jaunākas ziņas"
 
-#: app/templates/index.html:71
+#: app/templates/index.html:97
 msgid "Older posts"
 msgstr "Vecākas ziņas"
 
-#: app/templates/index.html:77
+#: app/templates/index.html:103
 msgid "Tested with:"
 msgstr "Testēts ar:"
 
@@ -305,6 +403,31 @@ msgstr "Aizmirsi paroli?"
 #: app/templates/login.html:15
 msgid "Click to Reset It"
 msgstr "Spied šeit, lai atjaunotu"
+
+#: app/templates/place_predictions.html:6
+msgid "Place Predictions for all Scheduled Games"
+msgstr "Veic prognozes visām plānotajām spēlēm"
+
+#: app/templates/place_predictions.html:9
+msgid "ID"
+msgstr "ID"
+
+#: app/templates/place_predictions.html:11 app/templates/schedule.html:10
+msgid "Stage"
+msgstr "Posms"
+
+#: app/templates/place_predictions.html:12 app/templates/schedule.html:11
+#: app/templates/user.html:125
+msgid "Game Time"
+msgstr "Spēles laiks"
+
+#: app/templates/place_predictions.html:13
+msgid "Your Prediction"
+msgstr "Jūsu prognoze"
+
+#: app/templates/place_predictions.html:42
+msgid "Place Predictions"
+msgstr "Veikt prognozi"
 
 #: app/templates/reset_password.html:5
 msgid "Reset Your Password"
@@ -390,19 +513,19 @@ msgid "Scoring:"
 msgstr "Vērtēšana:"
 
 #: app/templates/rules.html:31
-msgid "- Correctly predicted outcome – 2 points."
-msgstr "- Pareizi prognozēts iznākums - 2 punkti."
+msgid "- Correctly predicted outcome – 3 points."
+msgstr "- Pareizi prognozēts iznākums - 3 punkti."
 
 #: app/templates/rules.html:32
 msgid ""
-"- Correctly predicted outcome with correct goal difference – 3 points (2 + "
+"- Correctly predicted outcome with correct goal difference – 4 points (3 + "
 "1)."
 msgstr ""
-"- Pareizi prognozēts rezultāts ar pareizu vārtu starpību - 3 punkti (2 + 1)."
+"- Pareizi prognozēts rezultāts ar pareizu vārtu starpību - 4 punkti (3 + 1)."
 
 #: app/templates/rules.html:33
-msgid "- Correctly predicted score – 6 points (2 + 1 + 3)."
-msgstr "- Pareizi prognozētais rezultāts - 6 punkti (2 + 1 + 3)."
+msgid "- Correctly predicted score – 7 points (3 + 1 + 3)."
+msgstr "- Pareizi prognozētais rezultāts - 7 punkti (3 + 1 + 3)."
 
 #: app/templates/rules.html:35
 msgid "- Correctly predicted first goal – 1 point (no matter which team wins)."
@@ -446,14 +569,6 @@ msgstr ""
 msgid "Schedule"
 msgstr "Grafiks"
 
-#: app/templates/schedule.html:10
-msgid "Stage"
-msgstr "Posms"
-
-#: app/templates/schedule.html:11 app/templates/user.html:125
-msgid "Game Time"
-msgstr "Spēles laiks"
-
 #: app/templates/schedule.html:12
 msgid "Status"
 msgstr "Statuss"
@@ -470,7 +585,7 @@ msgstr "Ieplānota -"
 msgid "Started -"
 msgstr "Sākusies -"
 
-#: app/templates/schedule.html:26
+#: app/templates/schedule.html:26 app/templates/schedule.html:27
 msgid "Game stats"
 msgstr "Spēles statistika"
 

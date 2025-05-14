@@ -52,26 +52,26 @@
      <p> {{ _('Useful links:') }} <a href="https://www.iihf.com/en/events/2025/wm">{{ _('IIHF 2025 official page') }}</a>
      </p>
 
-     <h2>Leaderboard</h2>
+     <h2>{{ _('Leaderboard') }}</h2>
   <table style="width:100%; border-collapse: collapse; text-align: center;">
       <tr>
           <td style="padding: 10px;">
-              <strong>Number of Points</strong><br>
+              <strong>{{ _('Number of Points') }}</strong><br>
               <img src="/static/leader_icons/leader_points.png" width="50"><br>
               {{ leaders['leader_points'].username }}
           </td>
           <td style="padding: 10px;">
-            <strong>Correct Scores</strong><br>
+            <strong>{{ _('Correct Scores') }}</strong><br>
             <img src="/static/leader_icons/leader_correct_scores.png" width="50"><br>
             {{ leaders['leader_correct_scores'].username }}
           </td>
           <td style="padding: 10px;">
-              <strong>Correct Outcomes</strong><br>
+              <strong>{{ _('Correct Outcomes') }}</strong><br>
               <img src="/static/leader_icons/leader_outcomes.png" width="50"><br>
               {{ leaders['leader_outcomes'].username }}
           </td>
           <td style="padding: 10px;">
-              <strong>First Goals</strong><br>
+              <strong>{{ _('First Goals') }}</strong><br>
               <img src="/static/leader_icons/leader_first_goals.png" width="50"><br>
               {{ leaders['leader_first_goals'].username }}
           </td>
