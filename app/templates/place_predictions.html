@@ -16,9 +16,9 @@
             <tr style="white-space: nowrap">
                 <td>{{ game.id }}</td>
                 <td>
-                    <img src="{{ url_for('static', filename=game.team_a + '.png') }}" width="20" height="20"/>
+                    <img src="{{ url_for('static', filename='flags/' + game.team_a + '.png') }}" width="20" height="20"/>
                     {{ game.team_a }} - {{ game.team_b }}
-                    <img src="{{ url_for('static', filename=game.team_b + '.png') }}" width="20" height="20"/>
+                    <img src="{{ url_for('static', filename='flags/' + game.team_b + '.png') }}" width="20" height="20"/>
                 </td>
                 <td>{{ game.stage }}</td>
                 <td>{{ moment(game.starts_at).format('MMMM Do, h:mm a') }}</td>

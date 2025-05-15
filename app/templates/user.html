@@ -136,9 +136,9 @@
 		  <tr style="white-space: nowrap; color: brown">
 		    <td>{{result.id}}</td>
 		    <th>
-		    <img src={{ url_for('static', filename=result.team_a +'.png') }} width="20" height="20"/>
+		    <img src={{ url_for('static', filename='flags/' + result.team_a +'.png') }} width="20" height="20"/>
 		    {{result.team_a}} - {{result.team_b}}
-		    <img src={{ url_for('static', filename=result.team_b +'.png') }} width="20" height="20"/>
+		    <img src={{ url_for('static', filename='flags/' + result.team_b +'.png') }} width="20" height="20"/>
 		    </th>
 		    <td>{{ moment(result.starts_at).format('MMMM Do, h:mm a') }}</td>
 		    <td>{% if result[7]==1 %}
@@ -183,9 +183,9 @@
 		  <tr style="white-space: nowrap">
 		    <td>{{result.id}}</td>
 		    <th>
-		    <img src={{ url_for('static', filename=result.team_a +'.png') }} width="20" height="20"/>
+		    <img src={{ url_for('static', filename='flags/' + result.team_a +'.png') }} width="20" height="20"/>
 		    {{result.team_a}} - {{result.team_b}}
-		    <img src={{ url_for('static', filename=result.team_b +'.png') }} width="20" height="20"/>
+		    <img src={{ url_for('static', filename='flags/' + result.team_b +'.png') }} width="20" height="20"/>
 		    </th>
 		    <td>{{ moment(result.starts_at).format('MMMM Do, h:mm a') }}</td>
 		    <td>{% if result[7]==1 %}

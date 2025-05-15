@@ -15,8 +15,8 @@
 					{% for game in games %}
 					<li>
 						<div class="grid-container">
-							<img class="flag_1" src={{ url_for('static', filename=game.team_a +'.png') }}/>
-							<img class="flag_2" src={{ url_for('static', filename=game.team_b +'.png') }}/>
+							<img class="flag_1" src={{ url_for('static', filename='flags/' + game.team_a +'.png') }}/>
+							<img class="flag_2" src={{ url_for('static', filename='flags/' + game.team_b +'.png') }}/>
 							<div class="team_1">{{game.team_a}}</div>
 							<div class="team_2">{{game.team_b}}</div>
 							<div class="dot">:</div>
@@ -85,8 +85,8 @@
 			    <div class="bbStatus"> {{ _('Upcoming') }} </div>
 			    <div class="bbTeam1">{{game_chosen.team_a}}</div>
 			    <div class="bbTeam2">{{game_chosen.team_b}}</div>
-			    <img class="bbFlag1" src={{ url_for('static', filename=game_chosen.team_a +'.png') }}>
-			    <img class="bbFlag2" src={{ url_for('static', filename=game_chosen.team_b +'.png') }}>
+			    <img class="bbFlag1" src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }}>
+			    <img class="bbFlag2" src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }}>
 			    <div class="bbScore1">{{ form.score_a(size=1) }}</div>
 			    <div class="bbScore2">{{ form.score_b(size=1) }}</div>
 			    <div class="bbdots">:</div>
@@ -104,9 +104,9 @@
 			 {% endif %}
 		{% else %}
 			<h1>{{ _('Predictions for Game') }} {{game_chosen.id}}: 
-			    <img src={{ url_for('static', filename=game_chosen.team_a +'.png') }} width="40" height="40"/>
+			    <img src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }} width="40" height="40"/>
 			    {{game_chosen.team_a}} - {{game_chosen.team_b}}
-			    <img src={{ url_for('static', filename=game_chosen.team_b +'.png') }} width="40" height="40"/>
+			    <img src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }} width="40" height="40"/>
 			</h1>
 			<div> 
 			{{correct_winners}}/{{all_bets}} {{ _('of bets found the correct winner!') }} <br>
