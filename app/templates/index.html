@@ -2,8 +2,8 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>{{ _('Welcome to the game %(username)s!', username=current_user.username) }}</h1>
-    <!-- <p style="background-color:Orange;font-size:1.5em;"> <img src={{ url_for('static', filename='puck.png') }} width="20" height="20"/> Don't forget to predict the tournament winner from your profile page and put a default bet! </p> -->
+    <h1>{{ _('Welcome %(username)s!', username=current_user.username) }}</h1>
+    <!-- <p style="background-color:Orange;font-size:1.5em;"> <img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="20" height="20"/> Don't forget to predict the tournament winner from your profile page and put a default bet! </p> -->
     
     {% if current_user.default_score_a == None %}
     <div class="sticky-banner" id="sticky-banner">

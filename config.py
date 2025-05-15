@@ -18,3 +18,4 @@ class Config(object):
     ADMINS = ['mk_predictions@zohomail.eu']
     POSTS_PER_PAGE = 25
     LANGUAGES = ['en', 'lv']
+    SPORT = "hockey" #"football"
