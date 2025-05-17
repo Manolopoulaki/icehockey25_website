@@ -18,9 +18,9 @@
 			{% if user.default_score_a!=None %} 
 				<br> {{ _('You default prediction is' ) }}
 				{% if user.default_first_goal==1 %}
-			    	<img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/> {{user.default_score_a}}:{{user.default_score_b}}
+			    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{user.default_score_a}}:{{user.default_score_b}}
 			    	{% elif user.default_first_goal==2 %}
-			    	  {{user.default_score_a}}:{{user.default_score_b}} <img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/>
+			    	  {{user.default_score_a}}:{{user.default_score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
 			    	{% elif user.default_first_goal==0 %}
 			    	  {{user.default_score_a}}:{{user.default_score_b}}
 			    	{% endif %} 
@@ -142,17 +142,17 @@
 		    </th>
 		    <td>{{ moment(result.starts_at).format('MMMM Do, h:mm a') }}</td>
 		    <td>{% if result[7]==1 %}
-		    	<img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
+		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
 		    	{% elif result[7]==2 %}
-		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/>
+		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
 		    	{% elif result[7]==0 %}
 		    	  {{result[5]}}:{{result[6]}} 
 		    	{% endif %}
 		    </td>
 		    <td>{% if result.first_goal==1 %}
-		    	<img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
+		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
 		    	{% elif result.first_goal==2 %}
-		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/>
+		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
 		    	{% elif result.first_goal==0 %}
 		    	  {{result.score_a}}:{{result.score_b}} 
 		    	{% else %}
@@ -189,17 +189,17 @@
 		    </th>
 		    <td>{{ moment(result.starts_at).format('MMMM Do, h:mm a') }}</td>
 		    <td>{% if result[7]==1 %}
-		    	<img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
+		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
 		    	{% elif result[7]==2 %}
-		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/>
+		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
 		    	{% elif result[7]==0 %}
 		    	  {{result[5]}}:{{result[6]}} 
 		    	{% endif %}
 		    </td>
 		    <td>{% if result.first_goal==1 %}
-		    	<img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
+		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
 		    	{% elif result.first_goal==2 %}
-		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_icehockey/puck.png') }} width="10" height="10"/>
+		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
 		    	{% elif result.first_goal==0 %}
 		    	  {{result.score_a}}:{{result.score_b}} 
 		    	{% else %}

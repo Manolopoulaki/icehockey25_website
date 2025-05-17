@@ -64,7 +64,7 @@
 {% endblock %}
 
 {% block content %}
-	<div class="container content">
+	<div class="container content" style="background-image: url({{ url_for('static', filename='essentials_' ~ sport ~ '/background.png') }});">
 		{% with messages = get_flashed_messages() %}
 		{% if messages %}
 		{% for message in messages %}

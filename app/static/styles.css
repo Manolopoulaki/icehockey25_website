@@ -36,8 +36,7 @@ background-color: #faf7f7;
     padding: 5px;
 }
 
-.content { background-image: url("essentials_icehockey/background.png"); 
-background-repeat:repeat-y;
+.content { background-repeat:repeat-y;
 background-size:100%;
 background-position: center top; }
 

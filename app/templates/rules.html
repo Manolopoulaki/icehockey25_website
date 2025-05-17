@@ -28,9 +28,15 @@
 			<p></p> 
 			<dt>{{ _('Scoring:') }}</dt>
 			<p></p> 
+			{% if sport == "hockey": %}
 			<dd>{{ _('- Correctly predicted outcome – 3 points.') }}</dd>
 			<dd>{{ _('- Correctly predicted outcome with correct goal difference – 4 points (3 + 1).') }}</dd>
 			<dd>{{ _('- Correctly predicted score – 7 points (3 + 1 + 3).') }}</dd>
+			{% elif sport == "football": %}
+			<dd>{{ _('- Correctly predicted outcome – 2 points.') }}</dd>
+			<dd>{{ _('- Correctly predicted outcome with correct goal difference – 3 points (2 + 1).') }}</dd>
+			<dd>{{ _('- Correctly predicted score – 6 points (2 + 1 + 3).') }}</dd>
+			{% endif %}
 			<p></p> 
 			<dd>{{ _('- Correctly predicted first goal – 1 point (no matter which team wins).') }}</dd>
 			<p></p> 
@@ -61,5 +67,5 @@
 			<dd>{{ _('- Tie breakers in following order – most correctly predicted scores, most correctly predicted outcome with correct goal difference, most correctly predicted outcomes, most correctly predicted first goals.') }}</dd>
 		</dl> 
 		</div>
-	<div class="column right"><img src={{ url_for('static', filename='essentials_icehockey/referee.png')}} width=100%  /></div>
+	<div class="column right">  <img src="{{ url_for('static', filename='essentials_' ~ sport ~ '/referee.png') }}" width="100%" /></div>
 {% endblock %}
