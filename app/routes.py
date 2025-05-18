@@ -236,7 +236,7 @@ def default_prediction():
         flash(_('Your default prediction has been set.'))
         return redirect(url_for('user', username=current_user.username))
     next_game = get_next_game()
-    return render_template("default_prediction.html", title='Default Prediction', form=form, game_id=next_game.id)
+    return render_template("default_prediction.html", title='Default Prediction', sport=g.sport, form=form, game_id=next_game.id)
                                                   
 @app.route('/login', methods=['GET', 'POST'])
 def login():
