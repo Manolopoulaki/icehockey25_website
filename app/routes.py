@@ -14,11 +14,12 @@ from config import Config
 
 @app.before_request
 def before_request():
+    g.sport = app.config['SPORT']
+    g.locale = str(get_locale())
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
-        g.locale = str(get_locale())
-        g.sport = app.config['SPORT']
+        
         
 def get_next_game():
     is_next_game = Game.query.filter(Game.starts_at > datetime.utcnow()).order_by(Game.starts_at.asc(), Game.id.asc()).first()
