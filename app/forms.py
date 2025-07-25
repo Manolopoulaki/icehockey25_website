@@ -11,7 +11,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField(_l('Sign In'))
 
 class RegistrationForm(FlaskForm):
-    username = StringField(_l('Username'), validators=[DataRequired()])
+    username = StringField(_l('Username'), validators=[DataRequired(), Length(max=20)])
     name = StringField(_l('Name'), validators=[DataRequired()])
     email = StringField(_l('Email'), validators=[DataRequired(), Email()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
@@ -30,7 +30,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError(_l('Please use a different email address.'))
 
 class EditProfileForm(FlaskForm):
-    username = StringField(_l('Username'), validators=[DataRequired()])
+    username = StringField(_l('Username'), validators=[DataRequired(), Length(max=20)]) 
     about_me = TextAreaField(_l('About me'), validators=[Length(min=0, max=140)])
     submit = SubmitField(_l('Submit'))
     
@@ -51,17 +51,17 @@ class PostForm(FlaskForm):
     
 class NewSelectField(SelectField):
     def pre_validate(self, form):
-    	pass
-	
+        pass
+    
     def process_formdata(self, valuelist):
-    	if valuelist:
-    		self.data=",".join(valuelist)
-    	else:
-    		self.data="'"
+        if valuelist:
+            self.data=",".join(valuelist)
+        else:
+            self.data="'"
 
 class PlaceBetForm(FlaskForm): 
-    score_a = IntegerField('Score of Team A', validators=[InputRequired()])
-    score_b = IntegerField('Score of Team B', validators=[InputRequired()])
+    score_a = IntegerField('Score of Team A', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
+    score_b = IntegerField('Score of Team B', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
     first_goal = NewSelectField('First Goal', validators=[DataRequired()], coerce=str)
     submit = SubmitField(_l('Place Prediction'))
     
@@ -71,8 +71,8 @@ class PlaceWinnerForm(FlaskForm):
     
 class UploadResultsForm(FlaskForm): 
     game_id = NewSelectField('Game', validators=[DataRequired()], coerce=int)
-    score_a = IntegerField('Score A', validators=[InputRequired()])
-    score_b = IntegerField('Score B', validators=[InputRequired()])
+    score_a = IntegerField('Score A', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
+    score_b = IntegerField('Score B', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
     first_goal = NewSelectField('First Goal', validators=[DataRequired()], coerce=str)
     submit = SubmitField('Submit Result')
     
