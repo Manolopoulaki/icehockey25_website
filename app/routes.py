@@ -1,6 +1,6 @@
-from flask import render_template, flash, redirect, request, url_for, g, session
+from flask import render_template, flash, redirect, request, url_for, g, session, abort
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm
+from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Game, Bet, Winnerbet
 from werkzeug.urls import url_parse
@@ -10,6 +10,7 @@ from sqlalchemy import or_, and_, func, case
 from sqlalchemy.sql.functions import coalesce
 from flask_babel import get_locale
 from flask_babel import _
+from functools import wraps
 
 @app.before_request
 def before_request():
@@ -18,7 +19,14 @@ def before_request():
     if current_user.is_authenticated:
         current_user.last_seen = datetime.utcnow()
         db.session.commit()
-        
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)  # Forbidden
+        return f(*args, **kwargs)
+    return decorated_function    
         
 def get_next_game():
     is_next_game = Game.query.filter(Game.starts_at > datetime.utcnow()).order_by(Game.starts_at.asc(), Game.id.asc()).first()
@@ -274,6 +282,9 @@ def register():
         user = User(username=form.username.data, email=form.email.data, name=form.name.data, final_winner_points=0, total_score=0, total_score_diff=0, total_winner=0, total_first_goal=0, total_points=0, total_closed_bets=0, overall_points=0)
         user.set_password(form.password.data)
         db.session.add(user)
+        db.session.flush() 
+        if user.id == 1:
+            user.is_admin = True
         db.session.commit()
         flash(_('Congratulations, you are now a registered user!'))
         return redirect(url_for('login'))
@@ -350,8 +361,32 @@ def reset_password(token):
     return render_template('reset_password.html', title='Reset Password', sport=g.sport, form=form)
     
 @app.route('/admin', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def admin():
+    current_admins = User.query.filter(User.is_admin == True).all()
+    add_admin_form = AdminsForm(prefix="add")
+    add_admin_form.users.choices = [(u.id, f'{u.username}') for u in User.query.filter(User.is_admin != True).all()]
+    add_admin_form.users.coerce = int
+    if add_admin_form.validate_on_submit() and add_admin_form.submit.data:
+        user_id = add_admin_form.users.data
+        new_admin = User.query.get(user_id)
+        if new_admin: #checks the user exists
+            new_admin.is_admin = True
+            db.session.commit()
+            flash(f'{new_admin.username} has been granted admin rights.', 'success')
+        return redirect(url_for('index'))
+    remove_admin_form = AdminsForm(prefix="remove")
+    remove_admin_form.users.choices = [(u.id, f'{u.username}') for u in current_admins]
+    remove_admin_form.users.coerce = int
+    if remove_admin_form.validate_on_submit() and remove_admin_form.submit.data:
+        user_id = remove_admin_form.users.data
+        old_admin = User.query.get(user_id)
+        if old_admin: #checks the user exists
+            old_admin.is_admin = False
+            db.session.commit()
+            flash(f'{old_admin.username} has been taken away admin rights.', 'success')
+        return redirect(url_for('index'))
+
     form = UploadResultsForm()
     form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<datetime.utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
@@ -402,4 +437,5 @@ def admin():
         flash(_('The winner have been set.'))
         return redirect(url_for('index'))
     next_game = get_next_game()
-    return render_template("admin.html", title='Set Winner', sport=g.sport, form=form, wform=wform, game_id=next_game.id)
+    return render_template("admin.html", title='Set Winner', sport=g.sport, admins=current_admins, 
+                           aaform=add_admin_form, raform=remove_admin_form, form=form, wform=wform, game_id=next_game.id)

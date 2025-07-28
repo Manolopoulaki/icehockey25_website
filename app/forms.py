@@ -32,7 +32,7 @@ class RegistrationForm(FlaskForm):
 class EditProfileForm(FlaskForm):
     username = StringField(_l('Username'), validators=[DataRequired(), Length(max=20)]) 
     about_me = TextAreaField(_l('About me'), validators=[Length(min=0, max=140)])
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Save changes'))
     
     def __init__(self, original_username, *args, **kwargs):
         super(EditProfileForm, self).__init__(*args, **kwargs)
@@ -47,7 +47,7 @@ class EditProfileForm(FlaskForm):
 class PostForm(FlaskForm):
     post = TextAreaField(_l('Say something'), validators=[
         DataRequired(), Length(min=1, max=140)])
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Post'))
     
 class NewSelectField(SelectField):
     def pre_validate(self, form):
@@ -74,8 +74,12 @@ class UploadResultsForm(FlaskForm):
     score_a = IntegerField('Score A', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
     score_b = IntegerField('Score B', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
     first_goal = NewSelectField('First Goal', validators=[DataRequired()], coerce=str)
-    submit = SubmitField('Submit Result')
+    submit = SubmitField('Upload Result')
     
+class AdminsForm(FlaskForm): 
+    users = NewSelectField(_l('Users'), validators=[DataRequired()], coerce=str)
+    submit = SubmitField(_l('Save')) 
+
 class ResetPasswordRequestForm(FlaskForm):
     email = StringField(_l('Email'), validators=[DataRequired(), Email()])
     submit = SubmitField(_l('Request Password Reset'))

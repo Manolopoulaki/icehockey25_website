@@ -36,9 +36,9 @@
 			</ul>
 			<ul class="nav navbar-nav navbar-right" style="margin: 0px; padding-left: 10px;">
 				{% if current_user.is_anonymous %}
-				<li><a href="{{ url_for('login') }}">{{ _('Login') }}</a></li>
+				<li><a href="{{ url_for('login') }}">{{ _('LOGIN') }}</a></li>
 				{% endif %}
-				{% if current_user.username=='kikiss' %}
+				{% if current_user.is_admin %}
 				<li><a href="{{ url_for('admin') }}">
 					<div><i class="fa-solid fa-user-secret fa-lg"></i></div></a></li>
 				{% endif %}

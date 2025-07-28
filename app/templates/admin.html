@@ -2,6 +2,28 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    <h1>Admins</h1>
+    <h4>Current admins are</h4>
+    <ul>
+        {% for user in admins %}
+            <li><a href="{{ url_for('user', username=user.username) }}"> {{user.username}}</a></li>
+        {% else %}
+            <li>No admin users found.</li>
+        {% endfor %}
+    </ul>
+    <h4>Add users as admins</h4>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(aaform) }}
+        </div>
+    </div>
+    <h4>Remove users from admins</h4>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(raform) }}
+        </div>
+    </div>
+
     <h1>Upload Game Result</h1>
     <div class="row">
         <div class="col-md-4">
