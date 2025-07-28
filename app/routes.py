@@ -9,8 +9,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, func, case
 from sqlalchemy.sql.functions import coalesce
 from flask_babel import get_locale
-from flask_babel import _, lazy_gettext as _l
-from config import Config
+from flask_babel import _
 
 @app.before_request
 def before_request():
@@ -350,9 +349,9 @@ def reset_password(token):
         return redirect(url_for('login'))
     return render_template('reset_password.html', title='Reset Password', sport=g.sport, form=form)
     
-@app.route('/upload_game_results', methods=['GET', 'POST'])
+@app.route('/admin', methods=['GET', 'POST'])
 @login_required
-def upload_game_results():
+def admin():
     form = UploadResultsForm()
     form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<datetime.utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
@@ -386,17 +385,12 @@ def upload_game_results():
             u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(datetime.utcnow()-timedelta(hours=3))
         db.session.commit()
         flash(_('The results have been saved.'))
-    next_game = get_next_game()
-    return render_template("upload_game_results.html", title='Upload Results', sport=g.sport, form=form, game_id=next_game.id)
     
-@app.route('/set_winner', methods=['GET', 'POST'])
-@login_required
-def set_winner():
-    form = PlaceWinnerForm()
-    form.final_winner.choices = [(g.team, f'Team {g.team}') for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
-    if form.validate_on_submit():
+    wform = PlaceWinnerForm()
+    wform.final_winner.choices = [(g.team, f'Team {g.team}') for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
+    if wform.validate_on_submit():
         for u in User.query.all():
-            if u.final_winner==form.final_winner.data:
+            if u.final_winner==wform.final_winner.data:
                 for i in Winnerbet.query.all():
                     if u.final_winner_timestamp>i.last_bet: 
                         continue
@@ -408,4 +402,4 @@ def set_winner():
         flash(_('The winner have been set.'))
         return redirect(url_for('index'))
     next_game = get_next_game()
-    return render_template("set_winner.html", title='Set Winner', sport=g.sport, form=form, game_id=next_game.id)
+    return render_template("admin.html", title='Set Winner', sport=g.sport, form=form, wform=wform, game_id=next_game.id)

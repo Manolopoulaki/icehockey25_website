@@ -25,33 +25,28 @@
 		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="background-color:#FFFFFF;  padding: 0%;">
 			<ul class="nav navbar-nav" style="margin: 0px; padding-left: 10px;">
 				<li><a href="{{ url_for('index') }}" style="padding-top: 0px; padding-bottom: 0px;">
-                        			<img src={{ url_for('static', filename='logo.png') }} height="60px"/>
-                		</a></li>
+                        			<img src={{ url_for('static', filename='logo.png') }} height="60px"/></a></li>
 				{% if not current_user.is_anonymous %}
 				<li><a href="{{ url_for('index') }}">{{ _('HOME') }}</a></li>
 				<li><a href="{{ url_for('rules') }}">{{ _('RULES') }}</a></li>
 				<li><a href="{{ url_for('schedule') }}">{{ _('SCHEDULE') }}</a></li>
 				<li><a href="{{ url_for('games', idd=game_id) }}">{{ _('GAMES') }}</a></li>
 				<li><a href="{{ url_for('standings') }}">{{ _('STANDINGS') }}</a></li>
-				{% if current_user.username=='kikiss' %}
-				<li><a href="{{ url_for('upload_game_results') }}">Upl_Res</a></li>
-				{% endif %}
-				{% if current_user.username=='kikiss' %}
-				<li><a href="{{ url_for('set_winner') }}">Set_Win</a></li>{% endif %}
 				{% endif %}
 			</ul>
 			<ul class="nav navbar-nav navbar-right" style="margin: 0px; padding-left: 10px;">
-			{% if current_user.is_anonymous %}
+				{% if current_user.is_anonymous %}
 				<li><a href="{{ url_for('login') }}">{{ _('Login') }}</a></li>
-				{% else %}
+				{% endif %}
+				{% if current_user.username=='kikiss' %}
+				<li><a href="{{ url_for('admin') }}">
+					<div><i class="fa-solid fa-user-secret fa-lg"></i></div></a></li>
+				{% endif %}
+				{% if not current_user.is_anonymous %}
 				<li><a href="{{ url_for('user', username=current_user.username) }}">
-					<div><i class="fa-solid fa-user fa-lg"></i>
-            				 </div> 
-            			</a></li>
+					<div><i class="fa-solid fa-user fa-lg"></i></div></a></li>
 				<li><a href="{{ url_for('logout') }}">
-					<div><i class="fa-solid fa-sign-out fa-lg"></i>
-            				 </div> 
-				</a></li>
+					<div><i class="fa-solid fa-sign-out fa-lg"></i></div></a></li>
  				{% endif %}
 
 				 <li><select id="language" onchange='window.location.href=this.value;'>
