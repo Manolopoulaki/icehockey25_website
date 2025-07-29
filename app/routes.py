@@ -104,7 +104,7 @@ def rules():
 @app.route('/standings', methods=['GET', 'POST'])
 @login_required
 def standings():
-    results = User.query.with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).order_by('ranking').add_columns(User.username, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).all()
+    results = User.query.filter(User.is_shown==True).with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).order_by('ranking').add_columns(User.username, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).all()
     next_game = get_next_game()
     return render_template("standings.html", title='Standings', sport=g.sport, results=results, game_id=next_game.id)
     
@@ -363,6 +363,7 @@ def reset_password(token):
 @app.route('/admin', methods=['GET', 'POST'])
 @admin_required
 def admin():
+    # admins section
     current_admins = User.query.filter(User.is_admin == True).all()
     add_admin_form = AdminsForm(prefix="add")
     add_admin_form.users.choices = [(u.id, f'{u.username}') for u in User.query.filter(User.is_admin != True).all()]
@@ -386,7 +387,21 @@ def admin():
             db.session.commit()
             flash(f'{old_admin.username} has been taken away admin rights.', 'success')
         return redirect(url_for('index'))
+    
+    # users section
+    remove_user_form = AdminsForm(prefix="remove_user")
+    remove_user_form.users.choices = [(u.id, f'{u.username} - last seen at {u.last_seen} - placed {u.bets.count()} bets') for u in User.query.all()]
+    remove_user_form.users.coerce = int
+    if remove_user_form.validate_on_submit() and remove_user_form.submit.data:
+        user_id = remove_user_form.users.data
+        old_user = User.query.get(user_id)
+        if old_user: #checks the user exists
+            old_user.is_shown = False
+            db.session.commit()
+            flash(f'{old_user.username} has been removed from the website standings.', 'success')
+        return redirect(url_for('index'))
 
+    # games score and winner team section 
     form = UploadResultsForm()
     form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<datetime.utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
@@ -437,5 +452,5 @@ def admin():
         flash(_('The winner have been set.'))
         return redirect(url_for('index'))
     next_game = get_next_game()
-    return render_template("admin.html", title='Set Winner', sport=g.sport, admins=current_admins, 
-                           aaform=add_admin_form, raform=remove_admin_form, form=form, wform=wform, game_id=next_game.id)
+    return render_template("admin.html", title='Admin', sport=g.sport, admins=current_admins, 
+                           aaform=add_admin_form, raform=remove_admin_form, ruform=remove_user_form, form=form, wform=wform, game_id=next_game.id)
