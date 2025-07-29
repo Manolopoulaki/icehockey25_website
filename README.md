@@ -16,4 +16,9 @@ While in the top directory and using an Ubuntu (wsl) terminal on VSCode, first i
 
 ### Initial user setup
 
-To create the main/first admin user, after registering through the website, you have to manually set is_admin=True in the db for the user you want to be an admin. After that, it#s posible to add and remove admins through the website.
+To create the main/first admin user, after registering through the website, you have to manually set is_admin=True in the db for the user you want to be an admin. After that, it is posible to add and remove admins through the website.
+
+### Dev database setup
+
+Initially, to create the database, run ````flask db init````, ````flask db migrate -m "Initial migration"````, ````flask db upgrade````.
+For any subsequent change, run only ````flask db migrate -m "you change"```` and ````flask db upgrade````.
