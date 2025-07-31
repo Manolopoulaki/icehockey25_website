@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, request, url_for, g, session, abort
 from app import app, db
-from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm
+from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Game, Bet, Winnerbet
 from werkzeug.urls import url_parse
@@ -11,6 +11,8 @@ from sqlalchemy.sql.functions import coalesce
 from flask_babel import get_locale
 from flask_babel import _
 from functools import wraps
+import csv
+from io import TextIOWrapper
 
 @app.before_request
 def before_request():
@@ -104,7 +106,9 @@ def rules():
 @app.route('/standings', methods=['GET', 'POST'])
 @login_required
 def standings():
-    results = User.query.filter(User.is_shown==True).with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).order_by('ranking').add_columns(User.username, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).all()
+    # results = User.query.filter(User.is_shown==True).with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).order_by('ranking').add_columns(User.username, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).all()
+    ranked_users_cte = db.session.query(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking'), User.id, User.username, User.is_shown, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).cte(name='ranked_users')
+    results = db.session.query(ranked_users_cte).filter(ranked_users_cte.c.is_shown == True).order_by(ranked_users_cte.c.ranking).all()
     next_game = get_next_game()
     return render_template("standings.html", title='Standings', sport=g.sport, results=results, game_id=next_game.id)
     
@@ -374,8 +378,7 @@ def admin():
         if new_admin: #checks the user exists
             new_admin.is_admin = True
             db.session.commit()
-            flash(f'{new_admin.username} has been granted admin rights.', 'success')
-        return redirect(url_for('index'))
+            flash(_(f'{new_admin.username} has been granted admin rights.'), 'success')
     remove_admin_form = AdminsForm(prefix="remove")
     remove_admin_form.users.choices = [(u.id, f'{u.username}') for u in current_admins]
     remove_admin_form.users.coerce = int
@@ -385,8 +388,7 @@ def admin():
         if old_admin: #checks the user exists
             old_admin.is_admin = False
             db.session.commit()
-            flash(f'{old_admin.username} has been taken away admin rights.', 'success')
-        return redirect(url_for('index'))
+            flash(_(f'{old_admin.username} has been taken away admin rights.'), 'success')
     
     # users section
     remove_user_form = AdminsForm(prefix="remove_user")
@@ -398,14 +400,26 @@ def admin():
         if old_user: #checks the user exists
             old_user.is_shown = False
             db.session.commit()
-            flash(f'{old_user.username} has been removed from the website standings.', 'success')
-        return redirect(url_for('index'))
+            flash(_(f'{old_user.username} has been removed from the website standings.'), 'success')
 
-    # games score and winner team section 
-    form = UploadResultsForm()
+    # set games section 
+    set_game_form = SetGame(prefix='set_game')
+    set_game_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}, {g.starts_at}') for g in Game.query.filter(Game.team_a == 'TBD').order_by(Game.starts_at.asc(), Game.id.asc()).all()]
+    if set_game_form.validate_on_submit() and set_game_form.submit.data:
+        selected_game = Game.query.filter(Game.id==set_game_form.game_id.data).first()
+        selected_game.team_a = set_game_form.team_a.data
+        selected_game.team_b = set_game_form.team_b.data
+        db.session.commit()
+        flash(_('The game has been set.'))
+        return redirect(url_for('admin'))
+
+    # games score section 
+    upload_csv_form = UploadCSVForm(prefix='upload_game_schedule')
+    upload_winnerbet_csv_form = UploadCSVForm(prefix='upload_winner_bet_points')
+    form = UploadResultsForm(prefix='upload_game_score')
     form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<datetime.utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
-    if form.validate_on_submit():
+    if form.validate_on_submit() and form.submit.data:
         current_game = Game.query.filter(Game.id==form.game_id.data).first()
         current_game.score_a = form.score_a.data
         current_game.score_b = form.score_b.data
@@ -435,7 +449,42 @@ def admin():
             u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(datetime.utcnow()-timedelta(hours=3))
         db.session.commit()
         flash(_('The results have been saved.'))
+
+    correct_game_score_form = UploadResultsForm(prefix='correct_game_score')
+    correct_game_score_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<datetime.utcnow()).filter(Game.score_a != None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
+    correct_game_score_form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
+    if correct_game_score_form.validate_on_submit() and correct_game_score_form.submit.data:
+        current_game = Game.query.filter(Game.id==correct_game_score_form.game_id.data).first()
+        current_game.score_a = correct_game_score_form.score_a.data
+        current_game.score_b = correct_game_score_form.score_b.data
+        current_game.first_goal = correct_game_score_form.first_goal.data
+        bets_to_update = Bet.query.join(Game).filter((Game.id==correct_game_score_form.game_id.data)).all()
+        for bet in bets_to_update:
+            if (bet.first_goal==int(current_game.first_goal)): bet.first_goal_correct=True
+            else: bet.first_goal_correct=False
+            if (bet.score_a==current_game.score_a and bet.score_b==current_game.score_b): bet.score_correct=True
+            else: bet.score_correct=False
+            if (((bet.score_a>bet.score_b) and (current_game.score_a>current_game.score_b)) or ((bet.score_b>bet.score_a) and (current_game.score_b>current_game.score_a)) or ((bet.score_b==bet.score_a) and (current_game.score_b==current_game.score_a))):
+                bet.winner_correct=True
+            else: bet.winner_correct=False
+            if (bet.winner_correct==True and abs(bet.score_a-bet.score_b)==abs(current_game.score_a-current_game.score_b)): bet.score_diff_correct=True
+            else: bet.score_diff_correct=False
+            if g.sport == 'hockey':
+                bet.points = int(bet.first_goal_correct) + 3*int(bet.winner_correct) + int(bet.score_diff_correct) + 3*int(bet.score_correct)
+            if g.sport == 'football':
+                bet.points = int(bet.first_goal_correct) + 3*int(bet.winner_correct) + int(bet.score_diff_correct) + 2*int(bet.score_correct)
+        for u in User.query.all():
+            u.total_score = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_correct == True, 1)], else_=0)), 0))
+            u.total_score_diff = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_diff_correct == True, 1)], else_=0)), 0))
+            u.total_winner = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.winner_correct == True, 1)], else_=0)), 0))
+            u.total_first_goal = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.first_goal_correct == True, 1)], else_=0)), 0))
+            u.total_points =  User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(Bet.points), 0))  
+            u.overall_points = u.total_points
+            u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(datetime.utcnow()-timedelta(hours=3))
+        db.session.commit()
+        flash(_('The results have been corrected.'))
     
+    # winner team section 
     wform = PlaceWinnerForm()
     wform.final_winner.choices = [(g.team, f'Team {g.team}') for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
     if wform.validate_on_submit():
@@ -449,8 +498,75 @@ def admin():
                         break
                 u.overall_points += u.final_winner_points
         db.session.commit()
-        flash(_('The winner have been set.'))
-        return redirect(url_for('index'))
+        flash(_('The winner has been set.'))
+
     next_game = get_next_game()
+
     return render_template("admin.html", title='Admin', sport=g.sport, admins=current_admins, 
-                           aaform=add_admin_form, raform=remove_admin_form, ruform=remove_user_form, form=form, wform=wform, game_id=next_game.id)
+                           aaform=add_admin_form, raform=remove_admin_form, ruform=remove_user_form, 
+                           ug_csv_form=upload_csv_form, uw_csv_form=upload_winnerbet_csv_form, sgform=set_game_form, 
+                           form=form, cgsform=correct_game_score_form,
+                           wform=wform, game_id=next_game.id)
+
+@app.route('/upload_csv', methods=['POST'])
+@admin_required
+def upload_csv():
+    form = UploadCSVForm(prefix='upload_game_schedule')
+    if form.validate_on_submit():
+        file = form.csv_file.data
+        try:
+            stream = TextIOWrapper(file.stream, encoding='utf-8')
+            csv_input = csv.DictReader(stream)
+            for row in csv_input:
+                if not all(k in row for k in ('team_a', 'team_b', 'stage', 'starts_at')):
+                    flash('Missing required columns in CSV.', 'danger')
+                    return redirect(url_for('admin'))
+                try:
+                    starts_at = datetime.strptime(row['starts_at'], '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    flash(f"Invalid date format in row: {row}", 'danger')
+                    continue
+                game = Game(team_a=row['team_a'].strip(), team_b=row['team_b'].strip(), stage=row['stage'].strip(), starts_at=starts_at)
+                db.session.add(game)
+            db.session.commit()
+            flash('Games have been uploaded successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error processing CSV: {e}', 'danger')
+    else:
+        flash('Invalid file or form submission.', 'danger')
+    return redirect(url_for('admin'))
+
+@app.route('/upload_winnerbet_csv', methods=['POST'])
+@admin_required
+def upload_winnerbet_csv():
+    form = UploadCSVForm(prefix='upload_winner_bet_points')
+    if form.validate_on_submit():
+        file = form.csv_file.data
+        try:
+            stream = TextIOWrapper(file.stream, encoding='utf-8')
+            csv_input = csv.DictReader(stream)
+            for row in csv_input:
+                if not all(k in row for k in ('description', 'last_bet', 'bet_points')):
+                    flash('Missing required columns in CSV.', 'danger')
+                    return redirect(url_for('admin'))
+                try:
+                    last_bet = datetime.strptime(row['last_bet'], '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    flash(f"Invalid date format in row: {row}", 'danger')
+                    continue
+                try:
+                    bet_points = int(row['bet_points'])
+                except ValueError:
+                    flash(f"Invalid bet_points in row: {row}", 'danger')
+                    continue
+                wb = Winnerbet(description=row['description'].strip(), last_bet=last_bet, bet_points=bet_points)
+                db.session.add(wb)
+            db.session.commit()
+            flash('Winnerbet CSV uploaded successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error processing Winnerbet CSV: {e}', 'danger')
+    else:
+        flash('Invalid file or form submission.', 'danger')
+    return redirect(url_for('admin'))

@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from flask_babel import _, lazy_gettext as _l
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectField
 from wtforms.validators import ValidationError, DataRequired, InputRequired, Email, EqualTo, Length
@@ -13,10 +14,9 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     username = StringField(_l('Username'), validators=[DataRequired(), Length(max=20)])
     name = StringField(_l('Name'), validators=[DataRequired()])
-    email = StringField(_l('Email'), description='This is used only for password reseting and so we can reach you if you win!', validators=[DataRequired(), Email()])
+    email = StringField(_l('Email'), description=_l('This is used only for password reseting and so we can reach you if you win!'), validators=[DataRequired(), Email()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
-    password2 = PasswordField(
-        _l('Repeat Password'), validators=[DataRequired(), EqualTo('password')])
+    password2 = PasswordField(_l('Repeat Password'), validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField(_l('Register'))
 
     def validate_username(self, username):
@@ -45,8 +45,7 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError(_l('Please use a different username.'))
     
 class PostForm(FlaskForm):
-    post = TextAreaField(_l('Say something'), validators=[
-        DataRequired(), Length(min=1, max=140)])
+    post = TextAreaField(_l('Say something'), validators=[DataRequired(), Length(min=1, max=140)])
     submit = SubmitField(_l('Post'))
     
 class NewSelectField(SelectField):
@@ -60,22 +59,32 @@ class NewSelectField(SelectField):
             self.data="'"
 
 class PlaceBetForm(FlaskForm): 
-    score_a = IntegerField('Score of Team A', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
-    score_b = IntegerField('Score of Team B', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
-    first_goal = NewSelectField('First Goal', validators=[DataRequired()], coerce=str)
+    score_a = IntegerField(_l('Score of Team A'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
+    score_b = IntegerField(_l('Score of Team B'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
+    first_goal = NewSelectField(_l('First Goal'), validators=[DataRequired()], coerce=str)
     submit = SubmitField(_l('Place Prediction'))
+    
+class UploadResultsForm(FlaskForm): 
+    game_id = NewSelectField(_l('Game'), validators=[DataRequired()], coerce=int)
+    score_a = IntegerField(_l('Score of Team A'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
+    score_b = IntegerField(_l('Score of Team B'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
+    first_goal = NewSelectField(_l('First Goal'), validators=[DataRequired()], coerce=str)
+    submit = SubmitField(_l('Upload Result'))
+
+class UploadCSVForm(FlaskForm):
+    csv_file = FileField(_('CSV File'), validators=[FileRequired(), FileAllowed(['csv'], _('CSV files only!'))])
+    submit = SubmitField('Upload')
+
+class SetGame(FlaskForm):
+    game_id = NewSelectField(_l('Game'), validators=[DataRequired()], coerce=int)
+    team_a = StringField(_l('Team A'), validators=[DataRequired(), Length(max=3)]) 
+    team_b = StringField(_l('Team B'), validators=[DataRequired(), Length(max=3)])
+    submit = SubmitField(_l('Set Game'))
     
 class PlaceWinnerForm(FlaskForm): 
     final_winner = NewSelectField(_l('Tournament Winner'), validators=[DataRequired()], coerce=str)
     submit = SubmitField(_l('Submit'))
-    
-class UploadResultsForm(FlaskForm): 
-    game_id = NewSelectField('Game', validators=[DataRequired()], coerce=int)
-    score_a = IntegerField('Score A', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
-    score_b = IntegerField('Score B', validators=[InputRequired()], render_kw={"inputmode": "numeric"})
-    first_goal = NewSelectField('First Goal', validators=[DataRequired()], coerce=str)
-    submit = SubmitField('Upload Result')
-    
+
 class AdminsForm(FlaskForm): 
     users = NewSelectField(_l('Users'), validators=[DataRequired()], coerce=str)
     submit = SubmitField(_l('Save')) 

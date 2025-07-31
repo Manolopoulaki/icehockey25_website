@@ -2,46 +2,87 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>Admins</h1>
-    <h4>Current admins are</h4>
+    <h1>{{_('Admins')}}</h1>
+    <h4>{{_('Current admins are')}}</h4>
     <ul>
         {% for user in admins %}
             <li><a href="{{ url_for('user', username=user.username) }}"> {{user.username}}</a></li>
         {% else %}
-            <li>No admin users found.</li>
+            <li>{{_('No admin users found.')}}</li>
         {% endfor %}
     </ul>
-    <h4>Add users as admins</h4>
+    <h4>{{_('Add users as admins')}}</h4>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(aaform) }}
         </div>
     </div>
-    <h4>Remove users from admins</h4>
+    <h4>{{_('Remove users from admins')}}</h4>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(raform) }}
         </div>
     </div>
 
-    <h1>Users</h1>
-    <h4>Hide users from the standings</h4>
+    <h1>{{_('Users')}}</h1>
+    <h4>{{_('Hide users from the standings')}}</h4>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(ruform) }}
         </div>
     </div>
 
-    <h1>Game Results</h1>
-    <h4>Submit game's final score</h4>
+    <h1>{{_('Game Schedule')}}</h1>
+    <h4>{{_('Upload full game schedule')}}</h4>
+    <div class="alert alert-info">
+        <strong>{{ _('Required columns:') }}</strong><code>team_a,team_b,stage,starts_at</code><br>
+        <strong>{{ _('Date format for starts_at:') }}</strong> <code>YYYY-MM-DD HH:MM:SS</code><br>
+        <strong>{{ _('Example row:') }}</strong><code>ABC,XYZ,Quarter Final,2025-08-10 15:00:00</code>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(ug_csv_form, action=url_for('upload_csv'), enctype="multipart/form-data") }}
+        </div>
+    </div>
+    <h4>{{_('Upload winner bet points table')}}</h4>
+    <div class="alert alert-info">
+        <strong>{{ _('Required columns:') }}</strong><code>description,last_bet,bet_points</code><br>
+        <strong>{{ _('Date format for last_bet:') }}</strong> <code>YYYY-MM-DD HH:MM:SS</code><br>
+        <strong>{{ _('Example row:') }}</strong><code>End of group phase,2025-08-20 18:00:00,10</code>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(uw_csv_form, action=url_for('upload_winnerbet_csv'), enctype="multipart/form-data") }}
+        </div>
+    </div>
+    <h4>{{_('Set TBD games')}}</h4>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(sgform) }}
+        </div>
+    </div>
+    {% for field, errors in sgform.errors.items() %}
+        {% for error in errors %}
+            <div class="text-danger">{{ field }}: {{ error }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <h1>{{_('Game Results')}}</h1>
+    <h4>{{_('Submit game\'s final score')}}</h4>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}
         </div>
     </div>
+    <h4>{{_('Correct game\'s final score')}}</h4>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(cgsform) }}
+        </div>
+    </div>
 
-    <h1>Tournament Winner Team</h1>
-    <h4>Submit winner team</h4>
+    <h1>{{_('Tournament Winner Team')}}</h1>
+    <h4>{{_('Submit winner team')}}</h4>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(wform) }}
