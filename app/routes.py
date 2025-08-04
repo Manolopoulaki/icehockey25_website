@@ -283,7 +283,7 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data, name=form.name.data, final_winner_points=0, total_score=0, total_score_diff=0, total_winner=0, total_first_goal=0, total_points=0, total_closed_bets=0, overall_points=0)
+        user = User(username=form.username.data, email=form.email.data, final_winner_points=0, total_score=0, total_score_diff=0, total_winner=0, total_first_goal=0, total_points=0, total_closed_bets=0, overall_points=0)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.flush() 

@@ -5,17 +5,17 @@
     <h1>{{ _('Sign In') }}</h1>
     <div class="row">
         <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            <form method="post">
+                {{ form.hidden_tag() }}<br>
+                {{ form.username.label }}<br>
+                {{ form.username(class="form-control") }}<br>
+                {{ form.password.label }}<br>
+                {{ form.password(class="form-control") }}<br>
+                {{ form.remember_me() }} {{ form.remember_me.label }}<br>
+                <button type="submit" class="button">{{ form.submit.label.text }}</button>
+            </form>
         </div>
     </div>
-    <br>
-    <p>{{ _('New User?') }} <a href="{{ url_for('register') }}">{{ _('Click to Register!') }}</a></p>
-    <p>
-        {{ _('Forgot Your Password?') }}
-        <a href="{{ url_for('reset_password_request') }}">{{ _('Click to Reset It') }}</a>
-    </p>
-    <p align="right"><i><small>
-	     {{_('Tested with:')}} <br>
-	     Microsoft Edge 135.0.3179.85
-    </small></i></p>
+    <br><p>{{ _('New User?') }} <a href="{{ url_for('register') }}">{{ _('Click to Register!') }}</a></p>
+    <p>{{ _('Forgot Your Password?') }} <a href="{{ url_for('reset_password_request') }}">{{ _('Click to Reset It') }}</a></p>
 {% endblock %}

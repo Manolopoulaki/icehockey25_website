@@ -21,4 +21,4 @@ To create the main/first admin user, after registering through the website, you 
 ### Dev database setup
 
 Initially, to create the database, run ````flask db init````, ````flask db migrate -m "Initial migration"````, ````flask db upgrade````.
-For any subsequent change, run only ````flask db migrate -m "you change"```` and ````flask db upgrade````.
+For any subsequent change, run only ````flask db migrate -m "your change"```` and ````flask db upgrade````.

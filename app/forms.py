@@ -13,7 +13,6 @@ class LoginForm(FlaskForm):
 
 class RegistrationForm(FlaskForm):
     username = StringField(_l('Username'), validators=[DataRequired(), Length(max=20)])
-    name = StringField(_l('Name'), validators=[DataRequired()])
     email = StringField(_l('Email'), description=_l('This is used only for password reseting and so we can reach you if you win!'), validators=[DataRequired(), Email()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
     password2 = PasswordField(_l('Repeat Password'), validators=[DataRequired(), EqualTo('password')])
@@ -45,7 +44,7 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError(_l('Please use a different username.'))
     
 class PostForm(FlaskForm):
-    post = TextAreaField(_l('Say something'), validators=[DataRequired(), Length(min=1, max=140)])
+    post = TextAreaField(_l('New message'), validators=[DataRequired(), Length(min=1, max=140)])
     submit = SubmitField(_l('Post'))
     
 class NewSelectField(SelectField):
@@ -95,6 +94,5 @@ class ResetPasswordRequestForm(FlaskForm):
 
 class ResetPasswordForm(FlaskForm):
     password = PasswordField(_l('Password'), validators=[DataRequired()])
-    password2 = PasswordField(
-        _l('Repeat Password'), validators=[DataRequired(), EqualTo('password')])
+    password2 = PasswordField(_l('Repeat Password'), validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField(_l('Request Password Reset'))

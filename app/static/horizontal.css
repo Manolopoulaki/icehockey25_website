@@ -1,145 +1,100 @@
-/* Example wrapper */
+
 .wrap {
-	position: relative;
-	margin: 1.5em 0;
+  position: relative;
+  margin: 1.5em 0;
 }
 
-/* Frame */
 .frame {
-	height: 150px;
-	line-height: 150px;
-	overflow: hidden;
+  height: 150px;
+  line-height: 150px;
+  overflow: hidden;
 }
+
 .frame ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	height: 100%;
-	font-size: 50px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-size: 50px;
 }
+
 .frame ul li {
-	float: left;
-	width: 227px;
-	height: 100%;
-	margin: 0 3px 0 0;
-	padding: 0;
-	background: #5e5e5e;
-	color: #ddd;
-	text-align: center;
-	cursor: pointer;
-	font-size: 20px; 
-	text-align: center; 
-	line-height: 100%;
+  float: left;
+  width: 227px;
+  height: 100%;
+  margin: 0 3px 0 0;
+  padding: 0;
+  background: var(--color-primary);
+  color: var(--color-text);
+  text-align: center;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 100%;
 }
+
 .frame ul li.active {
-	color: #fff;
-	background: #5e5e5e;
+  color: var(--color-text);
+  background: var(--color-bright);
 }
 
 .frame ul li:hover {
-	color: #fff;
-	background: #a4a4a4;
+  color: var(--color-text);
+  background: var(--color-accent);
 }
 
-/* Scrollbar */
-.scrollbar {
-	margin: 0 0 1em 0;
-	height: 4px;
-	background: #ccc;
-	line-height: 0;
-}
-.scrollbar .handle {
-	width: 100px;
-	height: 100%;
-	background: #292a33;
-	cursor: pointer;
-}
-.scrollbar .handle .mousearea {
-	position: absolute;
-	top: -9px;
-	left: 0;
-	width: 100%;
-	height: 20px;
+.controls {
+  margin: 25px 0;
+  text-align: center;
 }
 
-/* Pages */
-.pages {
-	list-style: none;
-	margin: 20px 0;
-	padding: 0;
-	text-align: center;
-}
-.pages li {
-	display: inline-block;
-	width: 14px;
-	height: 14px;
-	margin: 0 4px;
-	text-indent: -999px;
-	border-radius: 10px;
-	cursor: pointer;
-	overflow: hidden;
-	background: #fff;
-	box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
-}
-.pages li:hover {
-	background: #fff;
-}
-.pages li.active {
-	background: #666;
+.grid-container {
+  width: 100%; 
+  height: 100%; 
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.5fr 1fr 0.5fr 1fr 0.5fr 1fr 1.5fr;
+  grid-template-rows: 0.1fr 1fr 1fr 0.25fr 1fr 0.25fr 0.5fr 0.1fr 0.5fr 0.1fr;
+  gap: 1px 1px;
 }
 
+.flag_1, .flag_2 {
+  width: 90%;
+  margin: 0 auto; 
+}
 
-@media screen and (max-width: 1200px) {
-    .scrollbar {
-        display: none;
-    }
-  }
+.score_1, .score_2, .dot {
+  font-size: 30px;
+  line-height: 200%;
+}
 
+.first_gol1, .first_gol2 {
+  width: 120%;
+  margin-top: 15px;
+}
 
+.date_time {
+  grid-area: 7 / 2 / 8 / 9;
+  font-size: 15px;
+}
 
-/* Controls */
-.controls { margin: 25px 0; text-align: center; }
+.game_id {
+  grid-area: 9 / 1 / 10 / 2;
+  font-size: 10px;
+}
 
- .grid-container {width: 100%; height: 100%; margin: 0; }
-
-  .grid-container {
-	display: grid;
-	grid-template-columns: 1.5fr 1fr 0.5fr 1fr 0.5fr 1fr 0.5fr 1fr 1.5fr;
-	grid-template-rows: 0.1fr 1fr 1fr 0.25fr 1fr 0.25fr 0.5fr 0.1fr 0.5fr 0.1fr;
-	gap: 1px 1px;
-  }
-  
-  .flag_1 { grid-area: 2 / 1 / 3 / 3; width: 90%; margin-left: auto; margin-right: auto;}
-  
-  .team_1 { grid-area: 3 / 1 / 4 / 3;}
-  
-  .dot { grid-area: 2 / 5 / 4 / 6; font-size: 30px;line-height: 200%;}
-  
-  .score_1 { grid-area: 2 / 4 / 4 / 5; font-size: 30px; line-height: 200%;}
-  
-  .score_2 { grid-area: 2 / 6 / 4 / 7; font-size: 30px; line-height: 200%;}
-  
-  .flag_2 { grid-area: 2 / 8 / 3 / 10; width: 90%; margin-left: auto; margin-right: auto;}
-  
-  .team_2 { grid-area: 3 / 8 / 4 / 10;}
-  
-  .dot_bet { grid-area: 5 / 5 / 6 / 6;}
-  
-  .first_gol2 { grid-area: 2 / 7 / 3 / 8; width: 120%; margin-top: 15px;}
-  
-  .first_gol1 { grid-area: 2 / 3 / 3 / 4; width: 120%; margin-top: 15px;}
-  
-  .bet_1 { grid-area: 5 / 4 / 6 / 5;}
-  
-  .bet_2 { grid-area: 5 / 6 / 6 / 7;}
-  
-  .bet_gol2 { grid-area: 5 / 7 / 6 / 8; width: 80%;}
-  
-  .bet_gol1 { grid-area: 5 / 3 / 6 / 4; width: 80%;}
-  
-  .date_time { grid-area: 7 / 2 / 8 / 9; font-size: 15px;}
-  
-  .status { grid-area: 9 / 2 / 10 / 9;}
-
-  .game_id { grid-area: 9 / 1 / 10 / 2; font-size: 10px;}
-  
+.flag_1 { grid-area: 2 / 1 / 3 / 3; }
+.flag_2 { grid-area: 2 / 8 / 3 / 10; }
+.team_1 { grid-area: 3 / 1 / 4 / 3; }
+.team_2 { grid-area: 3 / 8 / 4 / 10; }
+.score_1 { grid-area: 2 / 4 / 4 / 5; }
+.score_2 { grid-area: 2 / 6 / 4 / 7; }
+.dot_bet { grid-area: 5 / 5 / 6 / 6; }
+.dot { grid-area: 2 / 5 / 4 / 6; }
+.first_gol1 { grid-area: 2 / 3 / 3 / 4; }
+.first_gol2 { grid-area: 2 / 7 / 3 / 8; }
+.bet_1 { grid-area: 5 / 4 / 6 / 5; }
+.bet_2 { grid-area: 5 / 6 / 6 / 7; }
+.bet_gol1, .bet_gol2 { width: 80%; }
+.bet_gol1 { grid-area: 5 / 3 / 6 / 4; }
+.bet_gol2 { grid-area: 5 / 7 / 6 / 8; }
+.status { grid-area: 9 / 2 / 10 / 9; }

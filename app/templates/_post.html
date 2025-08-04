@@ -1,20 +1,20 @@
-    <table class="table table-hover">
-        <tr>
-            <td width="20px">
+<table class="table table-hover">
+    <tr>
+        <td width="20px">
+            <a href="{{ url_for('user', username=post.author.username) }}">
+                <img src="/static/hektor_pics/{{ post.author.id }}.jpg" width="50"> <!--<img src="{{ post.author.avatar(50) }}" /> -->
+            </a>
+        </td>
+        <td>
+            {% set user_link %}
                 <a href="{{ url_for('user', username=post.author.username) }}">
-                    <img src="/static/hektor_pics/{{ post.author.id }}.jpg" width="50"> <!--<img src="{{ post.author.avatar(50) }}" /> -->
+                    {{ post.author.username }}
                 </a>
-            </td>
-            <td>
-                {% set user_link %}
-                    <a href="{{ url_for('user', username=post.author.username) }}">
-                        {{ post.author.username }}
-                    </a>
-                {% endset %}
-                {{ _('%(username)s said %(when)s',
-                    username=user_link, when=moment(post.timestamp).fromNow()) }}
-                <br>
-                {{ post.body }}
-            </td>
-        </tr>
-    </table>
+            {% endset %}
+            {{ _('%(username)s said %(when)s:',
+                username=user_link, when=moment(post.timestamp).fromNow()) }}
+            <br>
+            {{ post.body }}
+        </td>
+    </tr>
+</table>

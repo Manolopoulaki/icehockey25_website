@@ -1,9 +1,27 @@
-body{
-background-color: #faf7f7;
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap');
+
+:root {
+  --color-primary: #32A685;
+  --color-secondary: #17AEBF;
+  --color-bright: #F29D52;
+  --color-accent: #F2798F;
+  --color-bg: #fff;
+  --color-text: #0D0D0D;
+}
+
+html, body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Poppins", sans-serif;
+}
+
+* {
+  font-family: inherit;
 }
 
 .navbar {
-  background-color:#FFFFFF;
+  background-color: var(--color-secondary);
   align-items: center;
   border: 0;
   font-size: 17px;
@@ -13,56 +31,44 @@ background-color: #faf7f7;
   margin-bottom: 10px;
   box-shadow: 0 0 30px rgba(0, 0, 0, .08);
   border-radius: 10px;
-  z-index:9999;
-}  
+  z-index: 9999;
+}
 
 .nav li a {
-	display: table-cell;
-  	vertical-align: middle;
-  	height: 80px;
-  	font-family: "Heebo",sans-serif;
-  	font-size: 1.5 rem;
-  	font-weight: 800;
-  	line-height: 2;
-  	color: #666565;
-    padding: 5px;
+  display: table-cell;
+  vertical-align: middle;
+  height: 80px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 2;
+  color: var(--color-text);
+  padding: 5px;
 }
 
-.content { background-repeat:repeat-y;
-background-size:100%;
-background-position: center top; }
-
-
-.column {
-    float: left;
+.content {
+  background-repeat: repeat-y;
+  background-size: 100%;
+  background-position: center top;
 }
 
-.left {
-    width: 68%;
-}
-  
-.right {
-    width: 30%;
-}
-  
-  /* Clear floats after the columns */
+.column { float: left; }
+.left { width: 68%; }
+.right { width: 30%; }
+
+/* Clear floats after the columns */
 .row:after {
-    content: "";
-    display: table;
-    clear: both;
+  content: "";
+  display: table;
+  clear: both;
 }
-  
-  /* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
-  @media screen and (max-width: 800px) {
-    .column {
-      width: 100%;
-    }
-    .right {
-        display: none;
-    }
-  }
 
-svg > g > g:last-child { pointer-events: none }
+/* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 800px) {
+  .column { width: 100%; }
+  .right { display: none; }
+}
+
+svg > g > g:last-child { pointer-events: none; }
 
 .statsRow:after {
   content: "";
@@ -73,179 +79,181 @@ svg > g > g:last-child { pointer-events: none }
 .statsColumn {
   position: relative;
   float: left;
-  width: 16.6%; 
-  min-width:150px;
+  width: 16.6%;
+  min-width: 150px;
 }
 
-.centerLabel
-{
-    position: absolute;
-    left: 2px;
-    top: 2px;
-    width: 150px;
-    line-height: 150px;
-    text-align: center;
-    font-size: 22px;
-    background-color: transparent;
+.centerLabel {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 150px;
+  line-height: 150px;
+  text-align: center;
+  font-size: 22px;
+  background-color: transparent;
 }
 
 .statsTitle {
-  position:absolute;
-  width:150px;
+  position: absolute;
+  width: 150px;
   text-align: center;
-  font-size:15px;
+  font-size: 15px;
   font-weight: bold;
-  }
-
-.statsValue
-{
-    line-height: 150px;
-    width: 150px;
-    text-align: center;
-    font-size: 52px;
-    font-weight: bold;
-    background-color: transparent;
 }
 
-
-.bbgrid-container {width: 100%; height: 100%; margin: 0; }
+.statsValue {
+  line-height: 150px;
+  width: 150px;
+  text-align: center;
+  font-size: 52px;
+  font-weight: bold;
+  background-color: transparent;
+}
 
 .bbgrid-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 0.5fr 1fr 1fr 1fr;
   grid-template-rows: 0.5fr 0.5fr 0.5fr 0.75fr 2fr 1fr 1fr;
-  text-align:center;
+  text-align: center;
   gap: 1px 1px;
   height: 250px;
-  max-width: 500px; 
-  margin:auto;
+  max-width: 500px;
+  margin: auto;
 }
 
 .bbgame { grid-area: 1 / 3 / 2 / 6; }
-
 .bbdate_time { grid-area: 2 / 3 / 3 / 6; }
-
 .bbStatus { grid-area: 3 / 3 / 4 / 6; }
 
-.bbTeam1 { grid-area: 4 / 1 / 5 / 3; 
-font-size: 20px;
-font-weight: bold;}
-
-.bbTeam2 { grid-area: 4 / 6 / 5 / 8;
-font-size: 20px;
-font-weight: bold; }
-
-.bbFlag1 { grid-area: 5 / 1 / 6 / 3; 
-max-width:106px;
-margin:auto;
-width:-webkit-fill-available;
-max-height:80px;}
-
-.bbFlag2 { grid-area: 5 / 6 / 6 / 8; 
-max-width:106px;
-margin:auto;
-width:-webkit-fill-available;
-max-height:80px;}
-
-.bbScore1 { grid-area: 5 / 3 / 6 / 4;
-font-size:35px; 
-width:90%;
-text-align:center;
-margin: auto;}
-
-input#score_a { 
-  width:60px;}
-
-  input#score_b { 
-  width:60px;}
-
-.bbinpp{
-font-size:40px; 
-width:50px;
-text-align:center;
+.bbTeam1, .bbTeam2 {
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.bbScore2 { grid-area: 5 / 5 / 6 / 6;
-font-size:35px; 
-width:90%;
-text-align:center;
-margin: auto;}
+.bbTeam1 { grid-area: 4 / 1 / 5 / 3; }
+.bbTeam2 { grid-area: 4 / 6 / 5 / 8; }
 
-.bbdots { grid-area: 5 / 4 / 6 / 5; 
-font-size:40px;
-margin: auto;}
+.bbFlag1, .bbFlag2 {
+  max-width: 106px;
+  width: -webkit-fill-available;
+  margin: auto;
+}
 
-.bbfirsttext { grid-area: 6 / 3 / 7 / 6;}
+.bbFlag1 { grid-area: 5 / 1 / 6 / 3; }
+.bbFlag2 { grid-area: 5 / 6 / 6 / 8; }
 
+.bbScore1, .bbScore2 {
+  font-size: 35px;
+  width: 90%;
+  text-align: center;
+  margin: auto;
+}
+
+.bbScore1 { grid-area: 5 / 3 / 6 / 4; }
+.bbScore2 { grid-area: 5 / 5 / 6 / 6; }
+
+.bbdots {
+  grid-area: 5 / 4 / 6 / 5;
+  font-size: 40px;
+  margin: auto;
+}
+
+input#score_a,
+input#score_b {
+  width: 60px;
+}
+
+.bbinpp {
+  font-size: 40px;
+  width: 50px;
+  text-align: center;
+}
+
+.bbfirsttext { grid-area: 6 / 3 / 7 / 6; }
 .bbsubmit { grid-area: 7 / 3 / 8 / 6; }
 
-
 tr:nth-child(even) {
-  background-color: #f0ede5
+  background-color: var(--color-bg);
 }
 
-
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap');
-
-
-
-.sticky-banner{
-    display:flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    top:0;
-    width:100%;
-    min-height: 80px;
-    background: #9600ffe0;
-    color:#fff;
-    box-shadow:rgba(0,0,0,0.24) 0px 3px 8px;
-    border-radius: 5px;
-}
-.s_banner_left,.s_banner_right{
-    display:flex;
-    align-items: center;
-    justify-content: center;
-}
-.s_icon{
-    background: #7b12c4;
-    padding:8px 12px;
-    margin:0 5px;
-    border-radius: 5px;
-    font-size: 24px;
-}
-button{
-    margin:5px;
-    padding:10px 16px;
-    background: #fff;
-    color:#7b12c4;
-    font-weight:600;
-    border:none;
-    outline:none;
-    cursor:pointer;
-    border-radius: 5px;
-    box-shadow:rgba(0,0,0,0.24) 0px 3px 8px;
-}
-.close1{
-    color:#fff;
-    background: #000;
+.sticky-banner {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  top: 0;
+  width: 100%;
+  min-height: 80px;
+  background: var(--color-bright);
+  color: var(--color-text);
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  border-radius: 5px;
 }
 
-.announcment{
-    font-family: "Poppins", sans-serif;
-    margin: 5px;
-    padding: 0;
+.s_banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.s_icon {
+  background: var(--color-bright);
+  padding: 8px 12px;
+  margin: 0 5px;
+  border-radius: 5px;
+  font-size: 24px;
+}
 
-.showHide { 
-   display:none;
-   font-family: "Poppins", sans-serif;
-    margin: 0;
-    padding: 0; }
+button {
+  margin: 5px;
+  padding: 7px 10px;
+  background: var(--color-secondary);
+  color: var(--color-text);
+  font-weight: 600;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  white-space: nowrap; /* This enforces the button text in one line */
+}
 
-/* Desktop*/
+.announcement {
+  margin: 5px;
+  padding: 0;
+}
+
+.showHide {
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+
 @media screen and (min-width: 768px) {
-  .showHide  { display: block; }
+  .showHide { display: block; }
 }
 
+/* Home page columns */
+.content-columns {
+  display: flex;
+  flex-direction: column; /* Default for small screens */
+  gap: 20px;
+}
 
+.chat-section, .leaderboard-section { flex: 1; }
+
+@media (min-width: 768px) {
+  .content-columns {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .chat-section {
+    flex: 2; /* Chat takes more space */
+    margin-right: 20px;
+  }
+
+  .leaderboard-section {
+    flex: 1; /* Leaderboard narrower */
+  }
+}
