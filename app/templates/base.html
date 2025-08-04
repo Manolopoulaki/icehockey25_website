@@ -1,7 +1,7 @@
 {% extends 'bootstrap/base.html' %}
 
 {% block title %}
-    {% if title %}{{ title }} -{{_(' Ice Hockey 2025')}}{% else %}{{_('Welcome to Ice Hockey 2025')}}{% endif %}
+    {% if title %}{{ title }} - {{_(' Ice Hockey 2025')}}{% else %}{{_('Ice Hockey 2025')}}{% endif %}
 {% endblock %}
 
 {% block styles %}
@@ -18,14 +18,12 @@
 			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
 				<span class="sr-only">{{ _('Toggle navigation') }}</span>
 				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
 			</button>
 		</div>
-		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="background-color:#FFFFFF;  padding: 0%;">
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="background-color:#fff;  padding: 0%;">
 			<ul class="nav navbar-nav" style="margin: 0px; padding-left: 10px;">
 				<li><a href="{{ url_for('index') }}" style="padding-top: 0px; padding-bottom: 0px;">
-                        			<img src={{ url_for('static', filename='logo.png') }} height="60px"/></a></li>
+					<img src={{ url_for('static', filename='logo.png') }} height="60px"/></a></li>
 				{% if not current_user.is_anonymous %}
 				<li><a href="{{ url_for('index') }}">{{ _('HOME') }}</a></li>
 				<li><a href="{{ url_for('rules') }}">{{ _('RULES') }}</a></li>
@@ -39,20 +37,17 @@
 				<li><a href="{{ url_for('login') }}">{{ _('LOGIN') }}</a></li>
 				{% endif %}
 				{% if current_user.is_admin %}
-				<li><a href="{{ url_for('admin') }}">
-					<div><i class="fa-solid fa-user-secret fa-lg"></i></div></a></li>
+				<li><a href="{{ url_for('admin') }}"><div><i class="fa-solid fa-user-secret fa-lg"></i></div></a></li>
 				{% endif %}
 				{% if not current_user.is_anonymous %}
-				<li><a href="{{ url_for('user', username=current_user.username) }}">
-					<div><i class="fa-solid fa-user fa-lg"></i></div></a></li>
-				<li><a href="{{ url_for('logout') }}">
-					<div><i class="fa-solid fa-sign-out fa-lg"></i></div></a></li>
+				<li><a href="{{ url_for('user', username=current_user.username) }}"><div><i class="fa-solid fa-user fa-lg"></i></div></a></li>
+				<li><a href="{{ url_for('logout') }}"><div><i class="fa-solid fa-sign-out fa-lg"></i></div></a></li>
  				{% endif %}
-
-				 <li><select id="language" onchange='window.location.href=this.value;'>
+				<li>
+					<select id="language" onchange='window.location.href=this.value;'>
 					<option value="/language/en" {% if session['lang'] == 'en' %}selected{% endif %}>EN</option>
-					<option value="/language/lv" {% if session['lang'] == 'lv' %}selected{% endif %}>LV</option>
-				  </select></li>
+					<option value="/language/lv" {% if session['lang'] == 'lv' %}selected{% endif %}>LV</option></select>
+				</li>
 			</ul>
 		</div> 
 	</nav>

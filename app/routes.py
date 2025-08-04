@@ -92,16 +92,14 @@ def index():
                     'leader_outcomes':leader_outcomes,
                     'leader_correct_scores':leader_correct_scores}
 
-    next_game = get_next_game()
     return render_template("index.html", title='Home', sport=g.sport, form=form, posts=posts.items,
-    			    next_url=next_url, prev_url=prev_url, leaders=leaders_dict, game_id=next_game.id)
+    			    next_url=next_url, prev_url=prev_url, leaders=leaders_dict, game_id=get_next_game().id)
 
 @app.route('/rules', methods=['GET', 'POST'])
 @login_required
 def rules():
     winner_bet = Winnerbet.query.all()
-    next_game = get_next_game()
-    return render_template("rules.html", title='Rules', winner_bet=winner_bet, sport=g.sport, game_id=next_game.id)
+    return render_template("rules.html", title='Rules', winner_bet=winner_bet, sport=g.sport, game_id=get_next_game().id)
     
 @app.route('/standings', methods=['GET', 'POST'])
 @login_required
@@ -109,17 +107,13 @@ def standings():
     # results = User.query.filter(User.is_shown==True).with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).order_by('ranking').add_columns(User.username, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).all()
     ranked_users_cte = db.session.query(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking'), User.id, User.username, User.is_shown, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).cte(name='ranked_users')
     results = db.session.query(ranked_users_cte).filter(ranked_users_cte.c.is_shown == True).order_by(ranked_users_cte.c.ranking).all()
-    next_game = get_next_game()
-    return render_template("standings.html", title='Standings', sport=g.sport, results=results, game_id=next_game.id)
+    return render_template("standings.html", title='Standings', sport=g.sport, results=results, game_id=get_next_game().id)
     
 @app.route('/schedule', methods=['GET', 'POST'])
 @login_required
 def schedule():
     games = Game.query.order_by(Game.id.asc()).all()
-    current_time = datetime.utcnow()
-    three_hours_earlier = datetime.utcnow() - timedelta(hours=3)
-    next_game = get_next_game()
-    return render_template("schedule.html", title='Schedule', sport=g.sport, games=games, game_id=next_game.id, current_time=current_time, three_hours_earlier=three_hours_earlier)
+    return render_template("schedule.html", title='Schedule', sport=g.sport, games=games, game_id=get_next_game().id)
     
 @app.route('/place_predictions', methods=['GET', 'POST'])
 @login_required
@@ -168,8 +162,7 @@ def place_predictions():
         db.session.commit()
         flash(_('Your predictions have been saved!'), 'success')
         return redirect(url_for('place_predictions'))
-    next_game = get_next_game()
-    return render_template("place_predictions.html", title='Place Predictions', sport=g.sport,games=games, forms=forms, game_id=next_game.id)
+    return render_template("place_predictions.html", title='Place Predictions', sport=g.sport,games=games, forms=forms, game_id=get_next_game().id)
 
 @app.route('/games/<idd>', methods=['GET', 'POST'])
 @login_required
@@ -203,8 +196,7 @@ def games(idd):
         db.session.commit()
         flash(_('Your prediction has been saved.'))
         return redirect(url_for('games', idd=idd))
-    next_game = get_next_game()
-    return render_template("games.html", title='Games', sport=g.sport, games=games, bets=bets, form=form, bets_to_show=bets_to_show, correct_winners=correct_winners, correct_first_goals=correct_first_goals, default_bets=default_bets, all_bets=all_bets, game_chosen=game_chosen, users=users, current_time=current_time, three_hours_earlier=three_hours_earlier, game_id=next_game.id)  
+    return render_template("games.html", title='Games', sport=g.sport, games=games, bets=bets, form=form, bets_to_show=bets_to_show, correct_winners=correct_winners, correct_first_goals=correct_first_goals, default_bets=default_bets, all_bets=all_bets, game_chosen=game_chosen, users=users, current_time=current_time, three_hours_earlier=three_hours_earlier, game_id=get_next_game().id)  
     
 @app.route('/winner_prediction', methods=['GET', 'POST'])
 @login_required
@@ -218,8 +210,7 @@ def winner_prediction():
         db.session.commit()
         flash(_('Your prediction has been saved.'))
         return redirect(url_for('user', username=current_user.username))
-    next_game = get_next_game()
-    return render_template("winner_prediction.html", title='Winner Prediction', sport=g.sport, form=form, winner_bet=winner_bet, game_id=next_game.id)
+    return render_template("winner_prediction.html", title='Winner Prediction', sport=g.sport, form=form, winner_bet=winner_bet, game_id=get_next_game().id)
     
 @app.route('/default_prediction', methods=['GET', 'POST'])
 @login_required
@@ -246,8 +237,7 @@ def default_prediction():
         db.session.commit()    	
         flash(_('Your default prediction has been set.'))
         return redirect(url_for('user', username=current_user.username))
-    next_game = get_next_game()
-    return render_template("default_prediction.html", title='Default Prediction', sport=g.sport, form=form, game_id=next_game.id)
+    return render_template("default_prediction.html", title='Default Prediction', sport=g.sport, form=form, game_id=get_next_game().id)
                                                   
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -317,8 +307,7 @@ def user(username):
     else:
         bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(Game.starts_at<datetime.utcnow()).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
     stats = User.query.with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).add_columns(User.username, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets, User.overall_points).all()    
-    next_game = get_next_game()
-    return render_template('user.html', title='Profile', sport=g.sport, user=user, bets=bets, stats=stats, winner_bet_points=winner_bet_points, game_id=next_game.id)
+    return render_template('user.html', title='Profile', sport=g.sport, user=user, bets=bets, stats=stats, winner_bet_points=winner_bet_points, game_id=get_next_game().id)
                            
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -333,8 +322,7 @@ def edit_profile():
     elif request.method == 'GET':
         form.username.data = current_user.username
         form.about_me.data = current_user.about_me
-    next_game = get_next_game()
-    return render_template('edit_profile.html', title='Edit Profile', sport=g.sport, form=form, game_id=next_game.id)                         
+    return render_template('edit_profile.html', title='Edit Profile', sport=g.sport, form=form, game_id=get_next_game().id)                         
 
 @app.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_password_request():
@@ -500,13 +488,11 @@ def admin():
         db.session.commit()
         flash(_('The winner has been set.'))
 
-    next_game = get_next_game()
-
     return render_template("admin.html", title='Admin', sport=g.sport, admins=current_admins, 
                            aaform=add_admin_form, raform=remove_admin_form, ruform=remove_user_form, 
                            ug_csv_form=upload_csv_form, uw_csv_form=upload_winnerbet_csv_form, sgform=set_game_form, 
                            form=form, cgsform=correct_game_score_form,
-                           wform=wform, game_id=next_game.id)
+                           wform=wform, game_id=get_next_game().id)
 
 @app.route('/upload_csv', methods=['POST'])
 @admin_required
