@@ -1,33 +1,33 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-	<h1>{{ _('Player standings') }}</h1>
+	<h2>{{ _('User Standings') }}</h2>
 	<div style="overflow-x:auto">
 	<table class="table table-hover" id="myTable2">
-	<tr>
-	    <th onclick="sortTable(0)" style="cursor:pointer">{{ _('Ranking &#8645;') }}</th>
-	    <th>{{ _('Player') }}</th>
-	    <th onclick="sortTable(2)" style="cursor:pointer">{{ _('First Goal &#8645;') }}</th>
-	    <th onclick="sortTable(3)" style="cursor:pointer">{{ _('Outcome &#8645;') }}</th>
-	    <th onclick="sortTable(4)" style="cursor:pointer">{{ _('Score Difference &#8645;') }}</th>
-	    <th onclick="sortTable(5)" style="cursor:pointer">{{ _('Score &#8645;') }}</th>
-	    <th onclick="sortTable(6)" style="cursor:pointer">{{ _('Game Points &#8645;') }}</th>
-	    <th onclick="sortTable(7)" style="cursor:pointer">{{ _('Winner Points &#8645;') }}</th>
-	    <th onclick="sortTable(8)" style="cursor:pointer">{{ _('Overall Points &#8645;') }}</th>
-	</tr>
-	{% for user in results %}
-	<tr>
-	    <td> {{user.ranking}} </td>
-	    <td> <a href="{{ url_for('user', username=user.username) }}"> {{user.username}} </td>
-	    <td> {{user.total_first_goal}} </td>
-	    <td> {{user.total_winner}} </td>
-	    <td> {{user.total_score_diff}} </td>
-	    <td> {{user.total_score}} </td>
-	    <td> {{user.total_points}} </td>
-	    <td> {{user.final_winner_points}} </td>
-	    <td> {{user.overall_points}} </td>
-	</tr>
-	{% endfor %}
+		<tr>
+			<th onclick="sortTable(0)" style="cursor:pointer">{{ _('Ranking &#8645;') }}</th>
+			<th>{{ _('User') }}</th>
+			<th onclick="sortTable(2)" style="cursor:pointer">{{ _('First Goal &#8645;') }}</th>
+			<th onclick="sortTable(3)" style="cursor:pointer">{{ _('Outcome &#8645;') }}</th>
+			<th onclick="sortTable(4)" style="cursor:pointer">{{ _('Score Diff &#8645;') }}</th>
+			<th onclick="sortTable(5)" style="cursor:pointer">{{ _('Score &#8645;') }}</th>
+			<th onclick="sortTable(6)" style="cursor:pointer">{{ _('Game Points &#8645;') }}</th>
+			<th onclick="sortTable(7)" style="cursor:pointer">{{ _('Winner Points &#8645;') }}</th>
+			<th onclick="sortTable(8)" style="cursor:pointer">{{ _('Overall Points &#8645;') }}</th>
+		</tr>
+		{% for user in results %}
+		<tr>
+			<td> {{user.ranking}} </td>
+			<td> <a href="{{ url_for('user', username=user.username) }}"> {{user.username}} </td>
+			<td> {{user.total_first_goal}} </td>
+			<td> {{user.total_winner}} </td>
+			<td> {{user.total_score_diff}} </td>
+			<td> {{user.total_score}} </td>
+			<td> {{user.total_points}} </td>
+			<td> {{user.final_winner_points}} </td>
+			<td> {{user.overall_points}} </td>
+		</tr>
+		{% endfor %}
 	</table>
 	</div>
 {% endblock %}
