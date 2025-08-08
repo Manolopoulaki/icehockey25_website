@@ -14,7 +14,7 @@
 	  {% for points in winner_bet %}
 	  <tr style="white-space: nowrap">
 	    <th>{{points.description}}</th>
-	    <td>{{moment(points.last_bet).format('MMMM Do, h:mm a') }}</td>
+	    <td>{{moment(points.last_bet).format('ddd DD/MM, H:mm') }}</td>
 	    <th>{{points.bet_points}}</th>
 	  </tr> 
 	  {% endfor %}

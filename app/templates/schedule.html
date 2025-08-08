@@ -21,7 +21,7 @@
 				<img src={{ url_for('static', filename='flags/' + game.team_b +'.png') }} width="20" height="20"/>
 			</td>
 	    	<td>{{game.stage}}</td>
-	    	<td>{{ moment(game.starts_at).format('dd DD/MM, h:mm a') }}</td>
+	    	<td>{{ moment(game.starts_at).format('ddd DD/MM, H:mm') }}</td>
 			<td>
 				{% if game.first_goal==1 %}
 				<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{game.score_a}}:{{game.score_b}}  

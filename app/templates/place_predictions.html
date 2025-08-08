@@ -21,7 +21,7 @@
                     <img src="{{ url_for('static', filename='flags/' + game.team_b + '.png') }}" width="20" height="20"/>
                 </td>
                 <td>{{ game.stage }}</td>
-                <td>{{ moment(game.starts_at).format('MMMM Do, h:mm a') }}</td>
+                <td>{{ moment(game.starts_at).format('ddd DD/MM, H:mm') }}</td>
                 <td>
                     <input name="score_a_{{ game.id }}" value="{{ forms[game.id].score_a.data or 0 }}" size=1>
                     :

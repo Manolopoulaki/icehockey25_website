@@ -43,7 +43,7 @@
 						{% else %}
 						<th>{{points.description}}</th>
 						{% endif %}
-						<td>{{moment(points.last_bet).format('MMMM Do, h:mm a') }}</td>
+						<td>{{moment(points.last_bet).format('ddd DD/MM, H:mm')}}</td>
 						<th>{{points.bet_points}}</th>
 					</tr> 
 					{% endfor %}
