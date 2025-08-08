@@ -35,7 +35,7 @@ jQuery(function($){
 		$frame.sly('on', 'active', function (eventName, itemindex) {
                 var indd = itemindex + 1;
                 window.history.pushState("hi", "hi", window.location.pathname.replace(/\/[^\/]*$/,"/" + indd));
-                $("#teest").load(location.href + " #teest" );
+                $("#gamebox").load(location.href + " #gamebox" );
                 setTimeout(() => { flask_moment_render_all(); }, 1000);
                 
                 });

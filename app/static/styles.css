@@ -105,17 +105,16 @@ svg > g > g:last-child { pointer-events: none; }
   margin: auto;
 }
 
-.bbgame { grid-area: 1 / 3 / 2 / 6; }
+.bbgame { grid-area: 1 / 2 / 2 / 7; }
 .bbdate_time { grid-area: 2 / 3 / 3 / 6; }
-.bbStatus { grid-area: 3 / 3 / 4 / 6; }
 
 .bbTeam1, .bbTeam2 {
   font-size: 20px;
   font-weight: bold;
 }
 
-.bbTeam1 { grid-area: 4 / 1 / 5 / 3; }
-.bbTeam2 { grid-area: 4 / 6 / 5 / 8; }
+.bbTeam1 { grid-area: 3 / 1 / 4 / 3; }
+.bbTeam2 { grid-area: 3 / 6 / 4 / 8; }
 
 .bbFlag1, .bbFlag2 {
   max-width: 106px;
@@ -123,8 +122,8 @@ svg > g > g:last-child { pointer-events: none; }
   margin: auto;
 }
 
-.bbFlag1 { grid-area: 5 / 1 / 6 / 3; }
-.bbFlag2 { grid-area: 5 / 6 / 6 / 8; }
+.bbFlag1 { grid-area: 4 / 1 / 5 / 3; }
+.bbFlag2 { grid-area: 4 / 6 / 5 / 8; }
 
 .bbScore1, .bbScore2 {
   font-size: 35px;
@@ -133,11 +132,11 @@ svg > g > g:last-child { pointer-events: none; }
   margin: auto;
 }
 
-.bbScore1 { grid-area: 5 / 3 / 6 / 4; }
-.bbScore2 { grid-area: 5 / 5 / 6 / 6; }
+.bbScore1 { grid-area: 4 / 3 / 5 / 4; }
+.bbScore2 { grid-area: 4 / 5 / 5 / 6; }
 
 .bbdots {
-  grid-area: 5 / 4 / 6 / 5;
+  grid-area: 4 / 4 / 5 / 5;
   font-size: 40px;
   margin: auto;
 }
@@ -153,8 +152,8 @@ input#score_b {
   text-align: center;
 }
 
-.bbfirsttext { grid-area: 6 / 3 / 7 / 6; }
-.bbsubmit { grid-area: 7 / 3 / 8 / 6; }
+.bbfirsttext { grid-area: 5 / 3 / 6 / 6; }
+.bbsubmit { grid-area: 6 / 3 / 7 / 6; }
 
 tr:nth-child(even) {
   background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);

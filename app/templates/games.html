@@ -2,166 +2,135 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-<div class="container example1">
-	<div class="pagespan">
-		<div class="wrap">
-			<!-- <div class="scrollbar">
-				<div class="handle" style="transform: translateZ(0px) translateX(38px); width: 190px;">
-					<div class="mousearea"></div>
-				</div>
-			</div> -->
-			<div class="frame" id="centered" style="overflow: hidden;">
-				<ul class="clearsfix" style="transform: translateZ(0px) translateX(-227px); width: 6840px;">
-					{% for game in games %}
-					<li>
-						<div class="grid-container">
-							<img class="flag_1" src={{ url_for('static', filename='flags/' + game.team_a +'.png') }}/>
-							<img class="flag_2" src={{ url_for('static', filename='flags/' + game.team_b +'.png') }}/>
-							<div class="team_1">{{game.team_a}}</div>
-							<div class="team_2">{{game.team_b}}</div>
-							<div class="dot">:</div>
-							<div class="score_1">
-								{% if game.score_a==None %} - {% else %} {{game.score_a}} {% endif %}
-							</div>
-							<div class="score_2">
-								{% if game.score_b==None %} - {% else %} {{game.score_b}} {% endif %}
-							</div>
-							{% if game.first_goal==1 %}
-							<img class="first_gol1" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
-							<div class="first_gol2"></div>
-							{% elif game.first_goal==2 %}
-							<img class="first_gol2" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
-							<div class="first_gol1"></div>
-							{% else %}
-							<div class="first_gol2"></div>
-							<div class="first_gol1"></div>
-							{% endif %}
-							<div class="dot_bet">:</div>
-							{% for bet in bets %} {% if bet.game_id==game.id %}
-							<div class="bet_1"> {{bet.score_a}} </div>
-							<div class="bet_2"> {{bet.score_b}} </div>
-							{% if bet.first_goal==1 %}
-							<img class="bet_gol1" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
-							<div class="bet_gol2"></div>
-							{% elif bet.first_goal==2 %}
-							<img class="bet_gol2" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
-							<div class="bet_gol1"></div>
-							{% else %}
-							<div class="bet_gol1"></div>
-							<div class="bet_gol2"></div>
-							{% endif %}
-							{% endif %} {% endfor %}
-							<div class="date_time">{{ moment(game.starts_at).format('ddd DD/MM, H:mm') }}</div>
-							<div class="game_id">{{game.id}}</div>
-							<div class="status">
-								{% if game.starts_at > current_time %} {{ _('Upcoming') }} {% endif %}
-								{% if game.starts_at < current_time and game.starts_at > three_hours_earlier and game.score_a == None %} {{ _('Started') }} {% endif %}
-								{% if game.starts_at < three_hours_earlier or game.score_a != None %} {{ _('Finished') }} {% endif %}
-							</div>
+	<div class="wrap">
+		<div class="frame" id="centered" style="overflow: hidden;">
+			<ul class="clearsfix" style="transform: translateZ(0px) translateX(-227px); width: 6840px;">
+				{% for game in games %}
+				<li>
+					<div class="grid-container">
+						<img class="flag_1" src={{ url_for('static', filename='flags/' + game.team_a +'.png') }}/>
+						<img class="flag_2" src={{ url_for('static', filename='flags/' + game.team_b +'.png') }}/>
+						<div class="team_1">{{game.team_a}}</div>
+						<div class="team_2">{{game.team_b}}</div>
+						<div class="dot">:</div>
+						<div class="score_1">{% if game.score_a==None %} - {% else %} {{game.score_a}} {% endif %}</div>
+						<div class="score_2">{% if game.score_b==None %} - {% else %} {{game.score_b}} {% endif %}</div>
+						{% if game.first_goal==1 %}
+						<img class="first_gol1" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
+						<div class="first_gol2"></div>
+						{% elif game.first_goal==2 %}
+						<img class="first_gol2" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
+						<div class="first_gol1"></div>
+						{% else %}
+						<div class="first_gol2"></div>
+						<div class="first_gol1"></div>
+						{% endif %}
+						<div class="dot_bet">:</div>
+						{% for bet in bets %} {% if bet.game_id==game.id %}
+						<div class="bet_1"> {{bet.score_a}} </div>
+						<div class="bet_2"> {{bet.score_b}} </div>
+						{% if bet.first_goal==1 %}
+						<img class="bet_gol1" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
+						<div class="bet_gol2"></div>
+						{% elif bet.first_goal==2 %}
+						<img class="bet_gol2" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
+						<div class="bet_gol1"></div>
+						{% else %}
+						<div class="bet_gol1"></div>
+						<div class="bet_gol2"></div>
+						{% endif %}
+						{% endif %} {% endfor %}
+						<div class="date_time">{{ moment(game.starts_at).format('ddd DD/MM, H:mm') }}</div>
+						<div class="game_id">{{game.id}}</div>
+						<div class="status">
+							{% if game.starts_at > current_time %} {{ _('Upcoming') }} {% endif %}
+							{% if game.starts_at < current_time and game.starts_at > three_hours_earlier and game.score_a == None %} {{ _('Started') }} {% endif %}
+							{% if game.starts_at < three_hours_earlier or game.score_a != None %} {{ _('Finished') }} {% endif %}
 						</div>
-					</li>   
-					{% endfor %}
-				</ul>
-			</div>
-			<div class="controls center">
-				<button class="btn prev"><i class="icon-chevron-left"></i> {{ _('prev') }}</button>
-				<button class="btn next">{{ _('next') }}<i class="icon-chevron-right"></i></button>
+					</div>
+				</li>   
+				{% endfor %}
+			</ul>
+		</div>
+		<div class="controls">
+			<button class="btn prev button"><i class="fa-solid fa-arrow-left"></i></button>
+			<button class="btn next button"><i class="fa-solid fa-arrow-right"></i></button>
 		</div>
 	</div>
-</div>
-
-<div id="teest">
-	{% if game_chosen==[] %}
-	    	<h1> {{ _('Please choose game from list above') }}</h1>
-	{% else %}	
+	<div id=gamebox>
+		{% if game_chosen==[] %}
+			<h2>{{ _('Please choose a game from list above') }}</h2>
+		{% endif %}	
 		{% if game_chosen.starts_at > current_time %}
-			{% if form %}
-			<h1 style="text-align:center;">{{ _('Place your prediction') }} </h1>
-			<form action="" method="post">
-			{{ form.hidden_tag() }}			
-			<div class="bbgrid-container">
-			    <div class="bbgame">{{ _('Game') }} {{game_chosen.id}} {{game_chosen.stage}}</div>
-			    <div class="bbdate_time">{{ moment(game_chosen.starts_at).format('MMMM Do, h:mm a') }}</div>
-			    <div class="bbStatus"> {{ _('Upcoming') }} </div>
-			    <div class="bbTeam1">{{game_chosen.team_a}}</div>
-			    <div class="bbTeam2">{{game_chosen.team_b}}</div>
-			    <img class="bbFlag1" src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }}>
-			    <img class="bbFlag2" src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }}>
-			    <div class="bbScore1">{{ form.score_a(size=1) }}</div>
-			    <div class="bbScore2">{{ form.score_b(size=1) }}</div>
-			    <div class="bbdots">:</div>
-			    <div class="bbfirsttext">{{ form.first_goal }}</div>
-			    <div class="bbsubmit">{{ form.submit() }}</div>
+			<div class="box" style="background-color: color-mix(in srgb, var(--color-bright) 30%, transparent);">
+				<form action="" method="post">{{ form.hidden_tag() }}			
+				<div class="bbgrid-container">
+					<h2 class="bbgame">{{ _('Game') }} {{game_chosen.id}} {{game_chosen.stage}}</h2>
+					<div class="bbdate_time">{{ moment(game_chosen.starts_at).format('MMMM Do, h:mm a') }}</div>
+					<div class="bbTeam1">{{game_chosen.team_a}}</div>
+					<div class="bbTeam2">{{game_chosen.team_b}}</div>
+					<img class="bbFlag1" src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }}>
+					<img class="bbFlag2" src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }}>
+					<div class="bbScore1">{{ form.score_a(size=1) }}</div>
+					<div class="bbScore2">{{ form.score_b(size=1) }}</div>
+					<div class="bbdots">:</div>
+					<div class="bbfirsttext">{{ form.first_goal }}</div>
+					<div class="bbsubmit"><button type="submit" class="button">{{ form.submit.label.text }}</button></div>
+				</div>
+				</form>
 			</div>
-			</form>
-			<div id="place_all_predictions_button"
-				style="display: flex; justify-content: center; align-items: center; height: 10vh;">
-				<button onclick="window.location.href='{{ url_for("place_predictions") }}'"
-					class="button">
+			<div id="place_all_predictions_button" style="display: flex; justify-content: center; align-items: center;">
+				<button onclick="window.location.href='{{ url_for("place_predictions") }}'" class="button">
 					{{ _('Place predictions for all scheduled games') }}
 				</button>
 			</div>
-			 {% endif %}
 		{% else %}
-			<h1>{{ _('Predictions for Game') }} {{game_chosen.id}}: 
-			    <img src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }} width="40" height="40"/>
-			    {{game_chosen.team_a}} - {{game_chosen.team_b}}
-			    <img src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }} width="40" height="40"/>
-			</h1>
-			<div> 
-			{{correct_winners}}/{{all_bets}} {{ _('of bets found the correct winner!') }} <br>
-			{{correct_first_goals}}/{{all_bets}} {{ _('of bets found the correct first goal team!') }} <br>
-			{{default_bets}}/{{all_bets}} {{ _('were default bets.') }}
+			<h2>{{ _('Predictions for Game') }} {{game_chosen.id}}: 
+				<img src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }} width="40" height="40"/>
+				{{game_chosen.team_a}} - {{game_chosen.team_b}}
+				<img src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }} width="40" height="40"/>
+			</h2>
+			<div class="box" style="background-color: color-mix(in srgb, var(--color-bright) 30%, transparent);">
+				{{correct_winners}}/{{all_bets}} {{ _('of bets found the correct winner!') }} <br>
+				{{correct_first_goals}}/{{all_bets}} {{ _('of bets found the correct first goal team!') }} <br>
+				{{default_bets}}/{{all_bets}} {{ _('were default bets.') }}
 			</div>
 			<table class="table table-hover">
-			<tr>
-			    <th>{{ _('Player') }}</th>
-			    <th>{{ _('Prediction') }}</th>
-			    <th>{{ _('Points') }}</th>
-			  </tr>
-			  {% for bet in bets_to_show %}
-				  {% if bet.is_default_bet==True %}
-				  <tr style="color: brown">
-				    {% for user in users %} {% if bet.user_id==user.id %}
-				    <td> <a href="{{ url_for('user', username=user.username) }}"> {{user.username}}</td>
-				    {% endif %} {% endfor %}
-				    <td>{% if bet.first_goal==1 %}
-				    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{bet.score_a}}:{{bet.score_b}}  
-				    	{% elif bet.first_goal==2 %}
-				    	  {{bet.score_a}}:{{bet.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-				    	{% elif bet.first_goal==0 %}
-				    	  {{bet.score_a}}:{{bet.score_b}}
-				    	{% else %}
-				    	? {{bet.score_a}}:{{bet.score_b}} ?
-				    	{% endif %}
-				    </td>
-				    <td>{% if bet.points==None %} - 
-				    	{% else %} {{bet.points}} {% endif %}
-				    </td>
-				  </tr> 
-				  {% else %}
-				  <tr>
-				    {% for user in users %} {% if bet.user_id==user.id %}
-				    <td> <a href="{{ url_for('user', username=user.username) }}"> {{user.username}}</td>
-				    {% endif %} {% endfor %}
-				    <td>{% if bet.first_goal==1 %}
-				    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{bet.score_a}}:{{bet.score_b}}  
-				    	{% elif bet.first_goal==2 %}
-				    	  {{bet.score_a}}:{{bet.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-				    	{% elif bet.first_goal==0 %}
-				    	  {{bet.score_a}}:{{bet.score_b}}
-				    	{% else %}
-				    	? {{bet.score_a}}:{{bet.score_b}} ?
-				    	{% endif %}
-				    </td>
-				    <td>{% if bet.points==None %} - 
-				    	{% else %} {{bet.points}} {% endif %}
-				    </td>
-				  </tr> 
-				  {% endif %}
-			{% endfor %} 
+				<tr>
+					<th>{{ _('User') }}</th>
+					<th>{{ _('Prediction') }}</th>
+					<th>{{ _('Points') }}</th>
+				</tr>
+				{% for bet in bets_to_show %}
+					<tr {% if bet.is_default_bet %}style="color: brown"{% endif %}>
+						{% for user in users %}
+							{% if bet.user_id == user.id %}
+								<td>
+									<a href="{{ url_for('user', username=user.username) }}">{{ user.username }}</a>
+								</td>
+							{% endif %}
+						{% endfor %}
+						<td>
+							{% if bet.first_goal == 1 %}
+								<img src="{{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}" width="10" height="10"/> {{ bet.score_a }}:{{ bet.score_b }}  
+							{% elif bet.first_goal == 2 %}
+								{{ bet.score_a }}:{{ bet.score_b }} <img src="{{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}" width="10" height="10"/>
+							{% elif bet.first_goal == 0 %}
+								{{ bet.score_a }}:{{ bet.score_b }}
+							{% else %}
+								? {{ bet.score_a }}:{{ bet.score_b }} ?
+							{% endif %}
+						</td>
+						<td>
+							{% if bet.points is none %}
+								-
+							{% else %}
+								{{ bet.points }}
+							{% endif %}
+						</td>
+					</tr>
+				{% endfor %} 
 			</table>
 		{% endif %}
-	{% endif %}
-</div>
+	</div>
 {% endblock %}
