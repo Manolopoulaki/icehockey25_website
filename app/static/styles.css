@@ -51,23 +51,6 @@ html, body {
   background-position: center top;
 }
 
-.column { float: left; }
-.left { width: 68%; }
-.right { width: 30%; }
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-/* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
-@media screen and (max-width: 800px) {
-  .column { width: 100%; }
-  .right { display: none; }
-}
-
 svg > g > g:last-child { pointer-events: none; }
 
 .statsRow:after {
@@ -174,7 +157,7 @@ input#score_b {
 .bbsubmit { grid-area: 7 / 3 / 8 / 6; }
 
 tr:nth-child(even) {
-  background-color: var(--color-bg);
+  background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .sticky-banner {
@@ -233,14 +216,13 @@ button {
   .showHide { display: block; }
 }
 
-/* Home page columns */
 .content-columns {
   display: flex;
   flex-direction: column; /* Default for small screens */
   gap: 20px;
 }
 
-.chat-section, .leaderboard-section { flex: 1; }
+.right-section, .left-section { flex: 1; }
 
 @media (min-width: 768px) {
   .content-columns {
@@ -248,12 +230,21 @@ button {
     align-items: flex-start;
   }
 
-  .chat-section {
-    flex: 2; /* Chat takes more space */
+  .right-section {
+    flex: 2; /* right section takes more space */
     margin-right: 20px;
   }
 
-  .leaderboard-section {
-    flex: 1; /* Leaderboard narrower */
+  .left-section {
+    flex: 1; /* this section narrower */
   }
+}
+
+.box {
+  background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, .08);
+  padding: 20px;
+  margin: 10px 0;
+  color: var(--color-text);
 }
