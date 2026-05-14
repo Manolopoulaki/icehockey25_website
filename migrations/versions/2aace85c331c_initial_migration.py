@@ -1,8 +1,8 @@
 """Initial migration
 
-Revision ID: b76086a91d21
+Revision ID: 2aace85c331c
 Revises: 
-Create Date: 2025-07-29 15:42:11.891228
+Create Date: 2026-05-14 20:59:39.748624
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b76086a91d21'
+revision = '2aace85c331c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -36,7 +36,6 @@ def upgrade():
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=64), nullable=True),
-    sa.Column('name', sa.String(length=64), nullable=True),
     sa.Column('email', sa.String(length=120), nullable=True),
     sa.Column('password_hash', sa.String(length=128), nullable=True),
     sa.Column('is_admin', sa.Boolean(), nullable=True),
@@ -60,7 +59,6 @@ def upgrade():
     )
     op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
     op.create_index(op.f('ix_user_final_winner_timestamp'), 'user', ['final_winner_timestamp'], unique=False)
-    op.create_index(op.f('ix_user_name'), 'user', ['name'], unique=False)
     op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=True)
     op.create_table('winnerbet',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -114,7 +112,6 @@ def downgrade():
     op.drop_index(op.f('ix_winnerbet_last_bet'), table_name='winnerbet')
     op.drop_table('winnerbet')
     op.drop_index(op.f('ix_user_username'), table_name='user')
-    op.drop_index(op.f('ix_user_name'), table_name='user')
     op.drop_index(op.f('ix_user_final_winner_timestamp'), table_name='user')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')

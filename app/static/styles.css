@@ -247,3 +247,8 @@ button {
   margin: 10px 0;
   color: var(--color-text);
 }
+
+.box-container {
+  display: flex;
+  gap: 2rem; /* space between boxes */
+}

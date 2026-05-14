@@ -1,15 +1,60 @@
 {% extends "base.html" %}
                 
 {% block app_content %}
-    <table class="table table-hover">
-        <tr>
-            <td width="148px"><img src="/static/hektor_pics/{{ user.id }}.jpg" width="148"></td><!--<img src="{{ user.avatar(148) }}"></td>-->
-            <td>
-                <h2>{{ _('User: %(username)s!', username=user.username) }}</h2>
-                {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
-                {% if user.last_seen %}<p>{{ _('Last seen on: %(when)s', when=moment(user.last_seen).format('LLL')) }}</p>{% endif %}
-                {% if user == current_user %}
-			<p><a href="{{ url_for('edit_profile') }}">{{ _('Edit your profile') }}</a> |
+	<div class="box-container">
+		<div>
+			{% if user==current_user %}
+				{% if editing == 'username' %}
+					<form action="{{ url_for('user', username=user.username) }}" method="post" style="display:inline;">
+						<input type="hidden" name="edit" value="username">
+						<input type="text" name="username" value="{{ user.username }}">
+						<button type="submit" title="Save"><i class="fa-solid fa-floppy-disk"></i></button>
+						<a href="{{ url_for('user', username=user.username) }}" title="Cancel"><i class="fa-solid fa-xmark"></i></a>
+					</form>
+				{% else %}
+					<h2 style="display:inline-block;"> {{ user.username }}
+						<a href="{{ url_for('user', username=user.username, edit='username') }}" title="Edit">
+							<i class="fa fa-pencil" style="font-size: 0.5em; vertical-align: super;"></i></a>
+					</h2>
+				{% endif %}
+				<br>
+			{% else %}
+				<h2> {{ user.username }} </h2>
+			{% endif %}
+			<img src="/static/hektor_pics/{{ user.id }}.jpg" width="148">
+		</div>
+		<div class="box" style="background-color: color-mix(in srgb, var(--color-accent) 30%, transparent);">
+			{% if user==current_user %}
+				{% if editing == 'about_me' %}
+					<form action="{{ url_for('user', username=user.username) }}" method="post" style="width: 100%;">
+						<input type="hidden" name="edit" value="about_me">
+						<textarea name="about_me" rows="4" style="width: 100%;" 
+							placeholder="Write something about you">{{ user.about_me }}</textarea>
+						<button type="submit" title="Save"><i class="fa-solid fa-floppy-disk"></i></button>
+						<a href="{{ url_for('user', username=user.username) }}" title="Cancel"><i class="fa-solid fa-xmark"></i></a>
+					</form>
+				{% else %}
+					<div style="position: relative; min-height: 1.5em;">
+						<p style="margin: 0; white-space: pre-wrap;">{{ user.about_me or '<i>%s</i>' | format(_('(Write something about you)')) | safe }}</p>
+						<a href="{{ url_for('user', username=user.username, edit='about_me') }}" 
+							title="Edit" style="position: absolute; top: 0; right: 0; text-decoration: none;">
+							<i class="fa fa-pencil" style="font-size: 0.8em;"></i>
+						</a>
+					</div>
+				{% endif %}
+			{% else %}
+				<div style="position: relative; min-height: 1.5em;">
+						<p style="margin: 0; white-space: pre-wrap;">{{ user.about_me or '' }}</p>
+				</div>
+			{% endif %}
+			<br>
+			{% if user.last_seen %}<p>{{ _('Last seen on: %(when)s', when=moment(user.last_seen).format('LLL')) }}</p>{% endif %}
+		</div>
+	</div>   
+                
+                
+		{% if user == current_user %}
+			<p>
 			<a href="{{ url_for('winner_prediction') }}">{{ _('Predict the tournament winner') }}</a> |
 			<a href="{{ url_for('default_prediction') }}">{{ _('Place your default prediction') }}</a>
 			{% if user.final_winner %} 
@@ -29,188 +74,133 @@
 		{% else %} {% if user.final_winner %} 
 			<p> {{ _('%(user)s predicted the winner! Have you?', user=user.username ) }} </p> {% endif %}
 		{% endif %}
-            </td>
-        </tr>
-    </table>
+     
     
-    <h1>{{ _('Statistics') }}</h1>
-    {% for user_here in stats %} {% if user.username==user_here.username %} 
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load("visualization", "1", { packages: ["corechart"] });
-        google.charts.setOnLoadCallback(init);
-        function drawChart(myID, titler, correct, incorrect) {
-            var data = google.visualization.arrayToDataTable([
-                ['Result', 'Values'],
-                ['Correct', correct],
-                ['Incorrect', incorrect]
-            ]);
-            var options = {
-                title: titler,
-                pieHole: 0.6,
-                width:150,
-                height:150,
-                titlePosition: 'none',
-                backgroundColor: { fill:'transparent' },
-                colors: ['#97ca54', '#cdcdcd'],
-                pieSliceText: 'none',
-                legend: { position: 'none' },
-                tooltip: { text: 'percentage' },
-                tooltip: { textStyle: { fontSize: 14 }}
-            };
-            var chart = new google.visualization.PieChart(document.getElementById(myID));
-            chart.draw(data, options);
-        }
-        function init() {
-            drawChart('donutchart1', 'FIRST GOAL', {{user_here.total_first_goal}}, {{user_here.total_closed_bets - user_here.total_first_goal}});
-            drawChart('donutchart2', 'OUTCOME', {{user_here.total_winner}}, {{user_here.total_closed_bets - user_here.total_winner}});
-            drawChart('donutchart3', 'SCORE DIFFERENCE', {{user_here.total_score_diff}}, {{user_here.total_closed_bets - user_here.total_score_diff}});
-            drawChart('donutchart4', 'SCORE', {{user_here.total_score}}, {{user_here.total_closed_bets - user_here.total_score}});
-        }
-    </script>
-    	<div class="statsRow">
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Ranking') }} </div>
-			<div class="statsValue"> {{user_here.ranking}} </div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Points') }} </div>
-			<div class="statsValue"> {{user_here.overall_points}} </div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('First Goal') }} </div>
-			<div class="centerLabel">{{user_here.total_first_goal}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart1" class="donutDiv"></div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Outcome') }} </div>
-			<div class="centerLabel">{{user_here.total_winner}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart2" class="donutDiv"></div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Score Difference') }} </div>
-			<div class="centerLabel">{{user_here.total_score_diff}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart3" class="donutDiv"></div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Score') }} </div>
-			<div class="centerLabel">{{user_here.total_score}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart4" class="donutDiv"></div>
-		</div>
-    	</div>
-    	{% endif %} {% endfor %}
+	<div style="overflow-x:auto; overflow-y:hidden">
+    	{% for user_here in stats %} 
+			{% if user.username==user_here.username %} 
+    			<script src="https://www.gstatic.com/charts/loader.js"></script>
+				<script>
+					google.charts.load("current", { packages: ["corechart"] });
+					google.charts.setOnLoadCallback(init);
+					function drawChart(myID, correct, incorrect) {
+						const data = google.visualization.arrayToDataTable([
+						['Result', 'Values'],
+						['Correct', correct],
+						['Incorrect', incorrect]
+						]);
+						const styles = getComputedStyle(document.documentElement);
+						const options = {
+						pieHole: 0.6,
+						width: 150,
+						height: 150,
+						backgroundColor: { fill: 'transparent' },
+						colors: [
+							styles.getPropertyValue('--color-bright').trim(),
+							styles.getPropertyValue('--color-bg').trim()
+						],
+						pieSliceText: 'none',
+						legend: 'none',
+						tooltip: { text: 'percentage', textStyle: { fontSize: 14 } }
+						};
+						new google.visualization.PieChart(document.getElementById(myID))
+						.draw(data, options);
+					}
+					function init() {
+						const charts = [
+						{ id: 'donutchart1', correct: {{user_here.total_first_goal}}, total: {{user_here.total_closed_bets}} },
+						{ id: 'donutchart2', correct: {{user_here.total_winner}}, total: {{user_here.total_closed_bets}} },
+						{ id: 'donutchart3', correct: {{user_here.total_score_diff}}, total: {{user_here.total_closed_bets}} },
+						{ id: 'donutchart4', correct: {{user_here.total_score}}, total: {{user_here.total_closed_bets}} }
+						];
+						charts.forEach(c => drawChart(c.id, c.correct, c.total - c.correct));
+					}
+				</script>
+				<div class="statsRow">
+				<div class="statsColumn">
+					<div class="statsTitle"> {{ _('Ranking') }} </div>
+					<div class="statsValue"> {{user_here.ranking}} </div>
+				</div>
+				<div class="statsColumn">
+					<div class="statsTitle"> {{ _('Total Points') }} </div>
+					<div class="statsValue"> {{user_here.overall_points}} </div>
+				</div>
+				<div class="statsColumn">
+					<div class="statsTitle"> {{ _('First Goal') }} </div>
+					<div class="centerLabel">{{user_here.total_first_goal}}/{{user_here.total_closed_bets}}</div>
+					<div id="donutchart1" class="donutDiv"></div>
+				</div>
+				<div class="statsColumn">
+					<div class="statsTitle"> {{ _('Outcome') }} </div>
+					<div class="centerLabel">{{user_here.total_winner}}/{{user_here.total_closed_bets}}</div>
+					<div id="donutchart2" class="donutDiv"></div>
+				</div>
+				<div class="statsColumn">
+					<div class="statsTitle"> {{ _('Score Diff') }} </div>
+					<div class="centerLabel">{{user_here.total_score_diff}}/{{user_here.total_closed_bets}}</div>
+					<div id="donutchart3" class="donutDiv"></div>
+				</div>
+				<div class="statsColumn">
+					<div class="statsTitle"> {{ _('Score') }} </div>
+					<div class="centerLabel">{{user_here.total_score}}/{{user_here.total_closed_bets}}</div>
+					<div id="donutchart4" class="donutDiv"></div>
+				</div>
+    			</div>
+    		{% endif %} 
+		{% endfor %}
+	</div>
 	<div style="overflow-x:auto">
-	 <h1>{{ _('Predictions') }}</h1>
+	 	<h2>{{ _('Predictions') }}</h2>
 	    <table class="table table-hover">
-		 <tr>
-		    <th>ID</th>
-		    <th>{{ _('Game') }}</th>
-		    <th>{{ _('Game Time') }}</th>
-		    <th>{{ _('Prediction') }}</th>
-		    <th>{{ _('Result') }}</th>
-		    <th>{{ _('First Goal Correct') }}</th>
-		    <th>{{ _('Outcome Correct') }}</th>
-		    <th>{{ _('Score Difference Correct') }}</th>
-		    <th>{{ _('Score Correct') }}</th>
-		    <th>{{ _('Points') }}</th>
-		  </tr>
-		 {% for result in bets %}
-		 	{% if result.is_default_bet==True %}
-		  <tr style="white-space: nowrap; color: brown">
-		    <td>{{result.id}}</td>
-		    <th>
-		    <img src={{ url_for('static', filename='flags/' + result.team_a +'.png') }} width="20" height="20"/>
-		    {{result.team_a}} - {{result.team_b}}
-		    <img src={{ url_for('static', filename='flags/' + result.team_b +'.png') }} width="20" height="20"/>
-		    </th>
-		    <td>{{ moment(result.starts_at).format('ddd DD/MM, H:mm') }}</td>
-		    <td>{% if result[7]==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
-		    	{% elif result[7]==2 %}
-		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result[7]==0 %}
-		    	  {{result[5]}}:{{result[6]}} 
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
-		    	{% elif result.first_goal==2 %}
-		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result.first_goal==0 %}
-		    	  {{result.score_a}}:{{result.score_b}} 
-		    	{% else %}
-		    	-
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal_correct==None %} - 
-		    	{% elif result.first_goal_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.winner_correct==None %} - 
-		    	{% elif result.winner_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_diff_correct==None %} - 
-		    	{% elif result.score_diff_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_correct==None %} - 
-		    	{% elif result.score_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.points==None %} - 
-		    	{% else %} {{result.points}} {% endif %}
-		    	</td>
-		  </tr> 
-		  	{% else %}
-		  <tr style="white-space: nowrap">
-		    <td>{{result.id}}</td>
-		    <th>
-		    <img src={{ url_for('static', filename='flags/' + result.team_a +'.png') }} width="20" height="20"/>
-		    {{result.team_a}} - {{result.team_b}}
-		    <img src={{ url_for('static', filename='flags/' + result.team_b +'.png') }} width="20" height="20"/>
-		    </th>
-		    <td>{{ moment(result.starts_at).format('ddd DD/MM, H:mm') }}</td>
-		    <td>{% if result[7]==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
-		    	{% elif result[7]==2 %}
-		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result[7]==0 %}
-		    	  {{result[5]}}:{{result[6]}} 
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
-		    	{% elif result.first_goal==2 %}
-		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result.first_goal==0 %}
-		    	  {{result.score_a}}:{{result.score_b}} 
-		    	{% else %}
-		    	-
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal_correct==None %} - 
-		    	{% elif result.first_goal_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.winner_correct==None %} - 
-		    	{% elif result.winner_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_diff_correct==None %} - 
-		    	{% elif result.score_diff_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_correct==None %} - 
-		    	{% elif result.score_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.points==None %} - 
-		    	{% else %} {{result.points}} {% endif %}
-		    	</td>
-		  </tr> 
-		  	{% endif %}
-		  {% endfor %} 
-	    </table>
-</div>
+			<tr>
+				<th>ID</th>
+				<th>{{ _('Game') }}</th>
+				<th>{{ _('Game Time') }}</th>
+				<th>{{ _('Prediction') }}</th>
+				<th>{{ _('Result') }}</th>
+				<th>{{ _('First Goal') }}</th>
+				<th>{{ _('Outcome') }}</th>
+				<th>{{ _('Score Diff') }}</th>
+				<th>{{ _('Score') }}</th>
+				<th>{{ _('Points') }}</th>
+			</tr>
+			{% for result in bets %}
+				<tr style="white-space: nowrap; {% if result.is_default_bet %}color: brown{% endif %}">
+					<td>{{ result.id }}</td>
+					<td>
+						<img src="{{ url_for('static', filename='flags/' ~ result.team_a ~ '.png') }}" width="20" height="20"/>
+						{{ result.team_a }} - {{ result.team_b }}
+						<img src="{{ url_for('static', filename='flags/' ~ result.team_b ~ '.png') }}" width="20" height="20"/>
+					</td>
+					<td>{{ moment(result.starts_at).format('ddd DD/MM, H:mm') }}</td>
+					<td>
+						{% set goal_icon = "<img src='" ~ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') ~ "' width='10' height='10'/>" %}
+						{% if result[7] == 1 %}
+						{{ goal_icon | safe }} {{ result[5] }}:{{ result[6] }}
+						{% elif result[7] == 2 %}
+						{{ result[5] }}:{{ result[6] }} {{ goal_icon | safe }}
+						{% elif result[7] == 0 %}
+						{{ result[5] }}:{{ result[6] }}
+						{% else %}
+						{% endif %}
+					</td>
+					<td>
+						{% if result.first_goal == 1 %}
+						{{ goal_icon | safe }} {{ result.score_a }}:{{ result.score_b }}
+						{% elif result.first_goal == 2 %}
+						{{ result.score_a }}:{{ result.score_b }} {{ goal_icon | safe }}
+						{% elif result.first_goal == 0 %}
+						{{ result.score_a }}:{{ result.score_b }}
+						{% else %}
+						{% endif %}
+					</td>
+					<td>{% if result.first_goal_correct is none %} {% elif result.first_goal_correct %} <i class="fa fa-check"></i> {% else %} {% endif %}</td>
+					<td>{% if result.winner_correct is none %} {% elif result.winner_correct %} <i class="fa fa-check"></i> {% else %} {% endif %}</td>
+					<td>{% if result.score_diff_correct is none %} {% elif result.score_diff_correct %} <i class="fa fa-check"></i> {% else %} {% endif %}</td>
+					<td>{% if result.score_correct is none %} {% elif result.score_correct %} <i class="fa fa-check"></i> {% else %} {% endif %}</td>
+					<td>{% if result.points is none %} {% else %} {{ result.points }} {% endif %}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	</div>
 {% endblock %}

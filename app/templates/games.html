@@ -13,8 +13,8 @@
 						<div class="team_1">{{game.team_a}}</div>
 						<div class="team_2">{{game.team_b}}</div>
 						<div class="dot">:</div>
-						<div class="score_1">{% if game.score_a==None %} - {% else %} {{game.score_a}} {% endif %}</div>
-						<div class="score_2">{% if game.score_b==None %} - {% else %} {{game.score_b}} {% endif %}</div>
+						<div class="score_1">{% if game.score_a==None %} {% else %} {{game.score_a}} {% endif %}</div>
+						<div class="score_2">{% if game.score_b==None %} {% else %} {{game.score_b}} {% endif %}</div>
 						{% if game.first_goal==1 %}
 						<img class="first_gol1" src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}/>
 						<div class="first_gol2"></div>
@@ -123,7 +123,6 @@
 						</td>
 						<td>
 							{% if bet.points is none %}
-								-
 							{% else %}
 								{{ bet.points }}
 							{% endif %}
