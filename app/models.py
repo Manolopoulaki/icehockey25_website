@@ -6,9 +6,15 @@ from flask_login import UserMixin
 from time import time
 import jwt
 
+def _session_get(model, identity):
+    getter = getattr(db.session, 'get', None)
+    if getter is not None:
+        return getter(model, identity)
+    return model.query.get(identity)
+
 @login.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return _session_get(User, int(id))
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -46,7 +52,7 @@ class User(UserMixin, db.Model):
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
-        return 'https://www.gravatar.com/avatar/{}?d=wavatar&s={}'.format(
+        return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(
             digest, size)
 
     def get_reset_password_token(self, expires_in=600):
@@ -77,7 +83,7 @@ class User(UserMixin, db.Model):
                             algorithms=['HS256'])['reset_password']
         except:
             return
-        return User.query.get(id)
+        return _session_get(User, id)
         
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)

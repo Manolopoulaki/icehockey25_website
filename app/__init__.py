@@ -8,7 +8,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
-from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_babel import Babel
 
@@ -20,13 +19,20 @@ login = LoginManager(app)
 login.login_view = 'login'
 login.login_message = ''
 mail = Mail(app)
-bootstrap = Bootstrap(app)
 moment = Moment(app)
-babel = Babel(app)
-@babel.localeselector
 def get_locale():
     #return request.accept_languages.best_match(app.config['LANGUAGES'])
 	return session.get('lang', 'en')
+
+babel = Babel()
+try:
+	babel.init_app(app, locale_selector=get_locale)
+except TypeError:
+	babel.init_app(app)
+	if hasattr(babel, 'localeselector'):
+		@babel.localeselector
+		def _legacy_locale_selector():
+			return get_locale()
 
 if not app.debug and not app.testing:
 	if app.config['MAIL_SERVER']:
