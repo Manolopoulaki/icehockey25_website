@@ -3,7 +3,6 @@ from app import app, db
 from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Game, Bet, Winnerbet
-from werkzeug.urls import url_parse
 from app.email import send_password_reset_email
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, func, case
@@ -13,6 +12,7 @@ from flask_babel import _
 from functools import wraps
 import csv
 from io import TextIOWrapper
+from urllib.parse import urlsplit
 
 @app.before_request
 def before_request():
@@ -52,7 +52,7 @@ def index():
         return redirect(url_for('index'))
     page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page, app.config['POSTS_PER_PAGE'], False)#current_user.get_own_posts().all()
+        page=page, per_page=app.config['POSTS_PER_PAGE'], error_out=False)#current_user.get_own_posts().all()
     next_url = url_for('index', page=posts.next_num) \
         if posts.has_next else None
     prev_url = url_for('index', page=posts.prev_num) \
@@ -251,7 +251,7 @@ def login():
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
+        if not next_page or urlsplit(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Login', sport=g.sport, form=form)

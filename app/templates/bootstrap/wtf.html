@@ -1,0 +1,19 @@
+{% macro quick_form(form, action='', method='post', enctype=None) -%}
+<form action="{{ action }}" method="{{ method }}"{% if enctype %} enctype="{{ enctype }}"{% endif %}>
+	{{ form.hidden_tag() }}
+	{% for field in form if field.type not in ['CSRFTokenField', 'HiddenField', 'SubmitField'] %}
+		<div class="form-group{% if field.errors %} has-error{% endif %}">
+			{{ field.label(class='control-label') }}
+			{% if field.type == 'BooleanField' %}
+				<div class="checkbox">{{ field() }}</div>
+			{% else %}
+				{{ field(class='form-control') }}
+			{% endif %}
+			{% for error in field.errors %}
+				<span class="help-block">{{ error }}</span>
+			{% endfor %}
+		</div>
+	{% endfor %}
+	<button type="submit" class="button">{{ form.submit.label.text }}</button>
+</form>
+{%- endmacro %}
