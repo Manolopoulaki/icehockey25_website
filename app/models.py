@@ -56,9 +56,10 @@ class User(UserMixin, db.Model):
             digest, size)
 
     def get_reset_password_token(self, expires_in=600):
-        return jwt.encode(
+        token = jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
-            app.config['SECRET_KEY'], algorithm='HS256').decode('utf-8')
+            app.config['SECRET_KEY'], algorithm='HS256')
+        return token.decode('utf-8') if isinstance(token, bytes) else token
             
     def get_own_posts(self):
         return Post.query.join(
