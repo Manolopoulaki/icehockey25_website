@@ -4,10 +4,13 @@ import os
 from flask import Flask, session
 from flask import request
 from config import Config
+from markupsafe import Markup
+import jinja2
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_mail import Mail
+jinja2.Markup = Markup
 from flask_moment import Moment
 from flask_babel import Babel
 
