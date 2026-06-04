@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+if [ -x "$repo_root/venv/bin/pip-audit" ]; then
+    audit_cmd="$repo_root/venv/bin/pip-audit"
+elif command -v pip-audit >/dev/null 2>&1; then
+    audit_cmd=$(command -v pip-audit)
+else
+    echo "pip-audit is required for the pre-push vulnerability check." >&2
+    exit 1
+fi
+
+"$audit_cmd" -r requirements.txt
