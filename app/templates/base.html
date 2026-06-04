@@ -28,7 +28,11 @@
 				<li><a href="{{ url_for('index') }}">{{ _('HOME') }}</a></li>
 				<li><a href="{{ url_for('rules') }}">{{ _('RULES') }}</a></li>
 				<li><a href="{{ url_for('schedule') }}">{{ _('SCHEDULE') }}</a></li>
+				{% if game_id is not none %}
 				<li><a href="{{ url_for('games', idd=game_id) }}">{{ _('GAMES') }}</a></li>
+				{% else %}
+				<li class="disabled"><a href="#" aria-disabled="true">{{ _('GAMES') }}</a></li>
+				{% endif %}
 				<li><a href="{{ url_for('standings') }}">{{ _('STANDINGS') }}</a></li>
 				{% endif %}
 			</ul>

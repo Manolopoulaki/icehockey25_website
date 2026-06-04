@@ -6,7 +6,11 @@
     	<div class="left-section">
 			<div class="box">
 				<h4>{{ _('Game Outcome Predictions') }}</h4>
+				{% if game_id is not none %}
 				<p>{{ _('Predict the outcome of each game before its scheduled start time through the ') }}<a href="{{ url_for('games', idd=game_id) }}">{{ _('GAMES') }}</a>{{ _(' page.') }}</p>
+				{% else %}
+				<p>{{ _('Game predictions will be available after the schedule is uploaded.') }}</p>
+				{% endif %}
 				<p>{{ _('The outcome should be the final score, at the end of overtime and penalty shots.') }}</p>
 				<p>{{ _('The prediction can be changed until the beginning of the game. After that, the latest prediction will be used for scoring in the ') }}<a href="{{ url_for('standings') }}">{{ _('STANDINGS') }}</a>{{ _(' page.') }}</p>
 				<p>{{ _('You can set a default prediction in your ') }}<a href="{{ url_for('user', username=current_user.username) }}">{{ _('USER') }}</a>{{ _(' page, which will be used as every game\'s outcome if you haven\'t placed a prediction for it. Any game prediction overrides the default one.') }}</p>

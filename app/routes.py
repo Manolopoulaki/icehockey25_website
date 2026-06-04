@@ -31,11 +31,12 @@ def admin_required(f):
     return decorated_function    
         
 def get_next_game():
-    is_next_game = Game.query.filter(Game.starts_at > datetime.utcnow()).order_by(Game.starts_at.asc(), Game.id.asc()).first()
-    if is_next_game == None: 
-        return 1 #Game.query.order_by(Game.id.desc()).first()
-    else: 
-        return is_next_game.id # it was without .id
+    next_game = Game.query.filter(Game.starts_at > datetime.utcnow()).order_by(Game.starts_at.asc(), Game.id.asc()).first()
+    if next_game is not None:
+        return next_game.id
+
+    last_game = Game.query.order_by(Game.starts_at.desc(), Game.id.desc()).first()
+    return last_game.id if last_game is not None else None
         
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])

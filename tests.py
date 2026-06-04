@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import unittest
 from app import app, db
-from app.models import User, Post
+from app.models import User, Post, Game
+from app.routes import get_next_game
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -27,6 +28,31 @@ class UserModelCase(unittest.TestCase):
         self.assertEqual(u.avatar(128), ('https://www.gravatar.com/avatar/'
                                          'd4c74594d841139328695756648b6bd6'
                                          '?d=identicon&s=128'))
+
+    def test_get_next_game_returns_none_without_schedule(self):
+        self.assertIsNone(get_next_game())
+
+    def test_get_next_game_returns_next_upcoming_game(self):
+        past_game = Game(id=1, team_a='AUT', team_b='LAT',
+                         starts_at=datetime.utcnow() - timedelta(days=1))
+        next_game = Game(id=2, team_a='CAN', team_b='USA',
+                         starts_at=datetime.utcnow() + timedelta(hours=1))
+        later_game = Game(id=3, team_a='FIN', team_b='SWE',
+                          starts_at=datetime.utcnow() + timedelta(days=1))
+        db.session.add_all([past_game, next_game, later_game])
+        db.session.commit()
+
+        self.assertEqual(get_next_game(), next_game.id)
+
+    def test_get_next_game_returns_last_game_after_tournament(self):
+        first_game = Game(id=1, team_a='AUT', team_b='LAT',
+                          starts_at=datetime.utcnow() - timedelta(days=2))
+        last_game = Game(id=2, team_a='CAN', team_b='USA',
+                         starts_at=datetime.utcnow() - timedelta(days=1))
+        db.session.add_all([first_game, last_game])
+        db.session.commit()
+
+        self.assertEqual(get_next_game(), last_game.id)
 
 
 class SecurityHookCase(unittest.TestCase):
