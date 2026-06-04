@@ -38,6 +38,17 @@ class SecurityHookCase(unittest.TestCase):
         hook_text = hook_path.read_text(encoding='utf-8')
         self.assertIn('pip-audit', hook_text)
         self.assertIn('-r requirements.txt', hook_text)
+
+    def test_hook_bootstrap_is_documented_and_configures_git(self):
+        script_path = Path('scripts/setup-git-hooks.sh')
+        readme_path = Path('README.md')
+        self.assertTrue(script_path.exists(), 'bootstrap script is missing')
+        self.assertTrue(readme_path.exists(), 'README is missing')
+        script_text = script_path.read_text(encoding='utf-8')
+        readme_text = readme_path.read_text(encoding='utf-8')
+        self.assertIn('git config core.hooksPath .githooks', script_text)
+        self.assertIn('scripts/setup-git-hooks.sh', readme_text)
+        self.assertIn('.githooks/pre-push', readme_text)
                  
 if __name__ == '__main__':
     unittest.main(verbosity=2)                          
