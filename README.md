@@ -14,6 +14,8 @@ To switch between the ice hockey and football modes, go to _config.py_ file and 
 
 While in the top directory and using an Ubuntu (wsl) terminal on VSCode, first install venv (if this is the first time you run it) ````python3 -m venv venv````, then activate it with ````source venv/bin/activate```` and install the requirements ````pip install -r requirements.txt```` (needed only the first time). Finally, just run ````flask run````.
 
+The app requires `SECRET_KEY` to be set in `.env` or in the shell before startup. It is used to sign sessions and password-reset tokens.
+
 To make the pre-push vulnerability check run automatically on `git push`, run `scripts/setup-git-hooks.sh` once after cloning the repo. It sets Git to use the repo-local `.githooks/pre-push` hook, which runs `pip-audit -r requirements.txt` before every push.
 
 ### Initial user setup

@@ -18,8 +18,14 @@ def load_env_file(path):
 
 load_env_file(os.path.join(basedir, '.env'))
 
+def required_env(name):
+    value = os.environ.get(name)
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
 class Config(object):
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dabididogdabdab'
+    SECRET_KEY = required_env('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
