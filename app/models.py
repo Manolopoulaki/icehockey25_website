@@ -5,10 +5,29 @@ from app import db, login, app
 from flask_login import UserMixin
 from time import time
 import jwt
+from sqlalchemy.types import TypeDecorator, DateTime
 
 
 def utcnow():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(timezone.utc)
+
+class UTCDateTime(TypeDecorator):
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
 
 def _session_get(model, identity):
     getter = getattr(db.session, 'get', None)
@@ -28,12 +47,12 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     is_shown = db.Column(db.Boolean, default=True)
     about_me = db.Column(db.String(140))
-    last_seen = db.Column(db.DateTime, default=utcnow)
+    last_seen = db.Column(UTCDateTime(), default=utcnow)
     default_score_a = db.Column(db.Integer)
     default_score_b = db.Column(db.Integer)
     default_first_goal = db.Column(db.Integer)
     final_winner = db.Column(db.String(3))
-    final_winner_timestamp = db.Column(db.DateTime, index=True, default=utcnow)
+    final_winner_timestamp = db.Column(UTCDateTime(), index=True, default=utcnow)
     final_winner_points = db.Column(db.Integer)
     total_score = db.Column(db.Integer)
     total_score_diff = db.Column(db.Integer)
@@ -95,7 +114,7 @@ class Game(db.Model):
     team_a = db.Column(db.String(3), index=True)
     team_b = db.Column(db.String(3), index=True)
     stage = db.Column(db.String(17), index=True)
-    starts_at = db.Column(db.DateTime, index=True, default=utcnow)
+    starts_at = db.Column(UTCDateTime(), index=True, default=utcnow)
     score_a = db.Column(db.Integer)
     score_b = db.Column(db.Integer)
     first_goal = db.Column(db.Integer)
@@ -108,7 +127,7 @@ class Bet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), index=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), index=True)
-    timestamp = db.Column(db.DateTime, index=True, default=utcnow)
+    timestamp = db.Column(UTCDateTime(), index=True, default=utcnow)
     score_a = db.Column(db.Integer)
     score_b = db.Column(db.Integer)
     first_goal = db.Column(db.Integer)
@@ -125,7 +144,7 @@ class Bet(db.Model):
 class Winnerbet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(50))
-    last_bet = db.Column(db.DateTime, index=True, default=utcnow)
+    last_bet = db.Column(UTCDateTime(), index=True, default=utcnow)
     bet_points = db.Column(db.Integer)
 
     def __repr__(self):
@@ -134,7 +153,7 @@ class Winnerbet(db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
-    timestamp = db.Column(db.DateTime, index=True, default=utcnow)
+    timestamp = db.Column(UTCDateTime(), index=True, default=utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):

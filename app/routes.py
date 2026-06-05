@@ -2,9 +2,9 @@ from flask import render_template, flash, redirect, request, url_for, g, session
 from app import app, db
 from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Post, Game, Bet, Winnerbet
+from app.models import User, Post, Game, Bet, Winnerbet, utcnow
 from app.email import send_password_reset_email
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, func, case
 from sqlalchemy.sql.functions import coalesce
 from flask_babel import get_locale
@@ -13,9 +13,6 @@ from functools import wraps
 import csv
 from io import TextIOWrapper
 from urllib.parse import urlsplit
-
-def utcnow():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 @app.before_request
 def before_request():

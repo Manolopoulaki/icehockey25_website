@@ -1,6 +1,7 @@
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
+from datetime import timezone
 from flask import Flask, session
 from flask import request
 from config import Config
@@ -23,6 +24,16 @@ login.login_view = 'login'
 login.login_message = ''
 mail = Mail(app)
 moment = Moment(app)
+
+def as_utc(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+app.jinja_env.globals['as_utc'] = as_utc
+
 def get_locale():
     #return request.accept_languages.best_match(app.config['LANGUAGES'])
 	return session.get('lang', 'en')
