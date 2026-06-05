@@ -32,4 +32,4 @@ class Config(object):
     ADMINS = ['mk_predictions@zohomail.eu']
     POSTS_PER_PAGE = 25
     LANGUAGES = ['en', 'lv']
-    SPORT = "football" #"football" "hockey"
+    SPORT = os.environ.get('SPORT') or "football" #"football" "hockey"

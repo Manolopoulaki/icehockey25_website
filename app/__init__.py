@@ -1,6 +1,10 @@
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
+
+# Flask-Moment 0.9.0 still imports distutils; setuptools' local shim keeps it
+# importable on Python 3.12 without requiring an external env var.
+os.environ.setdefault('SETUPTOOLS_USE_DISTUTILS', 'local')
 from flask import Flask, session
 from flask import request
 from config import Config

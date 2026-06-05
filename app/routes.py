@@ -4,7 +4,7 @@ from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPa
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Game, Bet, Winnerbet
 from app.email import send_password_reset_email
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import or_, and_, func, case
 from sqlalchemy.sql.functions import coalesce
 from flask_babel import get_locale
@@ -14,12 +14,15 @@ import csv
 from io import TextIOWrapper
 from urllib.parse import urlsplit
 
+def utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
 @app.before_request
 def before_request():
     g.sport = app.config['SPORT']
     g.locale = str(get_locale())
     if current_user.is_authenticated:
-        current_user.last_seen = datetime.utcnow()
+        current_user.last_seen = utcnow()
         db.session.commit()
 
 def admin_required(f):
@@ -31,7 +34,7 @@ def admin_required(f):
     return decorated_function    
         
 def get_next_game():
-    next_game = Game.query.filter(Game.starts_at > datetime.utcnow()).order_by(Game.starts_at.asc(), Game.id.asc()).first()
+    next_game = Game.query.filter(Game.starts_at > utcnow()).order_by(Game.starts_at.asc(), Game.id.asc()).first()
     if next_game is not None:
         return next_game.id
 
@@ -119,7 +122,7 @@ def schedule():
 @app.route('/place_predictions', methods=['GET', 'POST'])
 @login_required
 def place_predictions():
-    current_time = datetime.utcnow()
+    current_time = utcnow()
     games = Game.query.filter(and_(Game.team_a != 'TBD', Game.team_b != 'TBD', Game.starts_at > current_time)).order_by(Game.id.asc()).all()
     forms = {}
     
@@ -169,7 +172,7 @@ def place_predictions():
 @login_required
 def games(idd):
     games = Game.query.order_by(Game.id.asc()).all()
-    bets = Bet.query.filter(Bet.user_id==current_user.id).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<datetime.utcnow())).all() 
+    bets = Bet.query.filter(Bet.user_id==current_user.id).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<utcnow())).all() 
     game_chosen = Game.query.filter(Game.id==idd).first_or_404()
     bets_to_show = Bet.query.filter(Bet.game_id==idd).order_by(Bet.timestamp.asc()).join(Game).add_columns(Bet.user_id, Game.id, Game.team_a, Game.team_b, Bet.score_a, Bet.score_b, Bet.first_goal, Bet.points, Bet.is_default_bet)
     correct_winners = Bet.query.filter(Bet.game_id==idd).filter(Bet.winner_correct==True).count()
@@ -177,8 +180,8 @@ def games(idd):
     default_bets = Bet.query.filter(Bet.game_id==idd).filter(Bet.is_default_bet==True).count()
     all_bets = Bet.query.filter(Bet.game_id==idd).count()
     users = User.query.add_columns(User.id, User.username)
-    current_time = datetime.utcnow()
-    three_hours_earlier = datetime.utcnow() - timedelta(hours=3)
+    current_time = utcnow()
+    three_hours_earlier = utcnow() - timedelta(hours=3)
     form = PlaceBetForm()
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], [_('First Goal'), _('Team %(teama)s', teama=game_chosen.team_a), _('Team %(teamb)s', teamb=game_chosen.team_b)])]
     if form.validate_on_submit():
@@ -207,7 +210,7 @@ def winner_prediction():
     winner_bet = Winnerbet.query.all()
     if form.validate_on_submit():
         current_user.final_winner = form.final_winner.data
-        current_user.final_winner_timestamp = datetime.utcnow()
+        current_user.final_winner_timestamp = utcnow()
         db.session.commit()
         flash(_('Your prediction has been saved.'))
         return redirect(url_for('user', username=current_user.username))
@@ -229,7 +232,7 @@ def default_prediction():
         current_user.default_score_b = form.score_b.data
         current_user.default_first_goal = form.first_goal.data
         db.session.commit()
-        for game in Game.query.filter(Game.starts_at>datetime.utcnow()).all():
+        for game in Game.query.filter(Game.starts_at>utcnow()).all():
             current_user.bets.filter_by(is_default_bet=True).filter_by(game_id=game.id).delete()
             list_of_bets = Bet.query.filter_by(user_id=current_user.id).filter_by(game_id=game.id).all()
             if len(list_of_bets)==0:
@@ -304,9 +307,9 @@ def user(username):
     #prev_url = url_for('user', username=user.username, page=posts.prev_num) \
     #    if posts.has_prev else None
     if user == current_user:
-        bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<datetime.utcnow())).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
+        bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<utcnow())).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
     else:
-        bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(Game.starts_at<datetime.utcnow()).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
+        bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(Game.starts_at<utcnow()).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
     stats = User.query.with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).add_columns(User.username, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets, User.overall_points).all()    
     return render_template('user.html', title='Profile', sport=g.sport, user=user, bets=bets, stats=stats, winner_bet_points=winner_bet_points, game_id=get_next_game())
                            
@@ -406,7 +409,7 @@ def admin():
     upload_csv_form = UploadCSVForm(prefix='upload_game_schedule')
     upload_winnerbet_csv_form = UploadCSVForm(prefix='upload_winner_bet_points')
     form = UploadResultsForm(prefix='upload_game_score')
-    form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<datetime.utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
+    form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
     if form.validate_on_submit() and form.submit.data:
         current_game = Game.query.filter(Game.id==form.game_id.data).first()
@@ -435,12 +438,12 @@ def admin():
             u.total_first_goal = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.first_goal_correct == True, 1)], else_=0)), 0))
             u.total_points =  User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(Bet.points), 0))  
             u.overall_points = u.total_points
-            u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(datetime.utcnow()-timedelta(hours=3))
+            u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(utcnow()-timedelta(hours=3))
         db.session.commit()
         flash(_('The results have been saved.'))
 
     correct_game_score_form = UploadResultsForm(prefix='correct_game_score')
-    correct_game_score_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<datetime.utcnow()).filter(Game.score_a != None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
+    correct_game_score_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a != None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     correct_game_score_form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
     if correct_game_score_form.validate_on_submit() and correct_game_score_form.submit.data:
         current_game = Game.query.filter(Game.id==correct_game_score_form.game_id.data).first()
@@ -469,7 +472,7 @@ def admin():
             u.total_first_goal = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.first_goal_correct == True, 1)], else_=0)), 0))
             u.total_points =  User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(Bet.points), 0))  
             u.overall_points = u.total_points
-            u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(datetime.utcnow()-timedelta(hours=3))
+            u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(utcnow()-timedelta(hours=3))
         db.session.commit()
         flash(_('The results have been corrected.'))
     
