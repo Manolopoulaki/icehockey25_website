@@ -292,13 +292,13 @@ def register():
 @login_required
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
+    winner_bet_points = 0
     if user.final_winner_timestamp:
-        for i in Winnerbet.query.all():
+        for i in Winnerbet.query.order_by(Winnerbet.last_bet.asc()).all():
             if user.final_winner_timestamp>i.last_bet: winner_bet_points = 0 #continue #TO CHECK
             else:
                 winner_bet_points = i.bet_points 
                 break	
-    else: winner_bet_points = 0
     #page = request.args.get('page', 1, type=int)
     #posts = user.posts.order_by(Post.timestamp.desc()).paginate(
     #    page, app.config['POSTS_PER_PAGE'], False)
@@ -310,7 +310,24 @@ def user(username):
         bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<utcnow())).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
     else:
         bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(Game.starts_at<utcnow()).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
-    stats = User.query.with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).add_columns(User.username, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets, User.overall_points).all()    
+    stats = User.query.with_entities(
+        func.rank().over(order_by=(
+            coalesce(User.overall_points, 0).desc(),
+            coalesce(User.total_score, 0).desc(),
+            coalesce(User.total_score_diff, 0).desc(),
+            coalesce(User.total_winner, 0).desc(),
+            coalesce(User.total_first_goal, 0).desc()
+        )).label('ranking')
+    ).add_columns(
+        User.username,
+        coalesce(User.total_score, 0).label('total_score'),
+        coalesce(User.total_score_diff, 0).label('total_score_diff'),
+        coalesce(User.total_winner, 0).label('total_winner'),
+        coalesce(User.total_first_goal, 0).label('total_first_goal'),
+        coalesce(User.total_points, 0).label('total_points'),
+        coalesce(User.total_closed_bets, 0).label('total_closed_bets'),
+        coalesce(User.overall_points, 0).label('overall_points')
+    ).all()    
     return render_template('user.html', title='Profile', sport=g.sport, user=user, bets=bets, stats=stats, winner_bet_points=winner_bet_points, game_id=get_next_game())
                            
 @app.route('/edit_profile', methods=['GET', 'POST'])

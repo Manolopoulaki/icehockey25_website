@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 import importlib
 from app import app, db
-from app.models import User, Post, Game
+from app.models import User, Post, Game, Winnerbet
 from app.routes import get_next_game, utcnow
 
 class UserModelCase(unittest.TestCase):
@@ -54,6 +54,28 @@ class UserModelCase(unittest.TestCase):
         db.session.commit()
 
         self.assertEqual(get_next_game(), last_game.id)
+
+    def test_user_page_handles_winner_bet_points_after_last_bet(self):
+        user = User(username='Hektor', email='hektor@example.com')
+        user.set_password('cat')
+        user.final_winner = 'FIN'
+        user.final_winner_timestamp = utcnow() + timedelta(days=1)
+        db.session.add(user)
+        db.session.flush()
+
+        winner_bet = Winnerbet(description='Tournament winner', last_bet=utcnow(), bet_points=7)
+        db.session.add(winner_bet)
+        db.session.commit()
+
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                sess['_user_id'] = str(user.id)
+                sess['_fresh'] = True
+
+            response = client.get(f'/user/{user.username}')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'You predicted FIN for winner!', response.data)
 
 
 class SecurityHookCase(unittest.TestCase):
