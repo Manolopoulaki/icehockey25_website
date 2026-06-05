@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 import unittest
-from distutils.version import StrictVersion
+import importlib
 from app import app, db
 from app.models import User, Post, Game
 from app.routes import get_next_game, utcnow
@@ -58,7 +58,8 @@ class UserModelCase(unittest.TestCase):
 
 class SecurityHookCase(unittest.TestCase):
     def test_distutils_strict_version_is_available(self):
-        self.assertTrue(StrictVersion is not None)
+        version_module = importlib.import_module('distutils.version')
+        self.assertTrue(hasattr(version_module, 'StrictVersion'))
 
     def test_pre_push_hook_runs_vulnerability_audit(self):
         hook_path = Path('.githooks/pre-push')

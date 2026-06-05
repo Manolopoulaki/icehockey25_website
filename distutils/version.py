@@ -1,1 +1,5 @@
-from setuptools._distutils.version import StrictVersion  # noqa: F401
+from packaging.version import Version
+
+
+class StrictVersion(Version):
+    """Minimal compatibility alias for Flask-Moment on Python 3.12+."""
