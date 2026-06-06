@@ -378,40 +378,43 @@ def admin():
     add_admin_form = AdminsForm(prefix="add")
     add_admin_form.users.choices = [(u.id, f'{u.username}') for u in User.query.filter(User.is_admin != True).all()]
     add_admin_form.users.coerce = int
-    if add_admin_form.validate_on_submit() and add_admin_form.submit.data:
+    if add_admin_form.submit.data and add_admin_form.validate_on_submit():
         user_id = add_admin_form.users.data
         new_admin = User.query.get(user_id)
         if new_admin: #checks the user exists
             new_admin.is_admin = True
             db.session.commit()
             flash(_(f'{new_admin.username} has been granted admin rights.'), 'success')
+            return redirect(url_for('admin'))
     remove_admin_form = AdminsForm(prefix="remove")
     remove_admin_form.users.choices = [(u.id, f'{u.username}') for u in current_admins]
     remove_admin_form.users.coerce = int
-    if remove_admin_form.validate_on_submit() and remove_admin_form.submit.data:
+    if remove_admin_form.submit.data and remove_admin_form.validate_on_submit():
         user_id = remove_admin_form.users.data
         old_admin = User.query.get(user_id)
         if old_admin: #checks the user exists
             old_admin.is_admin = False
             db.session.commit()
             flash(_(f'{old_admin.username} has been taken away admin rights.'), 'success')
+            return redirect(url_for('admin'))
     
     # users section
     remove_user_form = AdminsForm(prefix="remove_user")
     remove_user_form.users.choices = [(u.id, f'{u.username} - last seen at {u.last_seen} - placed {u.bets.count()} bets') for u in User.query.all()]
     remove_user_form.users.coerce = int
-    if remove_user_form.validate_on_submit() and remove_user_form.submit.data:
+    if remove_user_form.submit.data and remove_user_form.validate_on_submit():
         user_id = remove_user_form.users.data
         old_user = User.query.get(user_id)
         if old_user: #checks the user exists
             old_user.is_shown = False
             db.session.commit()
             flash(_(f'{old_user.username} has been removed from the website standings.'), 'success')
+            return redirect(url_for('admin'))
 
     # set games section 
     set_game_form = SetGame(prefix='set_game')
     set_game_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}, {g.starts_at}') for g in Game.query.filter(Game.team_a == 'TBD').order_by(Game.starts_at.asc(), Game.id.asc()).all()]
-    if set_game_form.validate_on_submit() and set_game_form.submit.data:
+    if set_game_form.submit.data and set_game_form.validate_on_submit():
         selected_game = Game.query.filter(Game.id==set_game_form.game_id.data).first()
         selected_game.team_a = set_game_form.team_a.data
         selected_game.team_b = set_game_form.team_b.data
@@ -425,7 +428,7 @@ def admin():
     form = UploadResultsForm(prefix='upload_game_score')
     form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
-    if form.validate_on_submit() and form.submit.data:
+    if form.submit.data and form.validate_on_submit():
         current_game = Game.query.filter(Game.id==form.game_id.data).first()
         current_game.score_a = form.score_a.data
         current_game.score_b = form.score_b.data
@@ -455,11 +458,12 @@ def admin():
             u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(utcnow()-timedelta(hours=3))
         db.session.commit()
         flash(_('The results have been saved.'))
+        return redirect(url_for('admin'))
 
     correct_game_score_form = UploadResultsForm(prefix='correct_game_score')
     correct_game_score_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a != None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     correct_game_score_form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
-    if correct_game_score_form.validate_on_submit() and correct_game_score_form.submit.data:
+    if correct_game_score_form.submit.data and correct_game_score_form.validate_on_submit():
         current_game = Game.query.filter(Game.id==correct_game_score_form.game_id.data).first()
         current_game.score_a = correct_game_score_form.score_a.data
         current_game.score_b = correct_game_score_form.score_b.data
@@ -489,11 +493,12 @@ def admin():
             u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(utcnow()-timedelta(hours=3))
         db.session.commit()
         flash(_('The results have been corrected.'))
+        return redirect(url_for('admin'))
     
     # winner team section 
     wform = PlaceWinnerForm()
     wform.final_winner.choices = [(g.team, f'Team {g.team}') for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
-    if wform.validate_on_submit():
+    if wform.submit.data and wform.validate_on_submit():
         for u in User.query.all():
             if u.final_winner==wform.final_winner.data:
                 for i in Winnerbet.query.all():
@@ -505,6 +510,7 @@ def admin():
                 u.overall_points += u.final_winner_points
         db.session.commit()
         flash(_('The winner has been set.'))
+        return redirect(url_for('admin'))
 
     return render_template("admin.html", title='Admin', sport=g.sport, admins=current_admins, 
                            aaform=add_admin_form, raform=remove_admin_form, ruform=remove_user_form, 
