@@ -34,33 +34,6 @@ html, body {
   z-index: 9999;
 }
 
-.navbar-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.navbar-toggle {
-  border: 2px solid var(--color-text);
-  background-color: var(--color-bright);
-  padding: 10px 12px;
-  margin: 12px;
-  box-shadow: none;
-}
-
-.navbar-toggle:hover,
-.navbar-toggle:focus {
-  background-color: var(--color-primary);
-}
-
-.navbar-toggle .icon-bar {
-  display: block;
-  width: 22px;
-  height: 3px;
-  border-radius: 999px;
-  background-color: var(--color-text);
-}
-
 .nav li a {
   display: table-cell;
   vertical-align: middle;
@@ -76,19 +49,6 @@ html, body {
   background-repeat: repeat-y;
   background-size: 100%;
   background-position: center top;
-}
-
-@media (max-width: 767px) {
-  .navbar {
-    margin-left: 10px;
-    margin-right: 10px;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .navbar-toggle {
-    display: block;
-  }
 }
 
 svg > g > g:last-child { pointer-events: none; }
