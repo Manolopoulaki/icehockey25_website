@@ -34,6 +34,26 @@ html, body {
   z-index: 9999;
 }
 
+.navbar-toggle {
+  border: 2px solid var(--color-text);
+  background-color: var(--color-bright);
+  padding: 10px 12px;
+  box-shadow: none;
+}
+
+.navbar-toggle:hover,
+.navbar-toggle:focus {
+  background-color: var(--color-primary);
+}
+
+.navbar-toggle .icon-bar {
+  display: block;
+  width: 22px;
+  height: 3px;
+  border-radius: 999px;
+  background-color: var(--color-text);
+}
+
 .nav li a {
   display: table-cell;
   vertical-align: middle;
