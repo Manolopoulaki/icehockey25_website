@@ -80,14 +80,16 @@ html, body {
 
 @media (max-width: 767px) {
   .navbar {
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-left: 0;
+    margin-right: 0;
     padding-left: 0;
     padding-right: 0;
+    border-radius: 0;
   }
 
   .navbar-toggle {
     display: block;
+    margin: 12px 12px 12px auto;
   }
 }
 
