@@ -1,0 +1,50 @@
+Codex Suggestions
+=================
+
+Major security issues:
+
+2. Remove the "first user becomes admin" bootstrap rule.
+   - File: app/routes.py
+   - Risk: The first registration gets admin privileges automatically, which is a privilege-escalation path on a fresh deployment or reset database.
+   - Fix: Seed admins out-of-band or require an explicit bootstrap flow protected by deployment controls.
+
+3. Avoid open redirects in language switching.
+   - File: app/routes.py
+   - Risk: Redirecting to request.referrer can be abused if the referrer is attacker-controlled.
+   - Fix: Redirect only to local paths or a fixed fallback route.
+
+4. Make logout a POST action.
+   - File: app/routes.py
+   - Risk: GET logout endpoints are CSRF-able.
+   - Fix: Change logout to POST and protect it with CSRF.
+
+Major performance issues:
+
+1. Remove the database commit from before_request.
+   - File: app/routes.py
+   - Risk: Updating last_seen and committing on every authenticated request adds a DB write to every page view.
+   - Fix: Update last_seen less frequently, or batch the write asynchronously.
+
+2. Replace per-user aggregate recomputation in admin result handling.
+   - File: app/routes.py
+   - Risk: The results upload path loops over all users and issues multiple aggregate queries per user, which scales very poorly.
+   - Fix: Recompute standings with set-based SQL aggregates or a dedicated background job.
+
+3. Avoid full-table ranking queries on hot pages.
+   - File: app/routes.py
+   - Risk: The profile and standings pages compute rankings across all users on request.
+   - Fix: Cache standings or precompute ranking fields after score updates.
+
+Secondary hardening / cleanup:
+
+1. Add file-size and row-count limits to CSV uploads.
+2. Change /logout to POST and add CSRF protection if not already enforced by the form.
+3. Review the admin CSV error messages so they do not echo raw row contents back to the browser.
+4. Revisit the scoring update code for correctness, because some assignments look like query objects rather than scalar results.
+
+Priority order:
+
+2. Admin bootstrap rule
+3. before_request DB commit
+4. Admin results recomputation
+5. Open redirect and logout CSRF

@@ -37,6 +37,9 @@ def get_next_game():
 
     last_game = Game.query.order_by(Game.starts_at.desc(), Game.id.desc()).first()
     return last_game.id if last_game is not None else None
+
+def _submitted(form):
+    return request.method == 'POST' and form.submit.name in request.form
         
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
@@ -378,7 +381,7 @@ def admin():
     add_admin_form = AdminsForm(prefix="add")
     add_admin_form.users.choices = [(u.id, f'{u.username}') for u in User.query.filter(User.is_admin != True).all()]
     add_admin_form.users.coerce = int
-    if add_admin_form.submit.data and add_admin_form.validate_on_submit():
+    if _submitted(add_admin_form) and add_admin_form.validate():
         user_id = add_admin_form.users.data
         new_admin = User.query.get(user_id)
         if new_admin: #checks the user exists
@@ -389,7 +392,7 @@ def admin():
     remove_admin_form = AdminsForm(prefix="remove")
     remove_admin_form.users.choices = [(u.id, f'{u.username}') for u in current_admins]
     remove_admin_form.users.coerce = int
-    if remove_admin_form.submit.data and remove_admin_form.validate_on_submit():
+    if _submitted(remove_admin_form) and remove_admin_form.validate():
         user_id = remove_admin_form.users.data
         old_admin = User.query.get(user_id)
         if old_admin: #checks the user exists
@@ -402,7 +405,7 @@ def admin():
     remove_user_form = AdminsForm(prefix="remove_user")
     remove_user_form.users.choices = [(u.id, f'{u.username} - last seen at {u.last_seen} - placed {u.bets.count()} bets') for u in User.query.all()]
     remove_user_form.users.coerce = int
-    if remove_user_form.submit.data and remove_user_form.validate_on_submit():
+    if _submitted(remove_user_form) and remove_user_form.validate():
         user_id = remove_user_form.users.data
         old_user = User.query.get(user_id)
         if old_user: #checks the user exists
@@ -414,7 +417,7 @@ def admin():
     # set games section 
     set_game_form = SetGame(prefix='set_game')
     set_game_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}, {g.starts_at}') for g in Game.query.filter(Game.team_a == 'TBD').order_by(Game.starts_at.asc(), Game.id.asc()).all()]
-    if set_game_form.submit.data and set_game_form.validate_on_submit():
+    if _submitted(set_game_form) and set_game_form.validate():
         selected_game = Game.query.filter(Game.id==set_game_form.game_id.data).first()
         selected_game.team_a = set_game_form.team_a.data
         selected_game.team_b = set_game_form.team_b.data
@@ -428,7 +431,7 @@ def admin():
     form = UploadResultsForm(prefix='upload_game_score')
     form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
-    if form.submit.data and form.validate_on_submit():
+    if _submitted(form) and form.validate():
         current_game = Game.query.filter(Game.id==form.game_id.data).first()
         current_game.score_a = form.score_a.data
         current_game.score_b = form.score_b.data
@@ -463,7 +466,7 @@ def admin():
     correct_game_score_form = UploadResultsForm(prefix='correct_game_score')
     correct_game_score_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a != None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
     correct_game_score_form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
-    if correct_game_score_form.submit.data and correct_game_score_form.validate_on_submit():
+    if _submitted(correct_game_score_form) and correct_game_score_form.validate():
         current_game = Game.query.filter(Game.id==correct_game_score_form.game_id.data).first()
         current_game.score_a = correct_game_score_form.score_a.data
         current_game.score_b = correct_game_score_form.score_b.data
@@ -498,7 +501,7 @@ def admin():
     # winner team section 
     wform = PlaceWinnerForm()
     wform.final_winner.choices = [(g.team, f'Team {g.team}') for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
-    if wform.submit.data and wform.validate_on_submit():
+    if _submitted(wform) and wform.validate():
         for u in User.query.all():
             if u.final_winner==wform.final_winner.data:
                 for i in Winnerbet.query.all():
