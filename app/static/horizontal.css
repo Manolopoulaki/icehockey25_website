@@ -58,7 +58,10 @@
 
 .flag_1, .flag_2 {
   width: 90%;
-  margin: 0 auto; 
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
 }
 
 .score_1, .score_2, .dot {

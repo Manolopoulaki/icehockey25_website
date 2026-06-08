@@ -139,7 +139,10 @@ svg > g > g:last-child { pointer-events: none; }
 .bbFlag1, .bbFlag2 {
   max-width: 106px;
   width: -webkit-fill-available;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
   margin: auto;
+  display: block;
 }
 
 .bbFlag1 { grid-area: 4 / 1 / 5 / 3; }
