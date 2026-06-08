@@ -14,6 +14,6 @@
 			{% endfor %}
 		</div>
 	{% endfor %}
-	<button type="submit" class="button">{{ form.submit.label.text }}</button>
+	<button type="submit" class="button" name="{{ form.submit.name }}" value="{{ form.submit.label.text }}">{{ form.submit.label.text }}</button>
 </form>
 {%- endmacro %}
