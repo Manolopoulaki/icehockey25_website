@@ -117,10 +117,10 @@ svg > g > g:last-child { pointer-events: none; }
 .bbgrid-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 0.5fr 1fr 1fr 1fr;
-  grid-template-rows: 0.5fr 0.5fr 0.5fr 0.75fr 2fr 1fr 1fr;
+  grid-template-rows: auto auto auto minmax(70px, auto) auto auto auto;
   text-align: center;
-  gap: 1px 1px;
-  height: 250px;
+  gap: 4px 1px;
+  min-height: 250px;
   max-width: 500px;
   margin: auto;
 }
@@ -131,6 +131,7 @@ svg > g > g:last-child { pointer-events: none; }
 .bbTeam1, .bbTeam2 {
   font-size: 20px;
   font-weight: bold;
+  padding: 0 2px;
 }
 
 .bbTeam1 { grid-area: 3 / 1 / 4 / 3; }

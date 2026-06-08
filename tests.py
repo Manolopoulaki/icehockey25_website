@@ -3,8 +3,10 @@ from pathlib import Path
 import unittest
 import importlib
 from app import app, db
-from app.models import User, Post, Game, Winnerbet
+from app.models import User, Post, Game, Winnerbet, Team
 from app.routes import get_next_game, utcnow
+from app.teams import get_team_name, _team_names_for_sport
+from app.team_data import iter_team_rows
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -29,6 +31,17 @@ class UserModelCase(unittest.TestCase):
         self.assertEqual(u.avatar(128), ('https://www.gravatar.com/avatar/'
                                          'd4c74594d841139328695756648b6bd6'
                                          '?d=identicon&s=128'))
+
+    def test_team_lookup_by_sport(self):
+        for sport, code, name in iter_team_rows():
+            db.session.add(Team(sport=sport, code=code, name=name))
+        db.session.commit()
+        _team_names_for_sport.cache_clear()
+
+        self.assertEqual(get_team_name('GER', sport='football'), 'Germany')
+        self.assertEqual(get_team_name('LAT', sport='hockey'), 'Latvia')
+        self.assertEqual(get_team_name('LAT', sport='football'), 'LAT')
+        self.assertEqual(get_team_name('TBD', sport='hockey'), 'TBD')
 
     def test_get_next_game_returns_none_without_schedule(self):
         self.assertIsNone(get_next_game())

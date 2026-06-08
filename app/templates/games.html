@@ -67,8 +67,8 @@
 				<div class="bbgrid-container">
 					<h2 class="bbgame">{{ _('Game') }} {{game_chosen.id}} {{game_chosen.stage}}</h2>
 					<div class="bbdate_time">{{ moment(as_utc(game_chosen.starts_at)).format('MMMM Do, h:mm a') }}</div>
-					<div class="bbTeam1">{{game_chosen.team_a}}</div>
-					<div class="bbTeam2">{{game_chosen.team_b}}</div>
+					<div class="bbTeam1">{{ game_chosen.team_a | team_name }}</div>
+					<div class="bbTeam2">{{ game_chosen.team_b | team_name }}</div>
 					<img class="bbFlag1" src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }}>
 					<img class="bbFlag2" src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }}>
 					<div class="bbScore1">{{ form.score_a(size=1) }}</div>
@@ -87,7 +87,7 @@
 		{% else %}
 			<h2>{{ _('Predictions for Game') }} {{game_chosen.id}}: 
 				<img src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }} width="40" height="40"/>
-				{{game_chosen.team_a}} - {{game_chosen.team_b}}
+				{{ game_chosen.team_a | team_name }} - {{ game_chosen.team_b | team_name }}
 				<img src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }} width="40" height="40"/>
 			</h2>
 			<div class="box" style="background-color: color-mix(in srgb, var(--color-bright) 30%, transparent);">

@@ -109,6 +109,16 @@ class User(UserMixin, db.Model):
             return
         return _session_get(User, id)
         
+class Team(db.Model):
+    sport = db.Column(db.String(16), primary_key=True)
+    code = db.Column(db.String(3), primary_key=True)
+    name = db.Column(db.String(64), nullable=False)
+    name_lv = db.Column(db.String(64))
+
+    def __repr__(self):
+        return f'<Team {self.sport} {self.code} {self.name}>'
+
+
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_a = db.Column(db.String(3), index=True)
