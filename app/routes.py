@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, request, url_for, g, session, abort
 from app import app, db
-from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm
+from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm, first_goal_choices
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Game, Bet, Winnerbet, utcnow
 from app.email import send_password_reset_email
@@ -129,19 +129,25 @@ def place_predictions():
     for game in games:
         form = PlaceBetForm()
         forms[game.id] = form
-        form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], [_('First Goal'), f'Team {game.team_a}', f'Team {game.team_b}'])]
+        form.first_goal.choices = first_goal_choices(game.team_a, game.team_b)
         existing_bet = current_user.bets.filter(and_(Bet.game_id==game.id, Bet.is_default_bet==False)).first()
         if existing_bet:
             form.score_a.data = existing_bet.score_a
             form.score_b.data = existing_bet.score_b
-            form.first_goal.data = str(existing_bet.first_goal)
+            form.first_goal.data = existing_bet.first_goal
 
     if request.method == 'POST':
+        saved_count = 0
         for game in games:
+            score_a_raw = request.form.get(f'score_a_{game.id}', '').strip()
+            score_b_raw = request.form.get(f'score_b_{game.id}', '').strip()
+            first_goal_raw = request.form.get(f'first_goal_{game.id}')
+            if score_a_raw == '' or score_b_raw == '' or first_goal_raw is None:
+                continue
             try:
-                score_a = int(request.form.get(f'score_a_{game.id}', 0))
-                score_b = int(request.form.get(f'score_b_{game.id}', 0))
-                first_goal = int(request.form.get(f'first_goal_{game.id}', 0))
+                score_a = int(score_a_raw)
+                score_b = int(score_b_raw)
+                first_goal = int(first_goal_raw)
             except (ValueError, TypeError):
                 flash(_('Invalid input for game %(game)s.', game=game.id), 'danger')
                 continue
@@ -154,8 +160,6 @@ def place_predictions():
                  (score_a != 0 and score_b != 0 and int(first_goal) == 0):
                 flash(_('Your first goal prediction is not valid for game %(game)s.', game=game.id), 'danger')
                 continue
-            elif (score_a == 0 and score_b == 0 and first_goal == 0):
-                continue
             elif score_a == score_b  and g.sport == 'hockey':
                 flash(_('Your prediction for game %(game)s cannot be a draw.', game=game.id), 'danger')
                 continue
@@ -163,8 +167,12 @@ def place_predictions():
                 current_user.bets.filter_by(game_id=game.id).delete()
                 bet = Bet(game_id=game.id, score_a=score_a, score_b=score_b, first_goal=first_goal, user=current_user, is_default_bet=False)
                 db.session.add(bet)
+                saved_count += 1
         db.session.commit()
-        flash(_('Your predictions have been saved!'), 'success')
+        if saved_count:
+            flash(_('Your predictions have been saved!'), 'success')
+        else:
+            flash(_('No predictions were saved. Enter scores and choose a first goal option for each game you want to update.'), 'warning')
         return redirect(url_for('place_predictions'))
     return render_template("place_predictions.html", title='Place Predictions', sport=g.sport,games=games, forms=forms, game_id=get_next_game())
 
@@ -183,12 +191,12 @@ def games(idd):
     current_time = utcnow()
     three_hours_earlier = utcnow() - timedelta(hours=3)
     form = PlaceBetForm()
-    form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], [_('First Goal'), _('Team %(teama)s', teama=game_chosen.team_a), _('Team %(teamb)s', teamb=game_chosen.team_b)])]
+    form.first_goal.choices = first_goal_choices(game_chosen.team_a, game_chosen.team_b)
     if form.validate_on_submit():
         if game_chosen.starts_at < current_time: 
             flash(_('This game has started'))
             return redirect(url_for('games', idd=idd))
-        if ((form.score_a.data == 0 and form.score_b.data == 0 and int(form.first_goal.data)!=0) or (form.score_a.data == 0 and form.score_b.data != 0 and int(form.first_goal.data)!=2) or     	(form.score_a.data != 0 and form.score_b.data == 0 and int(form.first_goal.data)!=1) or (form.score_a.data!=0 and form.score_b.data!=0 and int(form.first_goal.data)==0)): 
+        if ((form.score_a.data == 0 and form.score_b.data == 0 and form.first_goal.data != 0) or (form.score_a.data == 0 and form.score_b.data != 0 and form.first_goal.data != 2) or (form.score_a.data != 0 and form.score_b.data == 0 and form.first_goal.data != 1) or (form.score_a.data != 0 and form.score_b.data != 0 and form.first_goal.data == 0)): 
             flash(_('Your first goal prediction is not valid.'))
             return redirect(url_for('games', idd=idd))
         if form.score_a.data == form.score_b.data and g.sport == 'hockey':
@@ -220,9 +228,9 @@ def winner_prediction():
 @login_required
 def default_prediction():
     form = PlaceBetForm()
-    form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], [_('First Goal'), _('Team A'), _('Team B')])]
+    form.first_goal.choices = first_goal_choices(generic=True)
     if form.validate_on_submit():
-        if ((form.score_a.data == 0 and form.score_b.data == 0 and int(form.first_goal.data)!=0) or (form.score_a.data == 0 and form.score_b.data != 0 and int(form.first_goal.data)!=2) or     	(form.score_a.data != 0 and form.score_b.data == 0 and int(form.first_goal.data)!=1) or (form.score_a.data!=0 and form.score_b.data!=0 and int(form.first_goal.data)==0)): 
+        if ((form.score_a.data == 0 and form.score_b.data == 0 and form.first_goal.data != 0) or (form.score_a.data == 0 and form.score_b.data != 0 and form.first_goal.data != 2) or (form.score_a.data != 0 and form.score_b.data == 0 and form.first_goal.data != 1) or (form.score_a.data != 0 and form.score_b.data != 0 and form.first_goal.data == 0)): 
             flash(_('Your first goal prediction is not valid.'))
             return redirect(url_for('default_prediction'))
         if form.score_a.data == form.score_b.data and g.sport == 'hockey':
@@ -430,7 +438,7 @@ def admin():
     upload_winnerbet_csv_form = UploadCSVForm(prefix='upload_winner_bet_points')
     form = UploadResultsForm(prefix='upload_game_score')
     form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a == None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
-    form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
+    form.first_goal.choices = first_goal_choices(generic=True)
     if _submitted(form) and form.validate():
         current_game = Game.query.filter(Game.id==form.game_id.data).first()
         current_game.score_a = form.score_a.data
@@ -465,7 +473,7 @@ def admin():
 
     correct_game_score_form = UploadResultsForm(prefix='correct_game_score')
     correct_game_score_form.game_id.choices = [(g.id, f'Game {g.id}: {g.team_a}-{g.team_b}, {g.stage}') for g in Game.query.filter(Game.starts_at<utcnow()).filter(Game.score_a != None).order_by(Game.starts_at.asc(), Game.id.asc()).all()]
-    correct_game_score_form.first_goal.choices = [(iteam, team) for iteam, team in zip([0,1,2], ['First Goal', 'Team A', 'Team B'])]
+    correct_game_score_form.first_goal.choices = first_goal_choices(generic=True)
     if _submitted(correct_game_score_form) and correct_game_score_form.validate():
         current_game = Game.query.filter(Game.id==correct_game_score_form.game_id.data).first()
         current_game.score_a = correct_game_score_form.score_a.data

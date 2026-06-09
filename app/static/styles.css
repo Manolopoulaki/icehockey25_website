@@ -176,7 +176,100 @@ input#score_b {
   text-align: center;
 }
 
-.bbfirsttext { grid-area: 5 / 3 / 6 / 6; }
+.bbfirsttext {
+  grid-area: 5 / 1 / 6 / 8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+}
+
+.first-goal-radios {
+  border: 0;
+  margin: 0;
+  padding: 0.35rem 0;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.first-goal-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 2px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.first-goal-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+}
+
+.first-goal-option:has(input:checked) {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.first-goal-option:hover {
+  border-color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 18%, transparent);
+}
+
+.first-goal-option:has(input:checked):hover {
+  background: var(--color-primary);
+}
+
+.first-goal-radios--compact {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  width: auto;
+  gap: 0.4rem;
+  padding: 0;
+}
+
+.first-goal-radios--compact .first-goal-option {
+  font-size: 0.9rem;
+  padding: 0.3rem 0.55rem;
+}
+
+.prediction-cell {
+  white-space: nowrap;
+}
+
+.prediction-row {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.prediction-scores {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
 .bbsubmit { grid-area: 6 / 3 / 7 / 6; }
 
 tr:nth-child(even) {

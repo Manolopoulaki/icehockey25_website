@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from flask_babel import _, lazy_gettext as _l
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, IntegerField, SelectField, RadioField
 from wtforms.validators import ValidationError, DataRequired, InputRequired, Email, EqualTo, Length
 from app.models import User
 
@@ -43,6 +43,21 @@ class EditProfileForm(FlaskForm):
             if user is not None:
                 raise ValidationError(_l('Please use a different username.'))
     
+def first_goal_choices(team_a=None, team_b=None, generic=False):
+    from flask_babel import gettext as _
+    if generic:
+        return [
+            (0, _('No first goal')),
+            (1, _('First goal A')),
+            (2, _('First goal B')),
+        ]
+    return [
+        (0, _('No first goal')),
+        (1, _('First goal %(code)s', code=team_a)),
+        (2, _('First goal %(code)s', code=team_b)),
+    ]
+
+
 class PostForm(FlaskForm):
     post = TextAreaField(_l('New message'), validators=[DataRequired(), Length(min=1, max=140)])
     submit = SubmitField(_l('Post'))
@@ -60,14 +75,14 @@ class NewSelectField(SelectField):
 class PlaceBetForm(FlaskForm): 
     score_a = IntegerField(_l('Score of Team A'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
     score_b = IntegerField(_l('Score of Team B'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
-    first_goal = NewSelectField(_l('First Goal'), validators=[DataRequired()], coerce=str)
+    first_goal = RadioField(_l('First goal'), choices=[], validators=[InputRequired()], coerce=int)
     submit = SubmitField(_l('Place Prediction'))
     
 class UploadResultsForm(FlaskForm): 
     game_id = NewSelectField(_l('Game'), validators=[DataRequired()], coerce=int)
     score_a = IntegerField(_l('Score of Team A'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
     score_b = IntegerField(_l('Score of Team B'), validators=[InputRequired()], render_kw={"inputmode": "numeric"})
-    first_goal = NewSelectField(_l('First Goal'), validators=[DataRequired()], coerce=str)
+    first_goal = RadioField(_l('First goal'), choices=[], validators=[InputRequired()], coerce=int)
     submit = SubmitField(_l('Upload Result'))
 
 class UploadCSVForm(FlaskForm):

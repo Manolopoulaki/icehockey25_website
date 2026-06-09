@@ -1,13 +1,36 @@
+{% macro first_goal_radios(field) -%}
+<fieldset class="first-goal-radios" aria-label="{{ field.label.text }}">
+	{% for subfield in field %}
+		<label class="first-goal-option">{{ subfield() }} {{ subfield.label.text }}</label>
+	{% endfor %}
+</fieldset>
+{%- endmacro %}
+
+{% macro bulk_first_goal_radios(game_id, choices, selected) -%}
+<div class="first-goal-radios first-goal-radios--compact">
+	{% for val, label in choices %}
+		<label class="first-goal-option">
+			<input type="radio" name="first_goal_{{ game_id }}" value="{{ val }}"{% if selected is not none and selected == val %} checked{% endif %}>
+			{{ label }}
+		</label>
+	{% endfor %}
+</div>
+{%- endmacro %}
+
 {% macro quick_form(form, action='', method='post', enctype=None) -%}
 <form action="{{ action }}" method="{{ method }}"{% if enctype %} enctype="{{ enctype }}"{% endif %}>
 	{{ form.hidden_tag() }}
 	{% for field in form if field.type not in ['CSRFTokenField', 'HiddenField', 'SubmitField'] %}
 		<div class="form-group{% if field.errors %} has-error{% endif %}">
-			{{ field.label(class='control-label') }}
-			{% if field.type == 'BooleanField' %}
-				<div class="checkbox">{{ field() }}</div>
+			{% if field.type == 'RadioField' %}
+				{{ first_goal_radios(field) }}
 			{% else %}
-				{{ field(class='form-control') }}
+				{{ field.label(class='control-label') }}
+				{% if field.type == 'BooleanField' %}
+					<div class="checkbox">{{ field() }}</div>
+				{% else %}
+					{{ field(class='form-control') }}
+				{% endif %}
 			{% endif %}
 			{% for error in field.errors %}
 				<span class="help-block">{{ error }}</span>

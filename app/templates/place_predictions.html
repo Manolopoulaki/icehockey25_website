@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
 <form method="POST" action="{{ url_for('place_predictions') }}">
@@ -22,18 +23,15 @@
                 </td>
                 <td>{{ game.stage }}</td>
                 <td>{{ moment(as_utc(game.starts_at)).format('ddd DD/MM, H:mm') }}</td>
-                <td>
-                    <input name="score_a_{{ game.id }}" value="{{ forms[game.id].score_a.data or 0 }}" size=1>
-                    :
-                    <input name="score_b_{{ game.id }}" value="{{ forms[game.id].score_b.data or 0 }}" size=1>
-
-                    <select name="first_goal_{{ game.id }}">
-                        {% for val, label in forms[game.id].first_goal.choices %}
-                        <option value="{{ val }}" {% if forms[game.id].first_goal.data == val|string %}selected{% endif %}>
-                            {{ label }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                <td class="prediction-cell">
+                    <div class="prediction-row">
+                        <div class="prediction-scores">
+                            <input name="score_a_{{ game.id }}" value="{{ forms[game.id].score_a.data if forms[game.id].score_a.data is not none else '' }}" size=1>
+                            :
+                            <input name="score_b_{{ game.id }}" value="{{ forms[game.id].score_b.data if forms[game.id].score_b.data is not none else '' }}" size=1>
+                        </div>
+                        {{ wtf.bulk_first_goal_radios(game.id, forms[game.id].first_goal.choices, forms[game.id].first_goal.data) }}
+                    </div>
                 </td>
             </tr>
             {% endfor %}
