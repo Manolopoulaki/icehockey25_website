@@ -47,13 +47,13 @@ def first_goal_choices(team_a=None, team_b=None, generic=False):
     from flask_babel import gettext as _
     if generic:
         return [
-            (0, _('No first goal')),
             (1, _('First goal A')),
+            (0, _('No first goal')),
             (2, _('First goal B')),
         ]
     return [
-        (0, _('No first goal')),
         (1, _('First goal %(code)s', code=team_a)),
+        (0, _('No first goal')),
         (2, _('First goal %(code)s', code=team_b)),
     ]
 
