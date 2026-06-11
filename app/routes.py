@@ -449,10 +449,10 @@ def admin():
         for bet in bets_to_update:
             apply_bet_scoring(bet, current_game, g.sport)
         for u in User.query.all():
-            u.total_score = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_correct == True, 1)], else_=0)), 0))
-            u.total_score_diff = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_diff_correct == True, 1)], else_=0)), 0))
-            u.total_winner = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.winner_correct == True, 1)], else_=0)), 0))
-            u.total_first_goal = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.first_goal_correct == True, 1)], else_=0)), 0))
+            u.total_score = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.score_correct == True, 1), else_=0)), 0))
+            u.total_score_diff = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.score_diff_correct == True, 1), else_=0)), 0))
+            u.total_winner = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.winner_correct == True, 1), else_=0)), 0))
+            u.total_first_goal = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.first_goal_correct == True, 1), else_=0)), 0))
             u.total_points =  User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(Bet.points), 0))  
             u.overall_points = u.total_points
             u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(utcnow()-timedelta(hours=3))
@@ -472,10 +472,10 @@ def admin():
         for bet in bets_to_update:
             apply_bet_scoring(bet, current_game, g.sport)
         for u in User.query.all():
-            u.total_score = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_correct == True, 1)], else_=0)), 0))
-            u.total_score_diff = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_diff_correct == True, 1)], else_=0)), 0))
-            u.total_winner = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.winner_correct == True, 1)], else_=0)), 0))
-            u.total_first_goal = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.first_goal_correct == True, 1)], else_=0)), 0))
+            u.total_score = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.score_correct == True, 1), else_=0)), 0))
+            u.total_score_diff = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.score_diff_correct == True, 1), else_=0)), 0))
+            u.total_winner = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.winner_correct == True, 1), else_=0)), 0))
+            u.total_first_goal = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case((Bet.first_goal_correct == True, 1), else_=0)), 0))
             u.total_points =  User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(Bet.points), 0))  
             u.overall_points = u.total_points
             u.total_closed_bets = User.query.filter(User.id==u.id).join(Bet).join(Game).filter(Game.first_goal>0).with_entities(func.count(Bet.points)) #Game.starts_at<(utcnow()-timedelta(hours=3))
