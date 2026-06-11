@@ -3,10 +3,18 @@ from pathlib import Path
 import unittest
 import importlib
 from app import app, db
-from app.models import User, Post, Game, Winnerbet, Team
+from sqlalchemy import func
+from sqlalchemy.sql.functions import coalesce
+from app.models import User, Post, Game, Bet, Winnerbet, Team
 from app.routes import get_next_game, utcnow
 from app.teams import get_team_name, _team_names_for_sport
 from app.team_data import iter_team_rows
+from app.scoring import (
+    grade_bet,
+    compute_bet_points,
+    apply_bet_scoring,
+    point_values,
+)
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -89,6 +97,106 @@ class UserModelCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'You predicted FIN for winner!', response.data)
+
+
+class ScoringRulesCase(unittest.TestCase):
+    """Point totals must match rules.html for hockey and football."""
+
+    def setUp(self):
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.app_context = app.app_context()
+        self.app_context.push()
+        db.create_all()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
+
+    def _points(self, sport, fg, winner, diff, exact):
+        return compute_bet_points(sport, fg, winner, diff, exact)
+
+    def test_hockey_point_breakdown_matches_rules(self):
+        pts = point_values('hockey')
+        self.assertEqual(pts['outcome'], 3)
+        self.assertEqual(pts['score_diff'], 1)
+        self.assertEqual(pts['exact_score'], 3)
+        self.assertEqual(pts['first_goal'], 1)
+        self.assertEqual(self._points('hockey', False, True, False, False), 3)
+        self.assertEqual(self._points('hockey', False, True, True, False), 4)
+        self.assertEqual(self._points('hockey', False, True, True, True), 7)
+        self.assertEqual(self._points('hockey', True, True, True, True), 8)
+
+    def test_football_point_breakdown_matches_rules(self):
+        pts = point_values('football')
+        self.assertEqual(pts['outcome'], 2)
+        self.assertEqual(pts['score_diff'], 1)
+        self.assertEqual(pts['exact_score'], 3)
+        self.assertEqual(pts['first_goal'], 1)
+        self.assertEqual(self._points('football', False, True, False, False), 2)
+        self.assertEqual(self._points('football', False, True, True, False), 3)
+        self.assertEqual(self._points('football', False, True, True, True), 6)
+        self.assertEqual(self._points('football', True, True, True, True), 7)
+
+    def test_score_diff_only_counts_when_outcome_correct(self):
+        game = Game(team_a='A', team_b='B', score_a=1, score_b=3, first_goal=2)
+        bet = Bet(score_a=3, score_b=1, first_goal=1)
+        grade_bet(bet, game)
+        self.assertFalse(bet.winner_correct)
+        self.assertFalse(bet.score_diff_correct)
+        self.assertEqual(compute_bet_points('hockey', bet.first_goal_correct,
+                                             bet.winner_correct,
+                                             bet.score_diff_correct,
+                                             bet.score_correct), 0)
+
+    def test_apply_bet_scoring_on_finished_game(self):
+        game = Game(team_a='CAN', team_b='USA', score_a=2, score_b=1, first_goal=1)
+        bet = Bet(score_a=2, score_b=1, first_goal=1)
+        apply_bet_scoring(bet, game, 'football')
+        self.assertTrue(bet.score_correct)
+        self.assertTrue(bet.winner_correct)
+        self.assertTrue(bet.score_diff_correct)
+        self.assertTrue(bet.first_goal_correct)
+        self.assertEqual(bet.points, 7)
+
+
+class StandingsTiebreakerCase(unittest.TestCase):
+    def setUp(self):
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+        self.app_context = app.app_context()
+        self.app_context.push()
+        db.create_all()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
+
+    def test_standings_tiebreaker_order_matches_rules(self):
+        leader = User(username='leader', email='leader@example.com',
+                      overall_points=20, total_score=5, total_score_diff=4,
+                      total_winner=3, total_first_goal=2, total_closed_bets=10)
+        leader.set_password('cat')
+        runner = User(username='runner', email='runner@example.com',
+                      overall_points=20, total_score=4, total_score_diff=5,
+                      total_winner=3, total_first_goal=2, total_closed_bets=10)
+        runner.set_password('cat')
+        db.session.add_all([leader, runner])
+        db.session.commit()
+
+        ranked = db.session.query(
+            User.username,
+            func.rank().over(order_by=(
+                coalesce(User.overall_points, 0).desc(),
+                coalesce(User.total_score, 0).desc(),
+                coalesce(User.total_score_diff, 0).desc(),
+                coalesce(User.total_winner, 0).desc(),
+                coalesce(User.total_first_goal, 0).desc(),
+            )).label('ranking'),
+        ).order_by('ranking').all()
+
+        self.assertEqual(ranked[0].username, 'leader')
+        self.assertEqual(ranked[1].username, 'runner')
 
 
 class SecurityHookCase(unittest.TestCase):
