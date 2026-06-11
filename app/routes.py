@@ -1,4 +1,5 @@
-from flask import render_template, flash, redirect, request, url_for, g, session, abort, send_from_directory, jsonify
+from pathlib import Path
+from flask import render_template, flash, redirect, request, url_for, g, session, abort, jsonify, make_response
 from app import app, db
 from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm, first_goal_choices, validate_bet_scores
 from flask_login import current_user, login_user, logout_user, login_required
@@ -153,7 +154,8 @@ def web_manifest():
 
 @app.route('/sw.js')
 def service_worker():
-    response = send_from_directory(app.static_folder, 'sw.js')
+    content = Path(app.static_folder, 'sw.js').read_text(encoding='utf-8')
+    response = make_response(content)
     response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
     response.headers['Cache-Control'] = 'no-cache'
     return response

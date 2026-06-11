@@ -204,18 +204,20 @@ class PwaRoutesCase(TestCaseBase):
 class GamesPageCase(TestCaseBase):
     def test_games_page_includes_accuracy_stats(self):
         user = self.make_user('player')
-        game = Game(id=1, team_a='CAN', team_b='USA',
+        game = Game(team_a='CAN', team_b='USA',
                     starts_at=utcnow() - timedelta(days=1),
                     score_a=2, score_b=1, first_goal=1)
-        bet = Bet(user=user, game=game, score_a=2, score_b=1, first_goal=1,
-                  is_default_bet=False)
+        db.session.add(game)
+        db.session.flush()
+        bet = Bet(user_id=user.id, game_id=game.id, score_a=2, score_b=1,
+                  first_goal=1, is_default_bet=False)
         apply_bet_scoring(bet, game, 'football')
-        db.session.add_all([game, bet])
+        db.session.add(bet)
         db.session.commit()
 
         with app.test_client() as client:
             self.login(client, user)
-            response = client.get('/games/1')
+            response = client.get(f'/games/{game.id}')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'games-stats', response.data)
@@ -224,9 +226,9 @@ class GamesPageCase(TestCaseBase):
 
     def test_place_predictions_orders_games_by_start_time(self):
         user = self.make_user('player')
-        later = Game(id=2, team_a='CAN', team_b='USA',
-                     starts_at=utcnow() + timedelta(days=2))
-        sooner = Game(id=1, team_a='FIN', team_b='SWE',
+        later = Game(team_a='CAN', team_b='USA',
+                   starts_at=utcnow() + timedelta(days=2))
+        sooner = Game(team_a='FIN', team_b='SWE',
                       starts_at=utcnow() + timedelta(days=1))
         db.session.add_all([later, sooner])
         db.session.commit()
