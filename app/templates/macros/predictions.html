@@ -1,0 +1,38 @@
+{% macro score_with_goal(score_a, score_b, first_goal) %}
+    {% if first_goal == 1 %}
+        <img src="{{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}" width="10" height="10" alt=""/>
+        {{ score_a }}:{{ score_b }}
+    {% elif first_goal == 2 %}
+        {{ score_a }}:{{ score_b }}
+        <img src="{{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}" width="10" height="10" alt=""/>
+    {% else %}
+        {{ score_a }}:{{ score_b }}
+    {% endif %}
+{% endmacro %}
+
+{% macro correctness_icon(value, label, point_value, code) %}
+    {% if value == None %}
+        <span class="game-card-status game-card-status--pending" title="{{ label }}: {{ _('Pending') }}">
+            <span class="game-card-status-code" aria-hidden="true">{{ code }}</span>
+            <span class="sr-only">{{ label }}: {{ _('Pending') }}</span>
+        </span>
+    {% elif value == True %}
+        <span class="game-card-status game-card-status--correct" title="{{ label }}: {{ _('Correct') }} (+{{ point_value }} {{ _('pts') }})">
+            <span class="game-card-status-code" aria-hidden="true">{{ code }}</span>
+            <span class="sr-only">{{ label }}: {{ _('Correct') }} (+{{ point_value }} {{ _('pts') }})</span>
+        </span>
+    {% else %}
+        <span class="game-card-status game-card-status--wrong" title="{{ label }}: {{ _('Incorrect') }} (+0 {{ _('pts') }})">
+            <span class="game-card-status-code" aria-hidden="true">{{ code }}</span>
+            <span class="sr-only">{{ label }}: {{ _('Incorrect') }} (+0 {{ _('pts') }})</span>
+        </span>
+    {% endif %}
+{% endmacro %}
+
+{% macro game_result_score(result) %}
+    {% if result.first_goal == 1 or result.first_goal == 2 or result.first_goal == 0 %}
+        {{ score_with_goal(result.score_a, result.score_b, result.first_goal) }}
+    {% else %}
+        —
+    {% endif %}
+{% endmacro %}

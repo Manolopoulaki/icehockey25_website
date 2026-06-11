@@ -1,6 +1,9 @@
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
+import mimetypes
 import os
+
+mimetypes.add_type('application/manifest+json', '.webmanifest')
 from datetime import timezone
 from flask import Flask, session
 from flask import request
@@ -14,9 +17,11 @@ from flask_mail import Mail
 jinja2.Markup = Markup
 from flask_moment import Moment
 from flask_babel import Babel
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db, compare_type=True)
 login = LoginManager(app)

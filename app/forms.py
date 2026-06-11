@@ -43,6 +43,16 @@ class EditProfileForm(FlaskForm):
             if user is not None:
                 raise ValidationError(_l('Please use a different username.'))
     
+def validate_bet_scores(score_a, score_b, first_goal, sport):
+    if ((score_a == 0 and score_b == 0 and first_goal != 0)
+            or (score_a == 0 and score_b != 0 and first_goal != 2)
+            or (score_a != 0 and score_b == 0 and first_goal != 1)
+            or (score_a != 0 and score_b != 0 and first_goal == 0)):
+        return _l('Your first goal prediction is not valid.')
+    if score_a == score_b and sport == 'hockey':
+        return _l('Your prediction is not valid.')
+    return None
+
 def first_goal_choices(team_a=None, team_b=None, generic=False):
     from flask_babel import gettext as _
     if generic:

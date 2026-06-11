@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% from 'macros/predictions.html' import score_with_goal, correctness_icon, game_result_score with context %}
 
 {% block app_content %}
 	<div class="wrap">
@@ -85,52 +86,145 @@
 				</button>
 			</div>
 		{% else %}
-			<h2>{{ _('Predictions for Game') }} {{game_chosen.id}}: 
-				<img src={{ url_for('static', filename='flags/' + game_chosen.team_a +'.png') }} width="40" height="40"/>
-				{{ game_chosen.team_a | team_name }} - {{ game_chosen.team_b | team_name }}
-				<img src={{ url_for('static', filename='flags/' + game_chosen.team_b +'.png') }} width="40" height="40"/>
+			<div class="games-predictions-block">
+			<h2 class="games-match-title">
+				<span class="games-match-name games-match-name--a">{{ game_chosen.team_a | team_name }}</span>
+				<span class="games-match-result">{{ game_result_score(game_chosen) }}</span>
+				<span class="games-match-name games-match-name--b">{{ game_chosen.team_b | team_name }}</span>
+				<img class="games-match-flag games-match-flag--a" src="{{ url_for('static', filename='flags/' + game_chosen.team_a + '.png') }}" alt="">
+				<img class="games-match-flag games-match-flag--b" src="{{ url_for('static', filename='flags/' + game_chosen.team_b + '.png') }}" alt="">
 			</h2>
-			<div class="box" style="background-color: color-mix(in srgb, var(--color-bright) 30%, transparent);">
-				{{correct_winners}}/{{all_bets}} {{ _('of bets found the correct winner!') }} <br>
-				{{correct_first_goals}}/{{all_bets}} {{ _('of bets found the correct first goal team!') }} <br>
-				{{default_bets}}/{{all_bets}} {{ _('were default bets.') }}
+			<div class="games-stats">
+				<div class="dashboard-kpis games-stats-kpis">
+					<div class="dashboard-kpi">
+						<span class="dashboard-kpi-label">{{ _('Bets') }}</span>
+						<span class="dashboard-kpi-value">{{ all_bets }}</span>
+					</div>
+					<div class="dashboard-kpi">
+						<span class="dashboard-kpi-label">{{ _('Avg pts') }}</span>
+						<span class="dashboard-kpi-value">{% if avg_points != None %}{{ avg_points }}{% else %}—{% endif %}</span>
+					</div>
+					<div class="dashboard-kpi">
+						<span class="dashboard-kpi-label">{{ _('Max pts') }}</span>
+						<span class="dashboard-kpi-value">{% if max_points != None %}{{ max_points }}{% else %}—{% endif %}</span>
+					</div>
+				</div>
+				{% set pct_first_goal = (correct_first_goals * 100 / all_bets)|round|int if all_bets else 0 %}
+				{% set pct_winner = (correct_winners * 100 / all_bets)|round|int if all_bets else 0 %}
+				{% set pct_score_diff = (correct_score_diff * 100 / all_bets)|round|int if all_bets else 0 %}
+				{% set pct_score = (correct_score * 100 / all_bets)|round|int if all_bets else 0 %}
+				{% set pct_default = (default_bets * 100 / all_bets)|round|int if all_bets else 0 %}
+				<div class="games-stats-rows">
+					<div class="accuracy-row">
+						<span class="accuracy-label">{{ _('First Goal') }}</span>
+						<div class="accuracy-stats">
+							{% if all_bets %}
+								<span class="accuracy-pct">{{ pct_first_goal }}%</span>
+								<span class="accuracy-count">{{ correct_first_goals }} {{ _('of') }} {{ all_bets }}</span>
+							{% else %}
+								<span class="accuracy-pct accuracy-pct--empty">—</span>
+								<span class="accuracy-count">{{ _('No bets yet') }}</span>
+							{% endif %}
+						</div>
+						<div class="stat-bar" role="presentation"><div class="stat-bar-fill" style="width: {{ pct_first_goal }}%;"></div></div>
+					</div>
+					<div class="accuracy-row">
+						<span class="accuracy-label">{{ _('Outcome') }}</span>
+						<div class="accuracy-stats">
+							{% if all_bets %}
+								<span class="accuracy-pct">{{ pct_winner }}%</span>
+								<span class="accuracy-count">{{ correct_winners }} {{ _('of') }} {{ all_bets }}</span>
+							{% else %}
+								<span class="accuracy-pct accuracy-pct--empty">—</span>
+								<span class="accuracy-count">{{ _('No bets yet') }}</span>
+							{% endif %}
+						</div>
+						<div class="stat-bar" role="presentation"><div class="stat-bar-fill" style="width: {{ pct_winner }}%;"></div></div>
+					</div>
+					<div class="accuracy-row">
+						<span class="accuracy-label">{{ _('Score Difference') }}</span>
+						<div class="accuracy-stats">
+							{% if all_bets %}
+								<span class="accuracy-pct">{{ pct_score_diff }}%</span>
+								<span class="accuracy-count">{{ correct_score_diff }} {{ _('of') }} {{ all_bets }}</span>
+							{% else %}
+								<span class="accuracy-pct accuracy-pct--empty">—</span>
+								<span class="accuracy-count">{{ _('No bets yet') }}</span>
+							{% endif %}
+						</div>
+						<div class="stat-bar" role="presentation"><div class="stat-bar-fill" style="width: {{ pct_score_diff }}%;"></div></div>
+					</div>
+					<div class="accuracy-row">
+						<span class="accuracy-label">{{ _('Score') }}</span>
+						<div class="accuracy-stats">
+							{% if all_bets %}
+								<span class="accuracy-pct">{{ pct_score }}%</span>
+								<span class="accuracy-count">{{ correct_score }} {{ _('of') }} {{ all_bets }}</span>
+							{% else %}
+								<span class="accuracy-pct accuracy-pct--empty">—</span>
+								<span class="accuracy-count">{{ _('No bets yet') }}</span>
+							{% endif %}
+						</div>
+						<div class="stat-bar" role="presentation"><div class="stat-bar-fill" style="width: {{ pct_score }}%;"></div></div>
+					</div>
+					<div class="accuracy-row">
+						<span class="accuracy-label">{{ _('Default bets') }}</span>
+						<div class="accuracy-stats">
+							{% if all_bets %}
+								<span class="accuracy-pct">{{ pct_default }}%</span>
+								<span class="accuracy-count">{{ default_bets }} {{ _('of') }} {{ all_bets }}</span>
+							{% else %}
+								<span class="accuracy-pct accuracy-pct--empty">—</span>
+								<span class="accuracy-count">{{ _('No bets yet') }}</span>
+							{% endif %}
+						</div>
+						<div class="stat-bar stat-bar--muted" role="presentation"><div class="stat-bar-fill stat-bar-fill--muted" style="width: {{ pct_default }}%;"></div></div>
+					</div>
+				</div>
 			</div>
-			<table class="table table-hover">
-				<tr>
-					<th>{{ _('User') }}</th>
-					<th>{{ _('Prediction') }}</th>
-					<th>{{ _('Points') }}</th>
-				</tr>
+			{% set game_finished = game_chosen.first_goal == 0 or game_chosen.first_goal == 1 or game_chosen.first_goal == 2 %}
+			{% set pts = point_values(sport) %}
+			<div class="game-card-list game-card-list--by-user">
+				{% if bets_to_show %}
+					<div class="game-card-list-header">
+						<div class="game-card-header-cell">{{ _('User') }}</div>
+						<div class="game-card-header-cell">{{ _('Prediction') }}</div>
+						<div class="game-card-header-cell">{{ _('Points') }}</div>
+					</div>
+				{% endif %}
 				{% for bet in bets_to_show %}
-					<tr {% if bet.is_default_bet %}style="color: brown"{% endif %}>
-						{% for user in users %}
-							{% if bet.user_id == user.id %}
-								<td>
-									<a href="{{ url_for('user', username=user.username) }}">{{ user.username }}</a>
-								</td>
+					<article class="game-card{% if bet.is_default_bet %} game-card--default{% endif %}{% if game_finished %} game-card--finished{% endif %}">
+						<div class="game-card-aside game-card-aside--user">
+							<a class="game-card-user-link" href="{{ url_for('user', username=bet.user.username) }}">
+								<img class="game-card-user-avatar" src="{{ url_for('static', filename='hektor_pics/' ~ bet.user.id ~ '.jpg') }}" width="40" height="40" alt="">
+								<span class="game-card-username">{{ bet.user.username }}</span>
+							</a>
+							{% if bet.is_default_bet %}
+								<span class="chip chip--default-badge">{{ _('Default') }}</span>
 							{% endif %}
-						{% endfor %}
-						<td>
-							{% if bet.first_goal == 1 %}
-								<img src="{{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}" width="10" height="10"/> {{ bet.score_a }}:{{ bet.score_b }}  
-							{% elif bet.first_goal == 2 %}
-								{{ bet.score_a }}:{{ bet.score_b }} <img src="{{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }}" width="10" height="10"/>
-							{% elif bet.first_goal == 0 %}
-								{{ bet.score_a }}:{{ bet.score_b }}
+						</div>
+						<div class="game-card-main">
+							<div class="game-card-scorecard"{% if game_finished and bet.points != None %} title="{{ _('First goal +%(pts)s', pts=pts.first_goal if bet.first_goal_correct else 0) }} · {{ _('Outcome +%(pts)s', pts=pts.outcome if bet.winner_correct else 0) }} · {{ _('Score difference +%(pts)s', pts=pts.score_diff if bet.score_diff_correct else 0) }} · {{ _('Exact score +%(pts)s', pts=pts.exact_score if bet.score_correct else 0) }}"{% endif %}>
+								<span class="game-card-pick-value" title="{{ _('Prediction') }}">{{ score_with_goal(bet.score_a, bet.score_b, bet.first_goal) }}</span>
+								{{ correctness_icon(bet.first_goal_correct, _('First Goal'), pts.first_goal, 'G') }}
+								{{ correctness_icon(bet.winner_correct, _('Outcome'), pts.outcome, 'O') }}
+								{{ correctness_icon(bet.score_diff_correct, _('Score Difference'), pts.score_diff, 'D') }}
+								{{ correctness_icon(bet.score_correct, _('Score'), pts.exact_score, 'S') }}
+							</div>
+						</div>
+						<div class="game-card-aside game-card-aside--meta">
+							{% if game_finished %}
+								<div class="game-card-points game-card-points--hero">
+									{% if bet.points == None %}—{% else %}+{{ bet.points }}<span class="game-card-points-unit">{{ _('pts') }}</span>{% endif %}
+								</div>
 							{% else %}
-								? {{ bet.score_a }}:{{ bet.score_b }} ?
+								<div class="game-card-points game-card-points--hero game-card-points--pending">—</div>
 							{% endif %}
-						</td>
-						<td>
-							{% if bet.points is none %}
-								-
-							{% else %}
-								{{ bet.points }}
-							{% endif %}
-						</td>
-					</tr>
-				{% endfor %} 
-			</table>
+						</div>
+					</article>
+				{% endfor %}
+			</div>
+			</div>
 		{% endif %}
 	</div>
 {% endblock %}

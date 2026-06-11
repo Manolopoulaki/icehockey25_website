@@ -1,216 +1,387 @@
 {% extends "base.html" %}
-                
+{% import 'bootstrap/wtf.html' as wtf %}
+{% from 'macros/predictions.html' import score_with_goal, correctness_icon, game_result_score with context %}
+
 {% block app_content %}
-    <table class="table table-hover">
-        <tr>
-            <td width="148px"><img src="/static/hektor_pics/{{ user.id }}.jpg" width="148"></td><!--<img src="{{ user.avatar(148) }}"></td>-->
-            <td>
-                <h2>{{ _('User: %(username)s!', username=user.username) }}</h2>
-                {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
-                {% if user.last_seen %}<p>{{ _('Last seen on: %(when)s', when=moment(as_utc(user.last_seen)).format('LLL')) }}</p>{% endif %}
+    <div id="profile-edit" class="user-profile-header box{% if user == current_user and setup == 'profile' %} is-editing{% endif %}">
+        <img class="user-profile-avatar" src="/static/hektor_pics/{{ user.id }}.jpg" width="148" height="148" alt="">
+        <div class="user-profile-info">
+            <div class="user-profile-display">
+                <div class="user-profile-title-row">
+                    <h2 class="user-profile-name">{{ user.username }}</h2>
+                    {% if user_stats %}
+                        <div class="user-profile-chips">
+                            <span class="chip chip--rank">#{{ user_stats.ranking }}</span>
+                            <span class="chip chip--points">{{ user_stats.overall_points }} {{ _('pts') }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                {% if user.about_me %}<p class="user-profile-about">{{ user.about_me }}</p>{% endif %}
+                {% if user.last_seen %}
+                    <p class="user-profile-meta">{{ _('Last seen on: %(when)s', when=moment(as_utc(user.last_seen)).format('LLL')) }}</p>
+                {% endif %}
                 {% if user == current_user %}
-			<p><a href="{{ url_for('edit_profile') }}">{{ _('Edit your profile') }}</a> |
-			<a href="{{ url_for('winner_prediction') }}">{{ _('Predict the tournament winner') }}</a> |
-			<a href="{{ url_for('default_prediction') }}">{{ _('Place your default prediction') }}</a>
-			{% if user.final_winner %} 
-				<br> {{ _('You predicted %(winner)s for winner! This prediction is worth %(points)s points.', winner=user.final_winner, points=winner_bet_points) }}
-			{% endif %} 
-			{% if user.default_score_a!=None %} 
-				<br> {{ _('You default prediction is' ) }}
-				{% if user.default_first_goal==1 %}
-			    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{user.default_score_a}}:{{user.default_score_b}}
-			    	{% elif user.default_first_goal==2 %}
-			    	  {{user.default_score_a}}:{{user.default_score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-			    	{% elif user.default_first_goal==0 %}
-			    	  {{user.default_score_a}}:{{user.default_score_b}}
-			    	{% endif %} 
-			{% endif %}
-			</p>
-		{% else %} {% if user.final_winner %} 
-			<p> {{ _('%(user)s predicted the winner! Have you?', user=user.username ) }} </p> {% endif %}
-		{% endif %}
-            </td>
-        </tr>
-    </table>
-    
-    <h1>{{ _('Statistics') }}</h1>
-    {% for user_here in stats %} {% if user.username==user_here.username %} 
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load("visualization", "1", { packages: ["corechart"] });
-        google.charts.setOnLoadCallback(init);
-        function drawChart(myID, titler, correct, incorrect) {
-            var data = google.visualization.arrayToDataTable([
-                ['Result', 'Values'],
-                ['Correct', correct],
-                ['Incorrect', incorrect]
-            ]);
-            var options = {
-                title: titler,
-                pieHole: 0.6,
-                width:150,
-                height:150,
-                titlePosition: 'none',
-                backgroundColor: { fill:'transparent' },
-                colors: ['#97ca54', '#cdcdcd'],
-                pieSliceText: 'none',
-                legend: { position: 'none' },
-                tooltip: { text: 'percentage' },
-                tooltip: { textStyle: { fontSize: 14 }}
-            };
-            var chart = new google.visualization.PieChart(document.getElementById(myID));
-            chart.draw(data, options);
-        }
-        function init() {
-            drawChart('donutchart1', 'FIRST GOAL', {{user_here.total_first_goal}}, {{user_here.total_closed_bets - user_here.total_first_goal}});
-            drawChart('donutchart2', 'OUTCOME', {{user_here.total_winner}}, {{user_here.total_closed_bets - user_here.total_winner}});
-            drawChart('donutchart3', 'SCORE DIFFERENCE', {{user_here.total_score_diff}}, {{user_here.total_closed_bets - user_here.total_score_diff}});
-            drawChart('donutchart4', 'SCORE', {{user_here.total_score}}, {{user_here.total_closed_bets - user_here.total_score}});
-        }
+                    <div class="user-profile-actions">
+                        <button type="button" class="chip chip--action" data-open-form="profile-edit">{{ _('Edit your profile') }}</button>
+                    </div>
+                {% endif %}
+            </div>
+            {% if user == current_user %}
+                <div class="user-profile-form">
+                    <form action="{{ url_for('edit_profile') }}" method="post" class="user-profile-edit-form">
+                        {{ profile_form.hidden_tag() }}
+                        <div class="user-profile-field">
+                            <label class="user-profile-label" for="{{ profile_form.username.id }}">
+                                <span class="user-profile-label-text">{{ profile_form.username.label.text }}</span>
+                            </label>
+                            <div class="user-profile-control">
+                                {{ profile_form.username(class='user-profile-input', size=32, autocomplete='username', maxlength=20) }}
+                            </div>
+                            {% for error in profile_form.username.errors %}
+                                <span class="user-profile-error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="user-profile-field">
+                            <label class="user-profile-label" for="{{ profile_form.about_me.id }}">
+                                <span class="user-profile-label-text">{{ profile_form.about_me.label.text }}</span>
+                            </label>
+                            <div class="user-profile-control">
+                                {{ profile_form.about_me(class='user-profile-textarea', cols=50, rows=3, maxlength=140, placeholder=_('Tell others a little about yourself…')) }}
+                            </div>
+                            <div class="user-profile-field-footer">
+                                <span class="user-profile-hint">{{ _('A short bio shown on your profile') }}</span>
+                                <span class="user-profile-char-count" data-char-count-for="{{ profile_form.about_me.id }}">{{ (profile_form.about_me.data or '')|length }} / 140</span>
+                            </div>
+                            {% for error in profile_form.about_me.errors %}
+                                <span class="user-profile-error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="dashboard-form-actions dashboard-form-actions--compact">
+                            <button type="submit" class="button button--small">{{ _('Save') }}</button>
+                            <button type="button" class="button button--ghost button--small" data-close-form="profile-edit">{{ _('Cancel') }}</button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <section id="dashboard" class="user-dashboard box">
+        {% if user == current_user %}
+            <div class="dashboard-setup">
+                <div id="default-bet" class="dashboard-card dashboard-card--setup dashboard-card--private{% if setup == 'default' %} is-editing{% endif %}">
+                    <div class="dashboard-card-head">
+                        <div class="dashboard-card-head-left">
+                            <h3 class="dashboard-card-title">{{ _('Default bet') }}</h3>
+                            <span class="dashboard-private-badge" title="{{ _('Only you can see this') }}">
+                                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                {{ _('Private') }}
+                            </span>
+                        </div>
+                        <button type="button" class="dashboard-card-action" data-open-form="default-bet">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                            {% if user.default_score_a != None %}{{ _('Change') }}{% else %}{{ _('Set') }}{% endif %}
+                        </button>
+                    </div>
+                    <div class="dashboard-card-display">
+                        <div class="dashboard-bet-hero">
+                            {% if user.default_score_a != None %}
+                                <div class="dashboard-bet-ticket">{{ score_with_goal(user.default_score_a, user.default_score_b, user.default_first_goal) }}</div>
+                                <p class="dashboard-card-caption">{{ _('Used only for forgotten games') }}</p>
+                            {% else %}
+                                <p class="dashboard-card-empty">{{ _('No default bet set yet.') }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="dashboard-card-form">
+                        <p class="dashboard-form-hint">{{ _('Used only for games you forget to predict.') }}</p>
+                        <form action="{{ url_for('default_prediction') }}" method="post" class="dashboard-default-bet-form">
+                            {{ default_form.hidden_tag() }}
+                            <div class="dashboard-default-bet-row">
+                                <img class="dashboard-default-bet-flag" src="{{ url_for('static', filename='flags/TBD.png') }}" alt="{{ _('Home Team') }}">
+                                <div class="dashboard-default-bet-scores">
+                                    {{ default_form.score_a(class='dashboard-default-bet-input', size=1) }}
+                                    <span class="dashboard-default-bet-sep" aria-hidden="true">:</span>
+                                    {{ default_form.score_b(class='dashboard-default-bet-input', size=1) }}
+                                </div>
+                                <img class="dashboard-default-bet-flag" src="{{ url_for('static', filename='flags/TBD.png') }}" alt="{{ _('Away Team') }}">
+                            </div>
+                            {{ wtf.first_goal_radios(default_form.first_goal) }}
+                            <div class="dashboard-form-actions dashboard-form-actions--compact">
+                                <button type="submit" class="button button--small">{{ _('Save') }}</button>
+                                <button type="button" class="button button--ghost button--small" data-close-form="default-bet">{{ _('Cancel') }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="tournament-winner" class="dashboard-card dashboard-card--setup dashboard-card--private{% if setup == 'winner' %} is-editing{% endif %}">
+                    <div class="dashboard-card-head">
+                        <div class="dashboard-card-head-left">
+                            <h3 class="dashboard-card-title">{{ _('Tournament winner') }}</h3>
+                            <span class="dashboard-private-badge" title="{{ _('Only you can see this') }}">
+                                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                {{ _('Private') }}
+                            </span>
+                        </div>
+                        <button type="button" class="dashboard-card-action" data-open-form="tournament-winner">
+                            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                            {% if user.final_winner %}{{ _('Change') }}{% else %}{{ _('Pick') }}{% endif %}
+                        </button>
+                    </div>
+                    <div class="dashboard-card-display">
+                        {% if user.final_winner %}
+                            <div class="dashboard-winner-hero">
+                                <img class="dashboard-winner-flag" src="{{ url_for('static', filename='flags/' ~ user.final_winner ~ '.png') }}" width="48" height="48" alt="{{ user.final_winner | team_name }}">
+                                <span class="dashboard-winner-team">{{ user.final_winner | team_name }}</span>
+                                <span class="dashboard-winner-badge">{{ _('Worth %(points)s points', points=winner_bet_points) }}</span>
+                            </div>
+                        {% else %}
+                            <p class="dashboard-card-empty">{{ _('No tournament winner picked yet.') }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="dashboard-card-form">
+                        <p class="dashboard-form-hint">{{ _('Pick the team you think will win the tournament.') }}</p>
+                        {% if winner_bet %}
+                            <details class="dashboard-winner-points">
+                                <summary>{{ _('Points by prediction date') }}</summary>
+                                <table class="dashboard-winner-points-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ _('Stage') }}</th>
+                                            <th>{{ _('Final Date for Prediction') }}</th>
+                                            <th>{{ _('Points') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for points in winner_bet %}
+                                            <tr>
+                                                <td>{{ points.description }}</td>
+                                                <td>{{ moment(as_utc(points.last_bet)).format('ddd DD/MM, H:mm') }}</td>
+                                                <td>{{ points.bet_points }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </details>
+                        {% endif %}
+                        <form action="{{ url_for('winner_prediction') }}" method="post" class="dashboard-winner-form">
+                            {{ winner_form.hidden_tag() }}
+                            <label class="dashboard-winner-label" for="{{ winner_form.final_winner.id }}">{{ winner_form.final_winner.label.text }}</label>
+                            {{ winner_form.final_winner(class='dashboard-winner-select') }}
+                            <div class="dashboard-form-actions dashboard-form-actions--compact">
+                                <button type="submit" class="button button--small">{{ _('Save') }}</button>
+                                <button type="button" class="button button--ghost button--small" data-close-form="tournament-winner">{{ _('Cancel') }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if user_stats %}
+            <div class="dashboard-kpis">
+                <div class="dashboard-kpi">
+                    <span class="dashboard-kpi-label">{{ _('Ranking') }}</span>
+                    <span class="dashboard-kpi-value">#{{ user_stats.ranking }}</span>
+                </div>
+                <div class="dashboard-kpi">
+                    <span class="dashboard-kpi-label">{{ _('Points') }}</span>
+                    <span class="dashboard-kpi-value">{{ user_stats.overall_points }}</span>
+                </div>
+                <div class="dashboard-kpi">
+                    <span class="dashboard-kpi-label">{{ _('Games') }}</span>
+                    <span class="dashboard-kpi-value">{{ user_stats.total_closed_bets }}</span>
+                </div>
+            </div>
+            <div class="dashboard-accuracy">
+                <h3 class="dashboard-accuracy-title">{{ _('Prediction accuracy') }}</h3>
+                {% set closed = user_stats.total_closed_bets %}
+                {% set pct_fg = (user_stats.total_first_goal * 100 / closed)|round|int if closed else 0 %}
+                {% set pct_out = (user_stats.total_winner * 100 / closed)|round|int if closed else 0 %}
+                {% set pct_diff = (user_stats.total_score_diff * 100 / closed)|round|int if closed else 0 %}
+                {% set pct_score = (user_stats.total_score * 100 / closed)|round|int if closed else 0 %}
+                <div class="accuracy-row">
+                    <span class="accuracy-label">{{ _('First Goal') }}</span>
+                    <div class="accuracy-stats">
+                        {% if closed %}
+                            <span class="accuracy-pct">{{ pct_fg }}%</span>
+                            <span class="accuracy-count">{{ user_stats.total_first_goal }} {{ _('of') }} {{ closed }}</span>
+                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.first_goal) }}</span>{% endif %}
+                        {% else %}
+                            <span class="accuracy-pct accuracy-pct--empty">—</span>
+                            <span class="accuracy-count">{{ _('No finished games yet') }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-bar stat-bar--compare" role="presentation">
+                        <div class="stat-bar-fill" style="width: {{ pct_fg }}%;"></div>
+                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.first_goal }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                    </div>
+                </div>
+                <div class="accuracy-row">
+                    <span class="accuracy-label">{{ _('Outcome') }}</span>
+                    <div class="accuracy-stats">
+                        {% if closed %}
+                            <span class="accuracy-pct">{{ pct_out }}%</span>
+                            <span class="accuracy-count">{{ user_stats.total_winner }} {{ _('of') }} {{ closed }}</span>
+                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.outcome) }}</span>{% endif %}
+                        {% else %}
+                            <span class="accuracy-pct accuracy-pct--empty">—</span>
+                            <span class="accuracy-count">{{ _('No finished games yet') }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-bar stat-bar--compare" role="presentation">
+                        <div class="stat-bar-fill" style="width: {{ pct_out }}%;"></div>
+                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.outcome }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                    </div>
+                </div>
+                <div class="accuracy-row">
+                    <span class="accuracy-label">{{ _('Score Difference') }}</span>
+                    <div class="accuracy-stats">
+                        {% if closed %}
+                            <span class="accuracy-pct">{{ pct_diff }}%</span>
+                            <span class="accuracy-count">{{ user_stats.total_score_diff }} {{ _('of') }} {{ closed }}</span>
+                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.score_diff) }}</span>{% endif %}
+                        {% else %}
+                            <span class="accuracy-pct accuracy-pct--empty">—</span>
+                            <span class="accuracy-count">{{ _('No finished games yet') }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-bar stat-bar--compare" role="presentation">
+                        <div class="stat-bar-fill" style="width: {{ pct_diff }}%;"></div>
+                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.score_diff }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                    </div>
+                </div>
+                <div class="accuracy-row">
+                    <span class="accuracy-label">{{ _('Score') }}</span>
+                    <div class="accuracy-stats">
+                        {% if closed %}
+                            <span class="accuracy-pct">{{ pct_score }}%</span>
+                            <span class="accuracy-count">{{ user_stats.total_score }} {{ _('of') }} {{ closed }}</span>
+                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.score) }}</span>{% endif %}
+                        {% else %}
+                            <span class="accuracy-pct accuracy-pct--empty">—</span>
+                            <span class="accuracy-count">{{ _('No finished games yet') }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="stat-bar stat-bar--compare" role="presentation">
+                        <div class="stat-bar-fill" style="width: {{ pct_score }}%;"></div>
+                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.score }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </section>
+
+    <div class="user-predictions">
+        <h2>{{ _('Predictions') }}</h2>
+        <div class="game-card-list">
+            {% if bets %}
+                <div class="game-card-list-header">
+                    <div class="game-card-header-cell">{{ _('Result') }}</div>
+                    <div class="game-card-header-cell">{{ _('Prediction') }}</div>
+                    <div class="game-card-header-cell">{{ _('Points') }}</div>
+                </div>
+            {% endif %}
+            {% for result in bets %}
+                {% set game_finished = result.first_goal == 0 or result.first_goal == 1 or result.first_goal == 2 %}
+                {% set pts = point_values(sport) %}
+                <a href="{{ url_for('games', idd=result.id) }}" class="game-card game-card-link{% if result.is_default_bet %} game-card--default{% endif %}{% if game_finished %} game-card--finished{% endif %}">
+                    <div class="game-card-aside game-card-aside--teams">
+                        <div class="game-card-teams">
+                            <div class="game-card-team-block">
+                                <span class="game-card-team">{{ result.team_a }}</span>
+                                <img class="game-card-flag" src="{{ url_for('static', filename='flags/' + result.team_a + '.png') }}" alt="">
+                            </div>
+                            <span class="game-card-result">{{ game_result_score(result) }}</span>
+                            <div class="game-card-team-block">
+                                <span class="game-card-team">{{ result.team_b }}</span>
+                                <img class="game-card-flag" src="{{ url_for('static', filename='flags/' + result.team_b + '.png') }}" alt="">
+                            </div>
+                        </div>
+                        {% if result.is_default_bet %}
+                            <span class="chip chip--default-badge">{{ _('Default') }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="game-card-main">
+                        <div class="game-card-scorecard"{% if game_finished and result.points != None %} title="{{ _('First goal +%(pts)s', pts=pts.first_goal if result.first_goal_correct else 0) }} · {{ _('Outcome +%(pts)s', pts=pts.outcome if result.winner_correct else 0) }} · {{ _('Score difference +%(pts)s', pts=pts.score_diff if result.score_diff_correct else 0) }} · {{ _('Exact score +%(pts)s', pts=pts.exact_score if result.score_correct else 0) }}"{% endif %}>
+                            <span class="game-card-pick-value" title="{{ _('Your prediction') }}">{{ score_with_goal(result.bet_score_a, result.bet_score_b, result.bet_first_goal) }}</span>
+                            {{ correctness_icon(result.first_goal_correct, _('First Goal'), pts.first_goal, 'G') }}
+                            {{ correctness_icon(result.winner_correct, _('Outcome'), pts.outcome, 'O') }}
+                            {{ correctness_icon(result.score_diff_correct, _('Score Difference'), pts.score_diff, 'D') }}
+                            {{ correctness_icon(result.score_correct, _('Score'), pts.exact_score, 'S') }}
+                        </div>
+                    </div>
+                    <div class="game-card-aside game-card-aside--meta">
+                        {% if game_finished %}
+                            <div class="game-card-points game-card-points--hero">
+                                {% if result.points == None %}—{% else %}+{{ result.points }}<span class="game-card-points-unit">{{ _('pts') }}</span>{% endif %}
+                            </div>
+                        {% else %}
+                            <time class="game-card-time">
+                                <span class="game-card-time-date">{{ moment(as_utc(result.starts_at)).format('DD/MM') }}</span>
+                                <span class="game-card-time-hour">{{ moment(as_utc(result.starts_at)).format('H:mm') }}</span>
+                            </time>
+                        {% endif %}
+                    </div>
+                </a>
+            {% else %}
+                <p class="game-card-empty">{{ _('No predictions yet.') }}</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        (function () {
+            function openInlineForm(cardId, scroll) {
+                var card = document.getElementById(cardId);
+                if (!card) return;
+                card.classList.add('is-editing');
+                if (scroll) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            function closeInlineForm(cardId) {
+                var card = document.getElementById(cardId);
+                if (!card) return;
+                card.classList.remove('is-editing');
+            }
+
+            document.querySelectorAll('[data-open-form]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    openInlineForm(button.getAttribute('data-open-form'), false);
+                });
+            });
+
+            document.querySelectorAll('[data-close-form]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    closeInlineForm(button.getAttribute('data-close-form'));
+                });
+            });
+
+            document.querySelectorAll('[data-char-count-for]').forEach(function (counter) {
+                var fieldId = counter.getAttribute('data-char-count-for');
+                var field = document.getElementById(fieldId);
+                if (!field) return;
+                var max = field.maxLength > 0 ? field.maxLength : 140;
+                var update = function () {
+                    counter.textContent = field.value.length + ' / ' + max;
+                };
+                field.addEventListener('input', update);
+                update();
+            });
+
+            var setup = new URLSearchParams(window.location.search).get('setup');
+            if (setup === 'profile') {
+                openInlineForm('profile-edit', true);
+            } else if (setup === 'default') {
+                openInlineForm('default-bet', true);
+            } else if (setup === 'winner') {
+                openInlineForm('tournament-winner', true);
+            }
+        })();
     </script>
-    	<div class="statsRow">
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Ranking') }} </div>
-			<div class="statsValue"> {{user_here.ranking}} </div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Points') }} </div>
-			<div class="statsValue"> {{user_here.overall_points}} </div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('First Goal') }} </div>
-			<div class="centerLabel">{{user_here.total_first_goal}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart1" class="donutDiv"></div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Outcome') }} </div>
-			<div class="centerLabel">{{user_here.total_winner}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart2" class="donutDiv"></div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Score Difference') }} </div>
-			<div class="centerLabel">{{user_here.total_score_diff}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart3" class="donutDiv"></div>
-		</div>
-		<div class="statsColumn">
-			<div class="statsTitle"> {{ _('Score') }} </div>
-			<div class="centerLabel">{{user_here.total_score}}/{{user_here.total_closed_bets}}</div>
-			<div id="donutchart4" class="donutDiv"></div>
-		</div>
-    	</div>
-    	{% endif %} {% endfor %}
-	<div style="overflow-x:auto">
-	 <h1>{{ _('Predictions') }}</h1>
-	    <table class="table table-hover">
-		 <tr>
-		    <th>ID</th>
-		    <th>{{ _('Game') }}</th>
-		    <th>{{ _('Game Time') }}</th>
-		    <th>{{ _('Prediction') }}</th>
-		    <th>{{ _('Result') }}</th>
-		    <th>{{ _('First Goal Correct') }}</th>
-		    <th>{{ _('Outcome Correct') }}</th>
-		    <th>{{ _('Score Difference Correct') }}</th>
-		    <th>{{ _('Score Correct') }}</th>
-		    <th>{{ _('Points') }}</th>
-		  </tr>
-		 {% for result in bets %}
-		 	{% if result.is_default_bet==True %}
-		  <tr style="white-space: nowrap; color: brown">
-		    <td>{{result.id}}</td>
-		    <th>
-		    <img src={{ url_for('static', filename='flags/' + result.team_a +'.png') }} width="20" height="20"/>
-		    {{result.team_a}} - {{result.team_b}}
-		    <img src={{ url_for('static', filename='flags/' + result.team_b +'.png') }} width="20" height="20"/>
-		    </th>
-		    <td>{{ moment(as_utc(result.starts_at)).format('ddd DD/MM, H:mm') }}</td>
-		    <td>{% if result[7]==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
-		    	{% elif result[7]==2 %}
-		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result[7]==0 %}
-		    	  {{result[5]}}:{{result[6]}} 
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
-		    	{% elif result.first_goal==2 %}
-		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result.first_goal==0 %}
-		    	  {{result.score_a}}:{{result.score_b}} 
-		    	{% else %}
-		    	-
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal_correct==None %} - 
-		    	{% elif result.first_goal_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.winner_correct==None %} - 
-		    	{% elif result.winner_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_diff_correct==None %} - 
-		    	{% elif result.score_diff_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_correct==None %} - 
-		    	{% elif result.score_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.points==None %} - 
-		    	{% else %} {{result.points}} {% endif %}
-		    	</td>
-		  </tr> 
-		  	{% else %}
-		  <tr style="white-space: nowrap">
-		    <td>{{result.id}}</td>
-		    <th>
-		    <img src={{ url_for('static', filename='flags/' + result.team_a +'.png') }} width="20" height="20"/>
-		    {{result.team_a}} - {{result.team_b}}
-		    <img src={{ url_for('static', filename='flags/' + result.team_b +'.png') }} width="20" height="20"/>
-		    </th>
-		    <td>{{ moment(as_utc(result.starts_at)).format('ddd DD/MM, H:mm') }}</td>
-		    <td>{% if result[7]==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result[5]}}:{{result[6]}}  
-		    	{% elif result[7]==2 %}
-		    	  {{result[5]}}:{{result[6]}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result[7]==0 %}
-		    	  {{result[5]}}:{{result[6]}} 
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal==1 %}
-		    	<img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/> {{result.score_a}}:{{result.score_b}}  
-		    	{% elif result.first_goal==2 %}
-		    	  {{result.score_a}}:{{result.score_b}} <img src={{ url_for('static', filename='essentials_' ~ sport ~ '/goal.png') }} width="10" height="10"/>
-		    	{% elif result.first_goal==0 %}
-		    	  {{result.score_a}}:{{result.score_b}} 
-		    	{% else %}
-		    	-
-		    	{% endif %}
-		    </td>
-		    <td>{% if result.first_goal_correct==None %} - 
-		    	{% elif result.first_goal_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.winner_correct==None %} - 
-		    	{% elif result.winner_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_diff_correct==None %} - 
-		    	{% elif result.score_diff_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.score_correct==None %} - 
-		    	{% elif result.score_correct==True %} X
-		    	{% else %} - {% endif %}
-		    	</td>
-		    <td>{% if result.points==None %} - 
-		    	{% else %} {{result.points}} {% endif %}
-		    	</td>
-		  </tr> 
-		  	{% endif %}
-		  {% endfor %} 
-	    </table>
-</div>
 {% endblock %}

@@ -12,7 +12,7 @@
         </div>
       </div>
       <div class="s_banner">
-          <a href="{{url_for('default_prediction')}}"><button>{{ _('Set Default Bet') }}</button></a>        
+          <a href="{{ url_for('user', username=current_user.username, setup='default') }}#default-bet"><button>{{ _('Set Default Bet') }}</button></a>        
           <button onclick="Close()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
@@ -28,7 +28,7 @@
         </div>
       </div>
       <div class="s_banner">
-          <a href="{{url_for('winner_prediction')}}" ><button>{{ _('Set Winner Team') }}</button></a>        
+          <a href="{{ url_for('user', username=current_user.username, setup='winner') }}#tournament-winner"><button>{{ _('Set Winner Team') }}</button></a>        
           <button onclick="Close1()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>

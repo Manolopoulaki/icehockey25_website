@@ -2,43 +2,40 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-<form method="POST" action="{{ url_for('place_predictions') }}">
-    <div style="overflow-x:auto">
-        <h2>{{ _('Place Predictions for all Scheduled Games') }}</h2>
-        <table class="table table-hover">
-            <tr>
-                <th>{{ _('ID') }}</th>
-                <th>{{ _('Game') }}</th>
-                <th>{{ _('Stage') }}</th>
-                <th>{{ _('Game Time') }}</th>
-                <th>{{ _('Your Prediction') }}</th>
-            </tr>
+<form method="POST" action="{{ url_for('place_predictions') }}" class="place-pred-form">
+    <h2>{{ _('Place Predictions for all Scheduled Games') }}</h2>
+    {% if games %}
+        <div class="place-pred-list">
             {% for game in games %}
-            <tr style="white-space: nowrap">
-                <td>{{ game.id }}</td>
-                <td>
-                    <img src="{{ url_for('static', filename='flags/' + game.team_a + '.png') }}" width="20" height="20"/>
-                    {{ game.team_a }} - {{ game.team_b }}
-                    <img src="{{ url_for('static', filename='flags/' + game.team_b + '.png') }}" width="20" height="20"/>
-                </td>
-                <td>{{ game.stage }}</td>
-                <td>{{ moment(as_utc(game.starts_at)).format('ddd DD/MM, H:mm') }}</td>
-                <td class="prediction-cell">
-                    <div class="prediction-row">
-                        <div class="prediction-scores">
-                            <input name="score_a_{{ game.id }}" value="{{ forms[game.id].score_a.data if forms[game.id].score_a.data is not none else '' }}" size=1>
-                            :
-                            <input name="score_b_{{ game.id }}" value="{{ forms[game.id].score_b.data if forms[game.id].score_b.data is not none else '' }}" size=1>
-                        </div>
-                        {{ wtf.bulk_first_goal_radios(game.id, forms[game.id].first_goal.choices, forms[game.id].first_goal.data) }}
+                <div class="place-pred-card">
+                    <div class="place-pred-meta">
+                        <span class="place-pred-id">#{{ game.id }}</span>
+                        <span class="place-pred-match">
+                            <img class="place-pred-flag" src="{{ url_for('static', filename='flags/' + game.team_a + '.png') }}" width="20" height="20" alt="">
+                            {{ game.team_a | team_name }} – {{ game.team_b | team_name }}
+                            <img class="place-pred-flag" src="{{ url_for('static', filename='flags/' + game.team_b + '.png') }}" width="20" height="20" alt="">
+                        </span>
+                        <span class="place-pred-stage">{{ game.stage }}</span>
+                        <time class="place-pred-time">{{ moment(as_utc(game.starts_at)).format('ddd DD/MM, H:mm') }}</time>
                     </div>
-                </td>
-            </tr>
+                    <div class="place-pred-pick">
+                        <div class="place-pred-scores">
+                            <input class="place-pred-score-input" name="score_a_{{ game.id }}" inputmode="numeric" value="{{ forms[game.id].score_a.data if forms[game.id].score_a.data is not none else '' }}" size="1" aria-label="{{ _('Home score') }}">
+                            <span class="place-pred-score-sep" aria-hidden="true">:</span>
+                            <input class="place-pred-score-input" name="score_b_{{ game.id }}" inputmode="numeric" value="{{ forms[game.id].score_b.data if forms[game.id].score_b.data is not none else '' }}" size="1" aria-label="{{ _('Away score') }}">
+                        </div>
+                        <div class="place-pred-first-goal">
+                            {{ wtf.bulk_first_goal_radios(game.id, forms[game.id].first_goal.choices, forms[game.id].first_goal.data) }}
+                        </div>
+                    </div>
+                </div>
             {% endfor %}
-        </table>
-        <div style="display: flex; justify-content: center;">
-            <button type="submit" class="button">{{ _('Place Predictions') }}</button>
         </div>
-    </div>
+        <div class="place-pred-save-bar">
+            <button type="submit" class="button">{{ _('Save all') }}</button>
+        </div>
+    {% else %}
+        <p class="game-card-empty">{{ _('No scheduled games to predict.') }}</p>
+    {% endif %}
 </form>
 {% endblock %}
