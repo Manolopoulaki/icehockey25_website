@@ -1,11 +1,13 @@
-from flask import render_template, flash, redirect, request, url_for, g, session, abort
+from pathlib import Path
+from flask import render_template, flash, redirect, request, url_for, g, session, abort, jsonify, make_response
 from app import app, db
-from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm, first_goal_choices
+from app.forms import AdminsForm, LoginForm, RegistrationForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm, EditProfileForm, PlaceBetForm, PlaceWinnerForm, UploadResultsForm, SetGame, UploadCSVForm, first_goal_choices, validate_bet_scores
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post, Game, Bet, Winnerbet, utcnow
 from app.email import send_password_reset_email
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, func, case
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import coalesce
 from flask_babel import get_locale
 from flask_babel import _
@@ -13,7 +15,150 @@ from functools import wraps
 import csv
 from io import TextIOWrapper
 from urllib.parse import urlsplit
+from app.teams import get_team_name
 from app.scoring import apply_bet_scoring
+
+def winner_team_choices():
+    teams = Game.query.filter(Game.team_a != 'TBD').with_entities(Game.team_b.label('team')).union(
+        Game.query.filter(Game.team_b != 'TBD').with_entities(Game.team_a.label('team'))
+    ).distinct().all()
+    choices = [(g.team, get_team_name(g.team)) for g in teams]
+    return sorted(choices, key=lambda choice: choice[1])
+
+def get_user_stats(username):
+    return User.query.filter_by(username=username).with_entities(
+        func.rank().over(order_by=(
+            coalesce(User.overall_points, 0).desc(),
+            coalesce(User.total_score, 0).desc(),
+            coalesce(User.total_score_diff, 0).desc(),
+            coalesce(User.total_winner, 0).desc(),
+            coalesce(User.total_first_goal, 0).desc()
+        )).label('ranking'),
+        User.username,
+        coalesce(User.total_score, 0).label('total_score'),
+        coalesce(User.total_score_diff, 0).label('total_score_diff'),
+        coalesce(User.total_winner, 0).label('total_winner'),
+        coalesce(User.total_first_goal, 0).label('total_first_goal'),
+        coalesce(User.total_points, 0).label('total_points'),
+        coalesce(User.total_closed_bets, 0).label('total_closed_bets'),
+        coalesce(User.overall_points, 0).label('overall_points')
+    ).first()
+
+def winner_bet_points_for(user):
+    if not user.final_winner_timestamp:
+        return 0
+    for tier in Winnerbet.query.order_by(Winnerbet.last_bet.asc()).all():
+        if user.final_winner_timestamp <= tier.last_bet:
+            return tier.bet_points
+    return 0
+
+def _user_bets_for_profile(profile_user):
+    bets = profile_user.bets.order_by(Bet.game_id.asc()).join(Game).add_columns(
+        Game.id,
+        Game.team_a,
+        Game.team_b,
+        Game.starts_at,
+        Bet.score_a.label('bet_score_a'),
+        Bet.score_b.label('bet_score_b'),
+        Bet.first_goal.label('bet_first_goal'),
+        Game.score_a,
+        Game.score_b,
+        Game.first_goal,
+        Bet.first_goal_correct,
+        Bet.winner_correct,
+        Bet.score_diff_correct,
+        Bet.score_correct,
+        Bet.points,
+        Bet.is_default_bet,
+    )
+    if profile_user == current_user:
+        return bets.filter(or_(Bet.is_default_bet == False, Game.starts_at < utcnow()))
+    return bets.filter(Game.starts_at < utcnow()).filter(Bet.is_default_bet == False)
+
+def _build_own_profile_forms(profile_form=None):
+    if profile_form is None:
+        profile_form = EditProfileForm(current_user.username)
+        profile_form.username.data = current_user.username
+        profile_form.about_me.data = current_user.about_me
+    default_form = PlaceBetForm()
+    default_form.first_goal.choices = first_goal_choices(generic=True)
+    if current_user.default_score_a is not None:
+        default_form.score_a.data = current_user.default_score_a
+        default_form.score_b.data = current_user.default_score_b
+        default_form.first_goal.data = current_user.default_first_goal
+    winner_form = PlaceWinnerForm()
+    winner_form.final_winner.choices = winner_team_choices()
+    if current_user.final_winner:
+        winner_form.final_winner.data = current_user.final_winner
+    return profile_form, default_form, winner_form, Winnerbet.query.all()
+
+def league_accuracy_averages():
+    row = db.session.query(
+        func.coalesce(func.sum(User.total_first_goal), 0).label('first_goal'),
+        func.coalesce(func.sum(User.total_winner), 0).label('outcome'),
+        func.coalesce(func.sum(User.total_score_diff), 0).label('score_diff'),
+        func.coalesce(func.sum(User.total_score), 0).label('score'),
+        func.coalesce(func.sum(User.total_closed_bets), 0).label('closed'),
+    ).filter(User.is_shown.is_(True)).first()
+    if not row or not row.closed:
+        return None
+    return {
+        'first_goal': int(round(row.first_goal * 100 / row.closed)),
+        'outcome': int(round(row.outcome * 100 / row.closed)),
+        'score_diff': int(round(row.score_diff * 100 / row.closed)),
+        'score': int(round(row.score * 100 / row.closed)),
+    }
+
+def _render_user_profile(profile_user, setup=None, profile_form=None):
+    profile_form_out = default_form = winner_form = winner_bet = None
+    if profile_user == current_user:
+        profile_form_out, default_form, winner_form, winner_bet = _build_own_profile_forms(profile_form)
+    return render_template(
+        'user.html',
+        title='Profile',
+        sport=g.sport,
+        user=profile_user,
+        bets=_user_bets_for_profile(profile_user),
+        user_stats=get_user_stats(profile_user.username),
+        winner_bet_points=winner_bet_points_for(profile_user) if profile_user == current_user else 0,
+        league_avg=league_accuracy_averages(),
+        game_id=get_next_game(),
+        setup=setup,
+        profile_form=profile_form_out,
+        default_form=default_form,
+        winner_form=winner_form,
+        winner_bet=winner_bet,
+    )
+
+@app.route('/manifest.webmanifest')
+def web_manifest():
+    icon_192 = url_for('static', filename='icons/pwa-192.png', _external=True)
+    icon_512 = url_for('static', filename='icons/pwa-512.png', _external=True)
+    return jsonify({
+        'id': '/',
+        'name': 'Sport Predictions',
+        'short_name': 'Predictions',
+        'description': 'Tournament predictions, standings, and game bets.',
+        'start_url': url_for('login', _external=True),
+        'scope': '/',
+        'display': 'standalone',
+        'display_override': ['standalone', 'minimal-ui'],
+        'prefer_related_applications': False,
+        'background_color': '#ffffff',
+        'theme_color': '#32A685',
+        'icons': [
+            {'src': icon_192, 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
+            {'src': icon_512, 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
+        ],
+    }), 200, {'Content-Type': 'application/manifest+json; charset=utf-8', 'Cache-Control': 'no-cache'}
+
+@app.route('/sw.js')
+def service_worker():
+    content = Path(app.static_folder, 'sw.js').read_text(encoding='utf-8')
+    response = make_response(content)
+    response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
 
 @app.before_request
 def before_request():
@@ -124,7 +269,7 @@ def schedule():
 @login_required
 def place_predictions():
     current_time = utcnow()
-    games = Game.query.filter(and_(Game.team_a != 'TBD', Game.team_b != 'TBD', Game.starts_at > current_time)).order_by(Game.id.asc()).all()
+    games = Game.query.filter(and_(Game.team_a != 'TBD', Game.team_b != 'TBD', Game.starts_at > current_time)).order_by(Game.starts_at.asc(), Game.id.asc()).all()
     forms = {}
     
     for game in games:
@@ -155,27 +300,21 @@ def place_predictions():
             if game.starts_at < current_time:
                 flash(_('This game (%(gamea)s vs %(gameb)s) has already started.', gamea=game.team_a, gameb=game.team_b), 'danger')
                 continue
-            elif (score_a == 0 and score_b == 0 and int(first_goal) != 0) or \
-                 (score_a == 0 and score_b != 0 and int(first_goal) != 2) or \
-                 (score_a != 0 and score_b == 0 and int(first_goal) != 1) or \
-                 (score_a != 0 and score_b != 0 and int(first_goal) == 0):
-                flash(_('Your first goal prediction is not valid for game %(game)s.', game=game.id), 'danger')
+            bet_error = validate_bet_scores(score_a, score_b, first_goal, g.sport)
+            if bet_error:
+                flash(_(bet_error), 'danger')
                 continue
-            elif score_a == score_b  and g.sport == 'hockey':
-                flash(_('Your prediction for game %(game)s cannot be a draw.', game=game.id), 'danger')
-                continue
-            else:
-                current_user.bets.filter_by(game_id=game.id).delete()
-                bet = Bet(game_id=game.id, score_a=score_a, score_b=score_b, first_goal=first_goal, user=current_user, is_default_bet=False)
-                db.session.add(bet)
-                saved_count += 1
+            current_user.bets.filter_by(game_id=game.id).delete()
+            bet = Bet(game_id=game.id, score_a=score_a, score_b=score_b, first_goal=first_goal, user=current_user, is_default_bet=False)
+            db.session.add(bet)
+            saved_count += 1
         db.session.commit()
         if saved_count:
             flash(_('Your predictions have been saved!'), 'success')
         else:
             flash(_('No predictions were saved. Enter scores and choose a first goal option for each game you want to update.'), 'warning')
         return redirect(url_for('place_predictions'))
-    return render_template("place_predictions.html", title='Place Predictions', sport=g.sport,games=games, forms=forms, game_id=get_next_game())
+    return render_template("place_predictions.html", title='Place Predictions', sport=g.sport, games=games, forms=forms, game_id=get_next_game())
 
 @app.route('/games/<idd>', methods=['GET', 'POST'])
 @login_required
@@ -183,12 +322,27 @@ def games(idd):
     games = Game.query.order_by(Game.id.asc()).all()
     bets = Bet.query.filter(Bet.user_id==current_user.id).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<utcnow())).all() 
     game_chosen = Game.query.filter(Game.id==idd).first_or_404()
-    bets_to_show = Bet.query.filter(Bet.game_id==idd).order_by(Bet.timestamp.asc()).join(Game).add_columns(Bet.user_id, Game.id, Game.team_a, Game.team_b, Bet.score_a, Bet.score_b, Bet.first_goal, Bet.points, Bet.is_default_bet)
-    correct_winners = Bet.query.filter(Bet.game_id==idd).filter(Bet.winner_correct==True).count()
-    correct_first_goals = Bet.query.filter(Bet.game_id==idd).filter(Bet.first_goal_correct==True).count()
-    default_bets = Bet.query.filter(Bet.game_id==idd).filter(Bet.is_default_bet==True).count()
-    all_bets = Bet.query.filter(Bet.game_id==idd).count()
-    users = User.query.add_columns(User.id, User.username)
+    bets_to_show = Bet.query.filter(Bet.game_id==idd).order_by(Bet.timestamp.asc()).options(joinedload(Bet.user)).all()
+    game_stats = db.session.query(
+        func.count(Bet.id).label('all_bets'),
+        func.sum(case((Bet.is_default_bet == True, 1), else_=0)).label('default_bets'),
+        func.sum(case((Bet.winner_correct == True, 1), else_=0)).label('correct_winners'),
+        func.sum(case((Bet.first_goal_correct == True, 1), else_=0)).label('correct_first_goals'),
+        func.sum(case((Bet.score_diff_correct == True, 1), else_=0)).label('correct_score_diff'),
+        func.sum(case((Bet.score_correct == True, 1), else_=0)).label('correct_score'),
+    ).filter(Bet.game_id == idd).first()
+    all_bets = game_stats.all_bets or 0
+    default_bets = game_stats.default_bets or 0
+    correct_winners = game_stats.correct_winners or 0
+    correct_first_goals = game_stats.correct_first_goals or 0
+    correct_score_diff = game_stats.correct_score_diff or 0
+    correct_score = game_stats.correct_score or 0
+    points_row = db.session.query(
+        func.avg(Bet.points),
+        func.max(Bet.points),
+    ).filter(Bet.game_id==idd, Bet.points.isnot(None)).first()
+    avg_points = round(points_row[0], 1) if points_row and points_row[0] is not None else None
+    max_points = points_row[1] if points_row and points_row[1] is not None else None
     current_time = utcnow()
     three_hours_earlier = utcnow() - timedelta(hours=3)
     form = PlaceBetForm()
@@ -197,11 +351,9 @@ def games(idd):
         if game_chosen.starts_at < current_time: 
             flash(_('This game has started'))
             return redirect(url_for('games', idd=idd))
-        if ((form.score_a.data == 0 and form.score_b.data == 0 and form.first_goal.data != 0) or (form.score_a.data == 0 and form.score_b.data != 0 and form.first_goal.data != 2) or (form.score_a.data != 0 and form.score_b.data == 0 and form.first_goal.data != 1) or (form.score_a.data != 0 and form.score_b.data != 0 and form.first_goal.data == 0)): 
-            flash(_('Your first goal prediction is not valid.'))
-            return redirect(url_for('games', idd=idd))
-        if form.score_a.data == form.score_b.data and g.sport == 'hockey':
-            flash(_('Your prediction is not valid.'))
+        bet_error = validate_bet_scores(form.score_a.data, form.score_b.data, form.first_goal.data, g.sport)
+        if bet_error:
+            flash(_(bet_error))
             return redirect(url_for('games', idd=idd))
         current_user.bets.filter_by(game_id=idd).delete()
         bet = Bet(game_id=idd, score_a = form.score_a.data, score_b = form.score_b.data, first_goal = form.first_goal.data, user=current_user, is_default_bet=False)
@@ -209,34 +361,35 @@ def games(idd):
         db.session.commit()
         flash(_('Your prediction has been saved.'))
         return redirect(url_for('games', idd=idd))
-    return render_template("games.html", title='Games', sport=g.sport, games=games, bets=bets, form=form, bets_to_show=bets_to_show, correct_winners=correct_winners, correct_first_goals=correct_first_goals, default_bets=default_bets, all_bets=all_bets, game_chosen=game_chosen, users=users, current_time=current_time, three_hours_earlier=three_hours_earlier, game_id=get_next_game())  
+    return render_template("games.html", title='Games', sport=g.sport, games=games, bets=bets, form=form, bets_to_show=bets_to_show, correct_winners=correct_winners, correct_first_goals=correct_first_goals, correct_score_diff=correct_score_diff, correct_score=correct_score, default_bets=default_bets, all_bets=all_bets, avg_points=avg_points, max_points=max_points, game_chosen=game_chosen, current_time=current_time, three_hours_earlier=three_hours_earlier, game_id=get_next_game())  
     
 @app.route('/winner_prediction', methods=['GET', 'POST'])
 @login_required
 def winner_prediction():
+    if request.method == 'GET':
+        return redirect(url_for('user', username=current_user.username, setup='winner'))
     form = PlaceWinnerForm()
-    form.final_winner.choices = [(g.team, _('Team %(team)s', team=g.team)) for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
-    winner_bet = Winnerbet.query.all()
+    form.final_winner.choices = winner_team_choices()
     if form.validate_on_submit():
         current_user.final_winner = form.final_winner.data
         current_user.final_winner_timestamp = utcnow()
         db.session.commit()
         flash(_('Your prediction has been saved.'))
         return redirect(url_for('user', username=current_user.username))
-    return render_template("winner_prediction.html", title='Winner Prediction', sport=g.sport, form=form, winner_bet=winner_bet, game_id=get_next_game())
+    return redirect(url_for('user', username=current_user.username, setup='winner'))
     
 @app.route('/default_prediction', methods=['GET', 'POST'])
 @login_required
 def default_prediction():
+    if request.method == 'GET':
+        return redirect(url_for('user', username=current_user.username, setup='default'))
     form = PlaceBetForm()
     form.first_goal.choices = first_goal_choices(generic=True)
     if form.validate_on_submit():
-        if ((form.score_a.data == 0 and form.score_b.data == 0 and form.first_goal.data != 0) or (form.score_a.data == 0 and form.score_b.data != 0 and form.first_goal.data != 2) or (form.score_a.data != 0 and form.score_b.data == 0 and form.first_goal.data != 1) or (form.score_a.data != 0 and form.score_b.data != 0 and form.first_goal.data == 0)): 
-            flash(_('Your first goal prediction is not valid.'))
-            return redirect(url_for('default_prediction'))
-        if form.score_a.data == form.score_b.data and g.sport == 'hockey':
-            flash(_('Your prediction is not valid.'))
-            return redirect(url_for('default_prediction'))
+        bet_error = validate_bet_scores(form.score_a.data, form.score_b.data, form.first_goal.data, g.sport)
+        if bet_error:
+            flash(_(bet_error))
+            return redirect(url_for('user', username=current_user.username, setup='default'))
         current_user.default_score_a = form.score_a.data
         current_user.default_score_b = form.score_b.data
         current_user.default_first_goal = form.first_goal.data
@@ -250,7 +403,7 @@ def default_prediction():
         db.session.commit()    	
         flash(_('Your default prediction has been set.'))
         return redirect(url_for('user', username=current_user.username))
-    return render_template("default_prediction.html", title='Default Prediction', sport=g.sport, form=form, game_id=get_next_game())
+    return redirect(url_for('user', username=current_user.username, setup='default'))
                                                   
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -300,48 +453,14 @@ def register():
 @app.route('/user/<username>')
 @login_required
 def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    winner_bet_points = 0
-    if user.final_winner_timestamp:
-        for i in Winnerbet.query.order_by(Winnerbet.last_bet.asc()).all():
-            if user.final_winner_timestamp>i.last_bet: winner_bet_points = 0 #continue #TO CHECK
-            else:
-                winner_bet_points = i.bet_points 
-                break	
-    #page = request.args.get('page', 1, type=int)
-    #posts = user.posts.order_by(Post.timestamp.desc()).paginate(
-    #    page, app.config['POSTS_PER_PAGE'], False)
-    #next_url = url_for('user', username=user.username, page=posts.next_num) \
-    #    if posts.has_next else None
-    #prev_url = url_for('user', username=user.username, page=posts.prev_num) \
-    #    if posts.has_prev else None
-    if user == current_user:
-        bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<utcnow())).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
-    else:
-        bets = user.bets.order_by(Bet.game_id.asc()).join(Game).filter(Game.starts_at<utcnow()).add_columns(Game.id, Game.team_a, Game.team_b, Game.starts_at, Bet.score_a, Bet.score_b, Bet.first_goal, Game.score_a, Game.score_b, Game.first_goal, Bet.first_goal_correct, Bet.winner_correct, Bet.score_diff_correct, Bet.score_correct, Bet.points, Bet.is_default_bet) 
-    stats = User.query.with_entities(
-        func.rank().over(order_by=(
-            coalesce(User.overall_points, 0).desc(),
-            coalesce(User.total_score, 0).desc(),
-            coalesce(User.total_score_diff, 0).desc(),
-            coalesce(User.total_winner, 0).desc(),
-            coalesce(User.total_first_goal, 0).desc()
-        )).label('ranking')
-    ).add_columns(
-        User.username,
-        coalesce(User.total_score, 0).label('total_score'),
-        coalesce(User.total_score_diff, 0).label('total_score_diff'),
-        coalesce(User.total_winner, 0).label('total_winner'),
-        coalesce(User.total_first_goal, 0).label('total_first_goal'),
-        coalesce(User.total_points, 0).label('total_points'),
-        coalesce(User.total_closed_bets, 0).label('total_closed_bets'),
-        coalesce(User.overall_points, 0).label('overall_points')
-    ).all()    
-    return render_template('user.html', title='Profile', sport=g.sport, user=user, bets=bets, stats=stats, winner_bet_points=winner_bet_points, game_id=get_next_game())
-                           
+    profile_user = User.query.filter_by(username=username).first_or_404()
+    return _render_user_profile(profile_user, setup=request.args.get('setup'))
+
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
+    if request.method == 'GET':
+        return redirect(url_for('user', username=current_user.username, setup='profile'))
     form = EditProfileForm(current_user.username)
     if form.validate_on_submit():
         current_user.username = form.username.data
@@ -349,10 +468,7 @@ def edit_profile():
         db.session.commit()
         flash(_('Your changes have been saved.'))
         return redirect(url_for('user', username=current_user.username))
-    elif request.method == 'GET':
-        form.username.data = current_user.username
-        form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html', title='Edit Profile', sport=g.sport, form=form, game_id=get_next_game())                         
+    return _render_user_profile(current_user, setup='profile', profile_form=form)                         
 
 @app.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_password_request():
@@ -485,7 +601,7 @@ def admin():
     
     # winner team section 
     wform = PlaceWinnerForm()
-    wform.final_winner.choices = [(g.team, f'Team {g.team}') for g in Game.query.filter(Game.team_a!='TBD').with_entities(Game.team_b.label('team')).union(Game.query.filter(Game.team_b!='TBD').with_entities(Game.team_a.label('team'))).distinct().all()]
+    wform.final_winner.choices = winner_team_choices()
     if _submitted(wform) and wform.validate():
         for u in User.query.all():
             if u.final_winner==wform.final_winner.data:

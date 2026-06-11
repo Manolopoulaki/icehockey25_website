@@ -6,7 +6,12 @@
 
 {% block styles %}
 {{super()}}
-	<meta name="viewport" content="width=device-width">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#32A685">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-title" content="{{ _('Predictions') }}">
+	<link rel="manifest" href="{{ url_for('web_manifest') }}">
+	<link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/pwa-192.png') }}">
 	<link rel="stylesheet" href="{{url_for('.static', filename='horizontal.css')}}">
 	<link rel="stylesheet" href="{{url_for('.static', filename='styles.css')}}">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -81,4 +86,17 @@
 	{{ super() }}
 	{{ moment.include_moment() }}
 	{{ moment.lang(g.locale) }}
+	<script>
+		if ('serviceWorker' in navigator) {
+			var swReloaded = false;
+			navigator.serviceWorker.addEventListener('controllerchange', function () {
+				if (swReloaded) return;
+				swReloaded = true;
+				window.location.reload();
+			});
+			navigator.serviceWorker.register("{{ url_for('service_worker') }}", { scope: '/' }).catch(function (err) {
+				console.warn('Service worker registration failed:', err);
+			});
+		}
+	</script>
 {% endblock %}
