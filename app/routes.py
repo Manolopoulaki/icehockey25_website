@@ -13,6 +13,7 @@ from functools import wraps
 import csv
 from io import TextIOWrapper
 from urllib.parse import urlsplit
+from app.scoring import apply_bet_scoring
 
 @app.before_request
 def before_request():
@@ -446,19 +447,7 @@ def admin():
         current_game.first_goal = form.first_goal.data
         bets_to_update = Bet.query.join(Game).filter((Game.id==form.game_id.data)).all()
         for bet in bets_to_update:
-            if (bet.first_goal==int(current_game.first_goal)): bet.first_goal_correct=True
-            else: bet.first_goal_correct=False
-            if (bet.score_a==current_game.score_a and bet.score_b==current_game.score_b): bet.score_correct=True
-            else: bet.score_correct=False
-            if (((bet.score_a>bet.score_b) and (current_game.score_a>current_game.score_b)) or ((bet.score_b>bet.score_a) and (current_game.score_b>current_game.score_a)) or ((bet.score_b==bet.score_a) and (current_game.score_b==current_game.score_a))):
-                bet.winner_correct=True
-            else: bet.winner_correct=False
-            if (bet.winner_correct==True and abs(bet.score_a-bet.score_b)==abs(current_game.score_a-current_game.score_b)): bet.score_diff_correct=True
-            else: bet.score_diff_correct=False
-            if g.sport == 'hockey':
-                bet.points = int(bet.first_goal_correct) + 3*int(bet.winner_correct) + int(bet.score_diff_correct) + 3*int(bet.score_correct)
-            if g.sport == 'football':
-                bet.points = int(bet.first_goal_correct) + 3*int(bet.winner_correct) + int(bet.score_diff_correct) + 2*int(bet.score_correct)
+            apply_bet_scoring(bet, current_game, g.sport)
         for u in User.query.all():
             u.total_score = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_correct == True, 1)], else_=0)), 0))
             u.total_score_diff = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_diff_correct == True, 1)], else_=0)), 0))
@@ -481,19 +470,7 @@ def admin():
         current_game.first_goal = correct_game_score_form.first_goal.data
         bets_to_update = Bet.query.join(Game).filter((Game.id==correct_game_score_form.game_id.data)).all()
         for bet in bets_to_update:
-            if (bet.first_goal==int(current_game.first_goal)): bet.first_goal_correct=True
-            else: bet.first_goal_correct=False
-            if (bet.score_a==current_game.score_a and bet.score_b==current_game.score_b): bet.score_correct=True
-            else: bet.score_correct=False
-            if (((bet.score_a>bet.score_b) and (current_game.score_a>current_game.score_b)) or ((bet.score_b>bet.score_a) and (current_game.score_b>current_game.score_a)) or ((bet.score_b==bet.score_a) and (current_game.score_b==current_game.score_a))):
-                bet.winner_correct=True
-            else: bet.winner_correct=False
-            if (bet.winner_correct==True and abs(bet.score_a-bet.score_b)==abs(current_game.score_a-current_game.score_b)): bet.score_diff_correct=True
-            else: bet.score_diff_correct=False
-            if g.sport == 'hockey':
-                bet.points = int(bet.first_goal_correct) + 3*int(bet.winner_correct) + int(bet.score_diff_correct) + 3*int(bet.score_correct)
-            if g.sport == 'football':
-                bet.points = int(bet.first_goal_correct) + 3*int(bet.winner_correct) + int(bet.score_diff_correct) + 2*int(bet.score_correct)
+            apply_bet_scoring(bet, current_game, g.sport)
         for u in User.query.all():
             u.total_score = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_correct == True, 1)], else_=0)), 0))
             u.total_score_diff = User.query.filter(User.id==u.id).join(Bet).with_entities(coalesce(func.sum(case([(Bet.score_diff_correct == True, 1)], else_=0)), 0))

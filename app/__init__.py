@@ -35,7 +35,9 @@ def as_utc(dt):
 app.jinja_env.globals['as_utc'] = as_utc
 
 from app.teams import team_name_filter
+from app.scoring import point_values
 app.jinja_env.filters['team_name'] = team_name_filter
+app.jinja_env.globals['point_values'] = point_values
 
 def get_locale():
     #return request.accept_languages.best_match(app.config['LANGUAGES'])
