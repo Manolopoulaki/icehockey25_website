@@ -4,6 +4,18 @@ set -eu
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
 
+if [ -x "$repo_root/venv/bin/python" ]; then
+    python_cmd="$repo_root/venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+    python_cmd=$(command -v python3)
+else
+    echo "python3 is required for the pre-push test check." >&2
+    exit 1
+fi
+
+echo "Running tests before push..."
+"$python_cmd" -m unittest tests
+
 if [ -x "$repo_root/venv/bin/pip-audit" ]; then
     audit_cmd="$repo_root/venv/bin/pip-audit"
 elif command -v pip-audit >/dev/null 2>&1; then
@@ -13,4 +25,5 @@ else
     exit 1
 fi
 
+echo "Running dependency vulnerability audit..."
 "$audit_cmd" -r requirements.txt

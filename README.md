@@ -16,11 +16,22 @@ While in the top directory and using an Ubuntu (wsl) terminal on VSCode, first i
 
 The app requires `SECRET_KEY` to be set in `.env` or in the shell before startup. It is used to sign sessions and password-reset tokens.
 
-To make the pre-push vulnerability check run automatically on `git push`, run `scripts/setup-git-hooks.sh` once after cloning the repo. It sets Git to use the repo-local `.githooks/pre-push` hook, which runs `pip-audit -r requirements.txt` before every push.
+### Git hooks
+
+After cloning the repo, run `scripts/setup-git-hooks.sh` once. It sets `core.hooksPath` to the repo-local `.githooks` directory so Git uses the shared hooks in this project instead of your global `~/.git/hooks`.
+
+The `.githooks/pre-push` hook runs automatically before every `git push` and blocks the push if any step fails:
+
+1. **Tests** — runs the full suite with `python -m unittest tests` (uses `venv/bin/python` when present, otherwise `python3`).
+2. **Dependency audit** — runs `pip-audit -r requirements.txt` to check for known vulnerabilities in pinned requirements (uses `venv/bin/pip-audit` when present, otherwise `pip-audit` on your `PATH`).
+
+Make sure the virtualenv is created and dependencies are installed (`pip install -r requirements.txt`) before pushing, so both checks can run. To run the hook manually without pushing: `.githooks/pre-push`.
 
 ### Initial user setup
 
-To create the main/first admin user, after registering through the website, you have to manually set is_admin=True in the db for the user you want to be an admin. After that, it is posible to add and remove admins through the website.
+The first account to register on an empty database is promoted to admin automatically (the register route sets `is_admin=True` when the new user gets `id == 1`). Register that account through the website after running the database migrations.
+
+Additional admins can be added or removed through the website by an existing admin. If you need to grant admin access on a database that already has users, set `is_admin=True` manually in the database for the account you want.
 
 ### Dev database setup
 

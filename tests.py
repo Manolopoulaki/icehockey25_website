@@ -455,12 +455,13 @@ class SecurityHookCase(unittest.TestCase):
         version_module = importlib.import_module('distutils.version')
         self.assertTrue(hasattr(version_module, 'StrictVersion'))
 
-    def test_pre_push_hook_runs_vulnerability_audit(self):
+    def test_pre_push_hook_runs_tests_and_vulnerability_audit(self):
         hook_path = Path('.githooks/pre-push')
         self.assertTrue(hook_path.exists(), 'pre-push hook is missing')
         self.assertTrue(hook_path.is_file(), 'pre-push hook is not a file')
         self.assertTrue(hook_path.stat().st_mode & 0o111, 'pre-push hook is not executable')
         hook_text = hook_path.read_text(encoding='utf-8')
+        self.assertIn('unittest tests', hook_text)
         self.assertIn('pip-audit', hook_text)
         self.assertIn('-r requirements.txt', hook_text)
 
