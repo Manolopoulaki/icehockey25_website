@@ -9,6 +9,7 @@ from app.models import User, Post, Game, Bet, Winnerbet, Team
 from app.forms import validate_bet_scores
 from app.routes import (
     get_next_game,
+    get_user_stats,
     utcnow,
     winner_bet_points_for,
     league_accuracy_averages,
@@ -285,6 +286,18 @@ class LeagueStatsCase(TestCaseBase):
 
         self.assertEqual(ranked[0].username, 'leader')
         self.assertEqual(ranked[1].username, 'runner')
+
+    def test_get_user_stats_returns_global_rank(self):
+        self.make_user('leader', overall_points=30, total_score=5,
+                       total_score_diff=4, total_winner=3,
+                       total_first_goal=2, total_closed_bets=10)
+        self.make_user('runner', overall_points=20, total_score=4,
+                       total_score_diff=5, total_winner=3,
+                       total_first_goal=2, total_closed_bets=10)
+        db.session.commit()
+
+        self.assertEqual(get_user_stats('leader').ranking, 1)
+        self.assertEqual(get_user_stats('runner').ranking, 2)
 
 
 class UserModelCase(TestCaseBase):

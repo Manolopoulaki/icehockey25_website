@@ -26,13 +26,13 @@ def winner_team_choices():
     return sorted(choices, key=lambda choice: choice[1])
 
 def get_user_stats(username):
-    return User.query.filter_by(username=username).with_entities(
+    ranked_users_cte = db.session.query(
         func.rank().over(order_by=(
-            coalesce(User.overall_points, 0).desc(),
-            coalesce(User.total_score, 0).desc(),
-            coalesce(User.total_score_diff, 0).desc(),
-            coalesce(User.total_winner, 0).desc(),
-            coalesce(User.total_first_goal, 0).desc()
+            User.overall_points.desc(),
+            User.total_score.desc(),
+            User.total_score_diff.desc(),
+            User.total_winner.desc(),
+            User.total_first_goal.desc(),
         )).label('ranking'),
         User.username,
         coalesce(User.total_score, 0).label('total_score'),
@@ -41,7 +41,10 @@ def get_user_stats(username):
         coalesce(User.total_first_goal, 0).label('total_first_goal'),
         coalesce(User.total_points, 0).label('total_points'),
         coalesce(User.total_closed_bets, 0).label('total_closed_bets'),
-        coalesce(User.overall_points, 0).label('overall_points')
+        coalesce(User.overall_points, 0).label('overall_points'),
+    ).cte(name='ranked_users')
+    return db.session.query(ranked_users_cte).filter(
+        ranked_users_cte.c.username == username
     ).first()
 
 def winner_bet_points_for(user):
