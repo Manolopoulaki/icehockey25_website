@@ -276,31 +276,6 @@ button.chip {
   color: #fff;
 }
 
-.chip--default {
-  background: color-mix(in srgb, var(--color-bright) 35%, transparent);
-  color: var(--color-text);
-  margin-bottom: 0.6rem;
-}
-
-.chip--winner {
-  background: color-mix(in srgb, var(--color-secondary) 28%, transparent);
-  color: var(--color-text);
-  margin-bottom: 0.4rem;
-}
-
-.chip--muted {
-  background: color-mix(in srgb, var(--color-text) 8%, transparent);
-  color: var(--color-text);
-  font-weight: 500;
-  margin-bottom: 0.6rem;
-}
-
-.chip--default-badge {
-  background: var(--color-bright);
-  color: var(--color-text);
-  padding: 0.15rem 0.5rem;
-}
-
 .chip--action {
   border: 2px solid var(--color-secondary);
   background: var(--color-bg);
@@ -427,8 +402,7 @@ button.chip {
   height: 15px;
 }
 
-.dashboard-card-caption,
-.dashboard-card-private {
+.dashboard-card-caption {
   margin: 0;
   font-size: 0.9em;
   opacity: 0.75;
@@ -1062,10 +1036,6 @@ button.button--ghost {
   flex-shrink: 0;
 }
 
-.game-card-aside--teams .chip--default-badge {
-  white-space: nowrap;
-}
-
 .game-card-list--by-user {
   --gc-col-teams: 11rem;
 }
@@ -1110,10 +1080,6 @@ button.button--ghost {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-}
-
-.game-card-aside--user .chip--default-badge {
-  white-space: nowrap;
 }
 
 .game-card-points--pending {
@@ -1227,10 +1193,6 @@ button.button--ghost {
   padding: 0.5rem;
   text-align: center;
   opacity: 0.8;
-}
-
-.game-card .chip--default-badge {
-  padding: 0.1rem 0.4rem;
 }
 
 @media (max-width: 600px) {
@@ -1367,12 +1329,6 @@ button.button--ghost {
 input#score_a,
 input#score_b {
   width: 60px;
-}
-
-.bbinpp {
-  font-size: 40px;
-  width: 50px;
-  text-align: center;
 }
 
 .bbfirsttext {
@@ -1635,23 +1591,6 @@ input#score_b {
   }
 }
 
-.prediction-cell {
-  white-space: nowrap;
-}
-
-.prediction-row {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.prediction-scores {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.15rem;
-  flex-shrink: 0;
-}
 .bbsubmit { grid-area: 6 / 3 / 7 / 6; }
 
 tr:nth-child(even) {

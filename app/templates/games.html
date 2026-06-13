@@ -59,9 +59,6 @@
 		</div>
 	</div>
 	<div id=gamebox>
-		{% if game_chosen==[] %}
-			<h2>{{ _('Please choose a game from list above') }}</h2>
-		{% endif %}	
 		{% if game_chosen.starts_at > current_time %}
 			<div class="box" style="background-color: color-mix(in srgb, var(--color-bright) 30%, transparent);">
 				<form action="" method="post">{{ form.hidden_tag() }}			
@@ -199,9 +196,6 @@
 								<img class="game-card-user-avatar" src="{{ url_for('static', filename='hektor_pics/' ~ bet.user.id ~ '.jpg') }}" width="40" height="40" alt="">
 								<span class="game-card-username">{{ bet.user.username }}</span>
 							</a>
-							{% if bet.is_default_bet %}
-								<span class="chip chip--default-badge">{{ _('Default') }}</span>
-							{% endif %}
 						</div>
 						<div class="game-card-main">
 							<div class="game-card-scorecard"{% if game_finished and bet.points != None %} title="{{ _('First goal +%(pts)s', pts=pts.first_goal if bet.first_goal_correct else 0) }} · {{ _('Outcome +%(pts)s', pts=pts.outcome if bet.winner_correct else 0) }} · {{ _('Score difference +%(pts)s', pts=pts.score_diff if bet.score_diff_correct else 0) }} · {{ _('Exact score +%(pts)s', pts=pts.exact_score if bet.score_correct else 0) }}"{% endif %}>

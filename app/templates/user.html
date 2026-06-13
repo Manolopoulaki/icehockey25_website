@@ -298,9 +298,6 @@
                                 <img class="game-card-flag" src="{{ url_for('static', filename='flags/' + result.team_b + '.png') }}" alt="">
                             </div>
                         </div>
-                        {% if result.is_default_bet %}
-                            <span class="chip chip--default-badge">{{ _('Default') }}</span>
-                        {% endif %}
                     </div>
                     <div class="game-card-main">
                         <div class="game-card-scorecard"{% if game_finished and result.points != None %} title="{{ _('First goal +%(pts)s', pts=pts.first_goal if result.first_goal_correct else 0) }} · {{ _('Outcome +%(pts)s', pts=pts.outcome if result.winner_correct else 0) }} · {{ _('Score difference +%(pts)s', pts=pts.score_diff if result.score_diff_correct else 0) }} · {{ _('Exact score +%(pts)s', pts=pts.exact_score if result.score_correct else 0) }}"{% endif %}>

@@ -6,7 +6,6 @@ import os
 mimetypes.add_type('application/manifest+json', '.webmanifest')
 from datetime import timezone
 from flask import Flask, session
-from flask import request
 from config import Config
 from markupsafe import Markup
 import jinja2

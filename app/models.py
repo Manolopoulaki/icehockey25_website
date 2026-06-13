@@ -83,22 +83,6 @@ class User(UserMixin, db.Model):
             {'reset_password': self.id, 'exp': time() + expires_in},
             app.config['SECRET_KEY'], algorithm='HS256')
         return token.decode('utf-8') if isinstance(token, bytes) else token
-            
-    def get_own_posts(self):
-        return Post.query.join(
-            User, (User.id == Post.user_id)).filter(
-                User.id == self.id).order_by(
-                    Post.timestamp.desc())
-                    
-#    def get_number_of_bets(self):
-#        return Bet.query.join(
-#            User, (User.id == Bet.user_id)).filter(
-#                User.id == self.id).count()  
-                
-#    def get_total_points(self):
-#        return Bet.query.join(
-#            User, (User.id == Bet.user_id)).filter(
-#                User.id == self.id).sum(Bet.points)                            
 
     @staticmethod
     def verify_reset_password_token(token):
