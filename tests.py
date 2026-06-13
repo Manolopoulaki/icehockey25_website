@@ -13,6 +13,7 @@ from app.routes import (
     utcnow,
     winner_bet_points_for,
     league_accuracy_averages,
+    _user_bets_for_profile,
 )
 from app.teams import get_team_name, _team_names_for_sport
 from app.team_data import iter_team_rows
@@ -183,6 +184,42 @@ class ProfileRoutesCase(TestCaseBase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'id="default-bet"', response.data)
         self.assertIn(b"openInlineForm('default-bet', true)", response.data)
+
+    def test_profile_shows_default_bets_in_game_cards(self):
+        viewer = self.make_user('viewer')
+        player = self.make_user('player')
+        finished_game = Game(team_a='CAN', team_b='USA',
+                             starts_at=utcnow() - timedelta(days=1),
+                             score_a=2, score_b=1, first_goal=1)
+        upcoming_game = Game(team_a='FIN', team_b='SWE',
+                             starts_at=utcnow() + timedelta(days=1))
+        db.session.add_all([finished_game, upcoming_game])
+        db.session.flush()
+        db.session.add_all([
+            Bet(user_id=player.id, game_id=finished_game.id, score_a=1, score_b=1,
+                first_goal=1, is_default_bet=True),
+            Bet(user_id=player.id, game_id=upcoming_game.id, score_a=0, score_b=0,
+                first_goal=0, is_default_bet=True),
+        ])
+        db.session.commit()
+
+        with app.test_request_context():
+            from flask_login import login_user
+            login_user(viewer)
+            other_bets = list(_user_bets_for_profile(player))
+            self.assertEqual(len(other_bets), 1)
+            self.assertTrue(other_bets[0].is_default_bet)
+
+            login_user(player)
+            own_bets = list(_user_bets_for_profile(player))
+            self.assertEqual(len(own_bets), 2)
+            self.assertTrue(all(bet.is_default_bet for bet in own_bets))
+
+        with app.test_client() as client:
+            self.login(client, viewer)
+            response = client.get(f'/user/{player.username}')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'chip--default-badge', response.data)
 
 
 class PwaRoutesCase(TestCaseBase):

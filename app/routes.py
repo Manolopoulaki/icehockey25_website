@@ -75,8 +75,8 @@ def _user_bets_for_profile(profile_user):
         Bet.is_default_bet,
     )
     if profile_user == current_user:
-        return bets.filter(or_(Bet.is_default_bet == False, Game.starts_at < utcnow()))
-    return bets.filter(Game.starts_at < utcnow()).filter(Bet.is_default_bet == False)
+        return bets
+    return bets.filter(Game.starts_at < utcnow())
 
 def _build_own_profile_forms(profile_form=None):
     if profile_form is None:
