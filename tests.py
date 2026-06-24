@@ -27,11 +27,11 @@ from app.scoring import (
 
 class TestCaseBase(unittest.TestCase):
     def setUp(self):
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
         self.app_context = app.app_context()
         self.app_context.push()
+        db.drop_all()
         db.create_all()
         self._original_sport = app.config['SPORT']
 
@@ -283,22 +283,23 @@ class GamesPageCase(TestCaseBase):
 
 class EveryoneStatsCase(TestCaseBase):
     def test_everyone_accuracy_averages(self):
-        u1 = self.make_user('a', is_shown=True, total_first_goal=2,
-                            total_winner=4, total_score_diff=3, total_score=1,
-                            total_closed_bets=10)
-        u2 = self.make_user('b', is_shown=True, total_first_goal=0,
-                            total_winner=2, total_score_diff=1, total_score=1,
-                            total_closed_bets=10)
+        self.make_user('a', is_shown=True, total_first_goal=2,
+                       total_winner=4, total_score_diff=3, total_score=1,
+                       total_closed_bets=10)
+        self.make_user('b', is_shown=True, total_first_goal=0,
+                       total_winner=2, total_score_diff=1, total_score=1,
+                       total_closed_bets=10)
         self.make_user('hidden', is_shown=False, total_first_goal=10,
                        total_winner=10, total_score_diff=10, total_score=10,
                        total_closed_bets=10)
-        db.session.commit()
+        self.assertEqual(User.query.filter(User.is_shown.is_(True)).count(), 2)
 
+        shown_closed_bets = 20
         averages = everyone_accuracy_averages()
-        self.assertEqual(averages['first_goal'], 10)
-        self.assertEqual(averages['outcome'], 30)
-        self.assertEqual(averages['score_diff'], 20)
-        self.assertEqual(averages['score'], 10)
+        self.assertEqual(averages['first_goal'], int(round(2 * 100 / shown_closed_bets)))
+        self.assertEqual(averages['outcome'], int(round(6 * 100 / shown_closed_bets)))
+        self.assertEqual(averages['score_diff'], int(round(4 * 100 / shown_closed_bets)))
+        self.assertEqual(averages['score'], int(round(2 * 100 / shown_closed_bets)))
 
     def test_standings_tiebreaker_order_matches_rules(self):
         from sqlalchemy import func
