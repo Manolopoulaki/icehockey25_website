@@ -12,7 +12,7 @@ from app.routes import (
     get_user_stats,
     utcnow,
     winner_bet_points_for,
-    league_accuracy_averages,
+    everyone_accuracy_averages,
     _user_bets_for_profile,
 )
 from app.teams import get_team_name, _team_names_for_sport
@@ -281,8 +281,8 @@ class GamesPageCase(TestCaseBase):
         self.assertLess(body.index('FIN'), body.index('CAN'))
 
 
-class LeagueStatsCase(TestCaseBase):
-    def test_league_accuracy_averages(self):
+class EveryoneStatsCase(TestCaseBase):
+    def test_everyone_accuracy_averages(self):
         u1 = self.make_user('a', is_shown=True, total_first_goal=2,
                             total_winner=4, total_score_diff=3, total_score=1,
                             total_closed_bets=10)

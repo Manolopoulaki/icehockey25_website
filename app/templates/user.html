@@ -213,7 +213,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_fg }}%;"></div>
-                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.first_goal }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.first_goal }}%;" title="{{ _("Everyone's average") }}"></div>{% endif %}
                     </div>
                 </div>
                 <div class="accuracy-row">
@@ -230,7 +230,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_out }}%;"></div>
-                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.outcome }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.outcome }}%;" title="{{ _("Everyone's average") }}"></div>{% endif %}
                     </div>
                 </div>
                 <div class="accuracy-row">
@@ -247,7 +247,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_diff }}%;"></div>
-                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.score_diff }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.score_diff }}%;" title="{{ _("Everyone's average") }}"></div>{% endif %}
                     </div>
                 </div>
                 <div class="accuracy-row">
@@ -264,7 +264,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_score }}%;"></div>
-                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.score }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.score }}%;" title="{{ _("Everyone's average") }}"></div>{% endif %}
                     </div>
                 </div>
             </div>
