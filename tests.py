@@ -294,7 +294,7 @@ class LeagueStatsCase(TestCaseBase):
                        total_closed_bets=10)
         db.session.commit()
 
-        averages = league_accuracy_averages()
+        averages = everyone_accuracy_averages()
         self.assertEqual(averages['first_goal'], 10)
         self.assertEqual(averages['outcome'], 30)
         self.assertEqual(averages['score_diff'], 20)

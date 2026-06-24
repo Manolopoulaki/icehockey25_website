@@ -22,7 +22,7 @@
                 {% endif %}
                 {% if user == current_user %}
                     <div class="user-profile-actions">
-                        <button type="button" class="chip chip--action" data-open-form="profile-edit">{{ _('Edit your profile') }}</button>
+                        <button type="button" class="chip chip--action" data-open-form="profile-edit">{{ _('Change username') }}</button>
                     </div>
                 {% endif %}
             </div>
@@ -49,7 +49,6 @@
                                 {{ profile_form.about_me(class='user-profile-textarea', cols=50, rows=3, maxlength=140, placeholder=_('Tell others a little about yourself…')) }}
                             </div>
                             <div class="user-profile-field-footer">
-                                <span class="user-profile-hint">{{ _('A short bio shown on your profile') }}</span>
                                 <span class="user-profile-char-count" data-char-count-for="{{ profile_form.about_me.id }}">{{ (profile_form.about_me.data or '')|length }} / 140</span>
                             </div>
                             {% for error in profile_form.about_me.errors %}
@@ -87,14 +86,14 @@
                         <div class="dashboard-bet-hero">
                             {% if user.default_score_a != None %}
                                 <div class="dashboard-bet-ticket">{{ score_with_goal(user.default_score_a, user.default_score_b, user.default_first_goal) }}</div>
-                                <p class="dashboard-card-caption">{{ _('Used only for forgotten games') }}</p>
+                                <p class="dashboard-card-caption">{{ _('Used only for games without a valid prediction') }}</p>
                             {% else %}
                                 <p class="dashboard-card-empty">{{ _('No default bet set yet.') }}</p>
                             {% endif %}
                         </div>
                     </div>
                     <div class="dashboard-card-form">
-                        <p class="dashboard-form-hint">{{ _('Used only for games you forget to predict.') }}</p>
+                        <p class="dashboard-form-hint">{{ _('Used only for games without a valid prediction') }}</p>
                         <form action="{{ url_for('default_prediction') }}" method="post" class="dashboard-default-bet-form">
                             {{ default_form.hidden_tag() }}
                             <div class="dashboard-default-bet-row">
@@ -206,7 +205,7 @@
                         {% if closed %}
                             <span class="accuracy-pct">{{ pct_fg }}%</span>
                             <span class="accuracy-count">{{ user_stats.total_first_goal }} {{ _('of') }} {{ closed }}</span>
-                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.first_goal) }}</span>{% endif %}
+                            {% if everyone_avg %}<span class="accuracy-everyone">{{ _("Everyone's avg: %(pct)s%%", pct=everyone_avg.first_goal) }}</span>{% endif %}
                         {% else %}
                             <span class="accuracy-pct accuracy-pct--empty">—</span>
                             <span class="accuracy-count">{{ _('No finished games yet') }}</span>
@@ -214,7 +213,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_fg }}%;"></div>
-                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.first_goal }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.first_goal }}%;" title="{{ _('League average') }}"></div>{% endif %}
                     </div>
                 </div>
                 <div class="accuracy-row">
@@ -223,7 +222,7 @@
                         {% if closed %}
                             <span class="accuracy-pct">{{ pct_out }}%</span>
                             <span class="accuracy-count">{{ user_stats.total_winner }} {{ _('of') }} {{ closed }}</span>
-                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.outcome) }}</span>{% endif %}
+                            {% if everyone_avg %}<span class="accuracy-everyone">{{ _("Everyone's avg: %(pct)s%%", pct=everyone_avg.outcome) }}</span>{% endif %}
                         {% else %}
                             <span class="accuracy-pct accuracy-pct--empty">—</span>
                             <span class="accuracy-count">{{ _('No finished games yet') }}</span>
@@ -231,7 +230,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_out }}%;"></div>
-                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.outcome }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.outcome }}%;" title="{{ _('League average') }}"></div>{% endif %}
                     </div>
                 </div>
                 <div class="accuracy-row">
@@ -240,7 +239,7 @@
                         {% if closed %}
                             <span class="accuracy-pct">{{ pct_diff }}%</span>
                             <span class="accuracy-count">{{ user_stats.total_score_diff }} {{ _('of') }} {{ closed }}</span>
-                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.score_diff) }}</span>{% endif %}
+                            {% if everyone_avg %}<span class="accuracy-everyone">{{ _("Everyone's avg: %(pct)s%%", pct=everyone_avg.score_diff) }}</span>{% endif %}
                         {% else %}
                             <span class="accuracy-pct accuracy-pct--empty">—</span>
                             <span class="accuracy-count">{{ _('No finished games yet') }}</span>
@@ -248,7 +247,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_diff }}%;"></div>
-                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.score_diff }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.score_diff }}%;" title="{{ _('League average') }}"></div>{% endif %}
                     </div>
                 </div>
                 <div class="accuracy-row">
@@ -257,7 +256,7 @@
                         {% if closed %}
                             <span class="accuracy-pct">{{ pct_score }}%</span>
                             <span class="accuracy-count">{{ user_stats.total_score }} {{ _('of') }} {{ closed }}</span>
-                            {% if league_avg %}<span class="accuracy-league">{{ _('League avg: %(pct)s%%', pct=league_avg.score) }}</span>{% endif %}
+                            {% if everyone_avg %}<span class="accuracy-everyone">{{ _("Everyone's avg: %(pct)s%%", pct=everyone_avg.score) }}</span>{% endif %}
                         {% else %}
                             <span class="accuracy-pct accuracy-pct--empty">—</span>
                             <span class="accuracy-count">{{ _('No finished games yet') }}</span>
@@ -265,7 +264,7 @@
                     </div>
                     <div class="stat-bar stat-bar--compare" role="presentation">
                         <div class="stat-bar-fill" style="width: {{ pct_score }}%;"></div>
-                        {% if league_avg %}<div class="stat-bar-league" style="left: {{ league_avg.score }}%;" title="{{ _('League average') }}"></div>{% endif %}
+                        {% if everyone_avg %}<div class="stat-bar-everyone" style="left: {{ everyone_avg.score }}%;" title="{{ _('League average') }}"></div>{% endif %}
                     </div>
                 </div>
             </div>

@@ -324,7 +324,7 @@ msgstr "Izveido rezerves prognozi, lai neaizmirstu nevienu spēli!"
 #: app/templates/index.html:16
 msgid ""
 "Default Bet will be used only for the games that you forget to make a valid "
-"prediction otherwise."
+"prediction."
 msgstr ""
 "Rezerves prognoze tiek izmantota tikai spēlēm, kurām ir aizmirsts uzlikt "
 "prognozes."
@@ -640,8 +640,8 @@ msgid "Last seen on: %(when)s"
 msgstr "Pēdējo reizi redzēts: %(when)s"
 
 #: app/templates/user.html:12
-msgid "Edit your profile"
-msgstr "Rediģēt savu profilu"
+msgid "Change username"
+msgstr "Mainīt lietotājvārdu"
 
 #: app/templates/user.html:13
 msgid "Predict the tournament winner"

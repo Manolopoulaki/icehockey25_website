@@ -95,7 +95,7 @@ def _build_own_profile_forms(profile_form=None):
         winner_form.final_winner.data = current_user.final_winner
     return profile_form, default_form, winner_form, Winnerbet.query.all()
 
-def league_accuracy_averages():
+def everyone_accuracy_averages():
     row = db.session.query(
         func.coalesce(func.sum(User.total_first_goal), 0).label('first_goal'),
         func.coalesce(func.sum(User.total_winner), 0).label('outcome'),
@@ -124,7 +124,7 @@ def _render_user_profile(profile_user, setup=None, profile_form=None):
         bets=_user_bets_for_profile(profile_user),
         user_stats=get_user_stats(profile_user.username),
         winner_bet_points=winner_bet_points_for(profile_user) if profile_user == current_user else 0,
-        league_avg=league_accuracy_averages(),
+        everyone_avg=everyone_accuracy_averages(),
         game_id=get_next_game(),
         setup=setup,
         profile_form=profile_form_out,
