@@ -325,7 +325,12 @@ def games(idd):
     games = Game.query.order_by(Game.id.asc()).all()
     bets = Bet.query.filter(Bet.user_id==current_user.id).join(Game).filter(or_(Bet.is_default_bet==False, Game.starts_at<utcnow())).all() 
     game_chosen = Game.query.filter(Game.id==idd).first_or_404()
-    bets_to_show = Bet.query.filter(Bet.game_id==idd).order_by(Bet.timestamp.asc()).options(joinedload(Bet.user)).all()
+    bets_to_show = Bet.query.filter(Bet.game_id==idd).options(joinedload(Bet.user)).all()
+    bets_to_show.sort(key=lambda bet: (
+        bet.user_id != current_user.id,
+        bet.points is None,
+        -(bet.points or 0),
+    ))
     game_stats = db.session.query(
         func.count(Bet.id).label('all_bets'),
         func.sum(case((Bet.is_default_bet == True, 1), else_=0)).label('default_bets'),
