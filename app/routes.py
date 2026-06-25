@@ -118,7 +118,7 @@ def _render_user_profile(profile_user, setup=None, profile_form=None):
         profile_form_out, default_form, winner_form, winner_bet = _build_own_profile_forms(profile_form)
     return render_template(
         'user.html',
-        title='Profile',
+        title=_('Profile'),
         sport=g.sport,
         user=profile_user,
         bets=_user_bets_for_profile(profile_user),
@@ -245,14 +245,14 @@ def index():
                     'leader_outcomes':leader_outcomes,
                     'leader_correct_scores':leader_correct_scores}
 
-    return render_template("index.html", title='Home', sport=g.sport, form=form, posts=posts.items,
+    return render_template("index.html", title=_('Home'), sport=g.sport, form=form, posts=posts.items,
     			    next_url=next_url, prev_url=prev_url, leaders=leaders_dict, game_id=get_next_game())
 
 @app.route('/rules', methods=['GET', 'POST'])
 @login_required
 def rules():
     winner_bet = Winnerbet.query.all()
-    return render_template("rules.html", title='Rules', winner_bet=winner_bet, sport=g.sport, game_id=get_next_game())
+    return render_template("rules.html", title=_('Rules'), winner_bet=winner_bet, sport=g.sport, game_id=get_next_game())
     
 @app.route('/standings', methods=['GET', 'POST'])
 @login_required
@@ -260,13 +260,13 @@ def standings():
     # results = User.query.filter(User.is_shown==True).with_entities(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking')).order_by('ranking').add_columns(User.username, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).all()
     ranked_users_cte = db.session.query(func.rank().over(order_by=(User.overall_points.desc(), User.total_score.desc(), User.total_score_diff.desc(), User.total_winner.desc(), User.total_first_goal.desc())).label('ranking'), User.id, User.username, User.is_shown, User.overall_points, User.final_winner_points, User.total_score, User.total_score_diff, User.total_winner, User.total_first_goal, User.total_points, User.total_closed_bets).cte(name='ranked_users')
     results = db.session.query(ranked_users_cte).filter(ranked_users_cte.c.is_shown == True).order_by(ranked_users_cte.c.ranking).all()
-    return render_template("standings.html", title='Standings', sport=g.sport, results=results, game_id=get_next_game())
+    return render_template("standings.html", title=_('Standings'), sport=g.sport, results=results, game_id=get_next_game())
     
 @app.route('/schedule', methods=['GET', 'POST'])
 @login_required
 def schedule():
     games = Game.query.order_by(Game.id.asc()).all()
-    return render_template("schedule.html", title='Schedule', sport=g.sport, games=games, game_id=get_next_game())
+    return render_template("schedule.html", title=_('Schedule'), sport=g.sport, games=games, game_id=get_next_game())
     
 @app.route('/place_predictions', methods=['GET', 'POST'])
 @login_required
@@ -317,7 +317,7 @@ def place_predictions():
         else:
             flash(_('No predictions were saved. Enter scores and choose a first goal option for each game you want to update.'), 'warning')
         return redirect(url_for('place_predictions'))
-    return render_template("place_predictions.html", title='Place Predictions', sport=g.sport, games=games, forms=forms, game_id=get_next_game())
+    return render_template("place_predictions.html", title=_('Place Predictions'), sport=g.sport, games=games, forms=forms, game_id=get_next_game())
 
 @app.route('/games/<idd>', methods=['GET', 'POST'])
 @login_required
@@ -364,7 +364,7 @@ def games(idd):
         db.session.commit()
         flash(_('Your prediction has been saved.'))
         return redirect(url_for('games', idd=idd))
-    return render_template("games.html", title='Games', sport=g.sport, games=games, bets=bets, form=form, bets_to_show=bets_to_show, correct_winners=correct_winners, correct_first_goals=correct_first_goals, correct_score_diff=correct_score_diff, correct_score=correct_score, default_bets=default_bets, all_bets=all_bets, avg_points=avg_points, max_points=max_points, game_chosen=game_chosen, current_time=current_time, three_hours_earlier=three_hours_earlier, game_id=get_next_game())  
+    return render_template("games.html", title=_('Games'), sport=g.sport, games=games, bets=bets, form=form, bets_to_show=bets_to_show, correct_winners=correct_winners, correct_first_goals=correct_first_goals, correct_score_diff=correct_score_diff, correct_score=correct_score, default_bets=default_bets, all_bets=all_bets, avg_points=avg_points, max_points=max_points, game_chosen=game_chosen, current_time=current_time, three_hours_earlier=three_hours_earlier, game_id=get_next_game())  
     
 @app.route('/winner_prediction', methods=['GET', 'POST'])
 @login_required
@@ -423,7 +423,7 @@ def login():
         if not next_page or urlsplit(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
-    return render_template('login.html', title='Login', sport=g.sport, form=form)
+    return render_template('login.html', title=_('Login'), sport=g.sport, form=form)
 
 @app.route('/logout')
 def logout():
@@ -451,7 +451,7 @@ def register():
         db.session.commit()
         flash(_('Congratulations, you are now a registered user!'))
         return redirect(url_for('login'))
-    return render_template('register.html', title='Register', sport=g.sport, form=form)
+    return render_template('register.html', title=_('Register'), sport=g.sport, form=form)
 
 @app.route('/user/<username>')
 @login_required
@@ -484,7 +484,7 @@ def reset_password_request():
             send_password_reset_email(user)
         flash(_('Check your email for the instructions to reset your password.'))
         return redirect(url_for('login'))
-    return render_template('reset_password_request.html', title='Reset Password', sport=g.sport, form=form)
+    return render_template('reset_password_request.html', title=_('Reset Password'), sport=g.sport, form=form)
 
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -499,7 +499,7 @@ def reset_password(token):
         db.session.commit()
         flash(_('Your password has been reset.'))
         return redirect(url_for('login'))
-    return render_template('reset_password.html', title='Reset Password', sport=g.sport, form=form)
+    return render_template('reset_password.html', title=_('Reset Password'), sport=g.sport, form=form)
     
 @app.route('/admin', methods=['GET', 'POST'])
 @admin_required
@@ -619,7 +619,7 @@ def admin():
         flash(_('The winner has been set.'))
         return redirect(url_for('admin'))
 
-    return render_template("admin.html", title='Admin', sport=g.sport, admins=current_admins, 
+    return render_template("admin.html", title=_('Admin'), sport=g.sport, admins=current_admins, 
                            aaform=add_admin_form, raform=remove_admin_form, ruform=remove_user_form, 
                            ug_csv_form=upload_csv_form, uw_csv_form=upload_winnerbet_csv_form, sgform=set_game_form, 
                            form=form, cgsform=correct_game_score_form,
