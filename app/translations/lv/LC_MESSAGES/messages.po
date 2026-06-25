@@ -76,7 +76,7 @@ msgstr "Jūsu prognoze nav pareiza."
 
 #: app/forms.py:60
 msgid "First goal A"
-msgstr "Pirmais vārtis A"
+msgstr "Pirmie vārti A"
 
 #: app/forms.py:61 app/forms.py:66
 msgid "No first goal"
@@ -84,12 +84,12 @@ msgstr "Nav pirmo vārtu"
 
 #: app/forms.py:62
 msgid "First goal B"
-msgstr "Pirmais vārtis B"
+msgstr "Pirmie vārti B"
 
 #: app/forms.py:65 app/forms.py:67
 #, python-format
 msgid "First goal %(code)s"
-msgstr "Pirmais vārtis %(code)s"
+msgstr "Pirmie vārti %(code)s"
 
 #: app/forms.py:72
 msgid "New message"
@@ -649,7 +649,7 @@ msgstr "Spēļu iznākuma prognozes"
 
 #: app/templates/rules.html:10
 msgid "Predict the outcome of each game before its scheduled start time through the "
-msgstr "Prognozējiet katra spēles iznākumu pirms plānotā sākuma laika lapā "
+msgstr "Prognozējiet katra spēles iznākumu pirms plānotā sākuma laika "
 
 #: app/templates/rules.html:10 app/templates/rules.html:15
 #: app/templates/rules.html:34 app/templates/rules.html:61
@@ -666,7 +666,7 @@ msgstr "Iznākumam jābūt gala rezultātam pēc papildlaika un soda metieniem."
 
 #: app/templates/rules.html:15
 msgid "The prediction can be changed until the beginning of the game. After that, the latest prediction will be used for scoring in the "
-msgstr "Prognozi var mainīt līdz spēles sākumam. Pēc tam jaunākā prognoze tiks izmantota punktu aprēķinā lapā "
+msgstr "Prognozi var mainīt līdz spēles sākumam. Pēc tam jaunākā prognoze tiks izmantota punktu aprēķinā "
 
 #: app/templates/rules.html:16
 msgid "You can set a default prediction in your "
@@ -718,7 +718,7 @@ msgstr "Turnīra uzvarētāja komandas prognozes"
 
 #: app/templates/rules.html:34
 msgid "Predict the winner team of the tournament through the "
-msgstr "Prognozējiet turnīra uzvarētāja komandu lapā "
+msgstr "Prognozējiet turnīra uzvarētāja komandu "
 
 #: app/templates/rules.html:35
 msgid "This can be done at any point during the competition and changed multiple times. The last prediction will be used for scoring."
@@ -738,7 +738,7 @@ msgstr "Punkti par pareizu prognozi"
 
 #: app/templates/rules.html:61
 msgid "The ongoing user scores and standings are published in "
-msgstr "Lietotāju rezultāti un kopvērtējums tiek publicēti lapā "
+msgstr "Lietotāju rezultāti un kopvērtējums tiek publicēti "
 
 #: app/templates/rules.html:62
 msgid "The user with the most game outcome points and tournament winner team points will be declared the winner."
