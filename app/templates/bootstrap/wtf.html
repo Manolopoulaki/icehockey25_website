@@ -40,3 +40,71 @@
 	<button type="submit" class="button" name="{{ form.submit.name }}" value="{{ form.submit.label.text }}">{{ form.submit.label.text }}</button>
 </form>
 {%- endmacro %}
+
+{% macro admin_score_form(form) -%}
+<form action="" method="post">
+	{{ form.hidden_tag() }}
+	<div class="form-group{% if form.game_id.errors %} has-error{% endif %}">
+		{{ form.game_id.label(class='control-label') }}
+		{{ form.game_id(class='form-control') }}
+		{% for error in form.game_id.errors %}
+			<span class="help-block">{{ error }}</span>
+		{% endfor %}
+	</div>
+	<div class="admin-match-pick">
+		<div class="admin-match-side">
+			{{ form.score_a.label(class='control-label') }}
+			{{ form.score_a(class='admin-score-input') }}
+			{% for error in form.score_a.errors %}
+				<span class="help-block">{{ error }}</span>
+			{% endfor %}
+		</div>
+		<span class="admin-score-sep" aria-hidden="true">:</span>
+		<div class="admin-match-side">
+			{{ form.score_b.label(class='control-label') }}
+			{{ form.score_b(class='admin-score-input') }}
+			{% for error in form.score_b.errors %}
+				<span class="help-block">{{ error }}</span>
+			{% endfor %}
+		</div>
+	</div>
+	<div class="form-group admin-first-goal{% if form.first_goal.errors %} has-error{% endif %}">
+		{{ first_goal_radios(form.first_goal) }}
+		{% for error in form.first_goal.errors %}
+			<span class="help-block">{{ error }}</span>
+		{% endfor %}
+	</div>
+	<button type="submit" class="button" name="{{ form.submit.name }}" value="{{ form.submit.label.text }}">{{ form.submit.label.text }}</button>
+</form>
+{%- endmacro %}
+
+{% macro admin_set_game_form(form) -%}
+<form action="" method="post">
+	{{ form.hidden_tag() }}
+	<div class="form-group{% if form.game_id.errors %} has-error{% endif %}">
+		{{ form.game_id.label(class='control-label') }}
+		{{ form.game_id(class='form-control') }}
+		{% for error in form.game_id.errors %}
+			<span class="help-block">{{ error }}</span>
+		{% endfor %}
+	</div>
+	<div class="admin-match-pick">
+		<div class="admin-match-side">
+			{{ form.team_a.label(class='control-label') }}
+			{{ form.team_a(class='admin-score-input admin-team-input') }}
+			{% for error in form.team_a.errors %}
+				<span class="help-block">{{ error }}</span>
+			{% endfor %}
+		</div>
+		<span class="admin-score-sep" aria-hidden="true">:</span>
+		<div class="admin-match-side">
+			{{ form.team_b.label(class='control-label') }}
+			{{ form.team_b(class='admin-score-input admin-team-input') }}
+			{% for error in form.team_b.errors %}
+				<span class="help-block">{{ error }}</span>
+			{% endfor %}
+		</div>
+	</div>
+	<button type="submit" class="button" name="{{ form.submit.name }}" value="{{ form.submit.label.text }}">{{ form.submit.label.text }}</button>
+</form>
+{%- endmacro %}

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from pathlib import Path
+import io
 import unittest
 import importlib
 from app import app, db
@@ -25,13 +26,30 @@ from app.scoring import (
 )
 
 
+def _switch_db_uri(uri):
+    """Point SQLAlchemy at a different database without touching app.db."""
+    db.session.remove()
+    engines = db._app_engines.setdefault(app, {})
+    for engine in engines.values():
+        engine.dispose()
+    engines.clear()
+    app.config['SQLALCHEMY_DATABASE_URI'] = uri
+    engine_options = dict(app.config.get('SQLALCHEMY_ENGINE_OPTIONS', {}))
+    engine_options['url'] = uri
+    engine_options.setdefault('echo', app.config.get('SQLALCHEMY_ECHO', False))
+    engine_options.setdefault('echo_pool', app.config.get('SQLALCHEMY_ECHO', False))
+    db._apply_driver_defaults(engine_options, app)
+    engines[None] = db._make_engine(None, engine_options, app)
+
+
 class TestCaseBase(unittest.TestCase):
     def setUp(self):
+        self._saved_db_uri = app.config['SQLALCHEMY_DATABASE_URI']
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
         self.app_context = app.app_context()
         self.app_context.push()
-        db.drop_all()
+        _switch_db_uri('sqlite://')
         db.create_all()
         self._original_sport = app.config['SPORT']
 
@@ -39,6 +57,7 @@ class TestCaseBase(unittest.TestCase):
         app.config['SPORT'] = self._original_sport
         db.session.remove()
         db.drop_all()
+        _switch_db_uri(self._saved_db_uri)
         self.app_context.pop()
 
     def set_sport(self, sport):
@@ -387,6 +406,388 @@ class UserModelCase(TestCaseBase):
         db.session.commit()
 
         self.assertEqual(get_next_game(), last_game.id)
+
+
+class AdminPageCase(TestCaseBase):
+    def make_admin(self, username='admin'):
+        user = self.make_user(username)
+        user.is_admin = True
+        db.session.commit()
+        return user
+
+    def test_anonymous_admin_page_forbidden(self):
+        with app.test_client() as client:
+            response = client.get('/admin')
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_admin_forbidden(self):
+        user = self.make_user('player')
+        with app.test_client() as client:
+            self.login(client, user)
+            response = client.get('/admin')
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_page_renders_for_admin(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.get('/admin')
+        self.assertEqual(response.status_code, 200)
+        body = response.data.decode('utf-8')
+        self.assertIn('admin-page', body)
+        self.assertIn('Admin Panel', body)
+
+    def test_admin_page_has_section_navigation(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.get('/admin')
+        body = response.data.decode('utf-8')
+        for section_id in (
+            'admin-admins', 'admin-users', 'admin-schedule',
+            'admin-results', 'admin-winner',
+        ):
+            self.assertIn(f'id="{section_id}"', body)
+        self.assertIn('admin-nav-link', body)
+
+    def test_admin_page_shows_current_admins_as_chips(self):
+        admin = self.make_admin('chief')
+        self.make_admin('helper')
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.get('/admin')
+        body = response.data.decode('utf-8')
+        self.assertIn('chip--admin', body)
+        self.assertIn('chief', body)
+        self.assertIn('helper', body)
+
+    def test_admin_page_includes_csv_format_guides(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.get('/admin')
+        body = response.data.decode('utf-8')
+        self.assertIn('admin-format-guide', body)
+        self.assertIn('team_a,team_b,stage,starts_at', body)
+        self.assertIn('description,last_bet,bet_points', body)
+
+    def test_admin_page_uses_color_cards(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            body = client.get('/admin').data.decode('utf-8')
+        for color in ('primary', 'secondary', 'bright', 'accent'):
+            self.assertIn(f'admin-card--{color}', body)
+
+    def test_admin_page_renders_all_expected_form_fields(self):
+        admin = self.make_admin()
+        finished = Game(
+            team_a='CAN', team_b='USA',
+            starts_at=utcnow() - timedelta(hours=2),
+            score_a=1, score_b=0, first_goal=1,
+        )
+        unfinished = Game(
+            team_a='NED', team_b='POR',
+            starts_at=utcnow() - timedelta(hours=1),
+        )
+        tbd = Game(
+            team_a='TBD', team_b='TBD',
+            starts_at=utcnow() + timedelta(days=1),
+        )
+        db.session.add_all([finished, unfinished, tbd])
+        db.session.commit()
+
+        with app.test_client() as client:
+            self.login(client, admin)
+            body = client.get('/admin').data.decode('utf-8')
+
+        for field_name in (
+            'upload_game_score-game_id',
+            'upload_game_score-score_a',
+            'upload_game_score-score_b',
+            'upload_game_score-first_goal',
+            'correct_game_score-game_id',
+            'correct_game_score-score_a',
+            'correct_game_score-score_b',
+            'correct_game_score-first_goal',
+            'add-users',
+            'remove-users',
+            'remove_user-users',
+            'final_winner',
+            'upload_game_schedule-csv_file',
+            'upload_winner_bet_points-csv_file',
+            'set_game-game_id',
+            'set_game-team_a',
+            'set_game-team_b',
+        ):
+            with self.subTest(field=field_name):
+                self.assertIn(f'name="{field_name}"', body)
+
+        for submit_name in (
+            'upload_game_score-submit',
+            'correct_game_score-submit',
+            'add-submit',
+            'remove-submit',
+            'remove_user-submit',
+            'submit',
+            'upload_game_schedule-submit',
+            'upload_winner_bet_points-submit',
+            'set_game-submit',
+        ):
+            with self.subTest(submit=submit_name):
+                self.assertIn(f'name="{submit_name}"', body)
+
+    def test_admin_page_renders_nine_post_forms(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            body = client.get('/admin').data.decode('utf-8')
+        self.assertEqual(body.count('method="post"'), 9)
+        self.assertEqual(body.count('admin-card-form'), 9)
+
+    def test_admin_score_forms_render_first_goal_radios(self):
+        admin = self.make_admin()
+        game = Game(
+            team_a='CAN', team_b='USA',
+            starts_at=utcnow() - timedelta(hours=1),
+        )
+        db.session.add(game)
+        db.session.commit()
+        with app.test_client() as client:
+            self.login(client, admin)
+            body = client.get('/admin').data.decode('utf-8')
+        self.assertIn('name="upload_game_score-first_goal"', body)
+        self.assertIn('name="correct_game_score-first_goal"', body)
+        self.assertIn('type="radio"', body)
+        self.assertIn('admin-match-pick', body)
+        self.assertIn('admin-score-input', body)
+
+    def test_admin_post_ignored_without_matching_submit_button(self):
+        admin = self.make_admin()
+        player = self.make_user('player')
+        game = Game(
+            team_a='CAN', team_b='USA',
+            starts_at=utcnow() - timedelta(hours=1),
+        )
+        db.session.add(game)
+        db.session.commit()
+        with app.test_client() as client:
+            self.login(client, admin)
+            client.post('/admin', data={
+                'upload_game_score-game_id': game.id,
+                'upload_game_score-score_a': 2,
+                'upload_game_score-score_b': 1,
+                'upload_game_score-first_goal': 1,
+            })
+        db.session.refresh(game)
+        db.session.refresh(player)
+        self.assertIsNone(game.score_a)
+        self.assertFalse(player.is_admin)
+
+    def test_admin_add_form_ignored_without_submit_button(self):
+        admin = self.make_admin()
+        player = self.make_user('player')
+        with app.test_client() as client:
+            self.login(client, admin)
+            client.post('/admin', data={'add-users': player.id})
+        db.session.refresh(player)
+        self.assertFalse(player.is_admin)
+
+    def test_admin_csv_forms_render_file_inputs(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            body = client.get('/admin').data.decode('utf-8')
+        self.assertIn('name="upload_game_schedule-csv_file"', body)
+        self.assertIn('name="upload_winner_bet_points-csv_file"', body)
+        self.assertGreaterEqual(body.count('type="file"'), 2)
+
+    def test_admin_page_csv_forms_keep_upload_actions(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.get('/admin')
+        body = response.data.decode('utf-8')
+        self.assertIn('action="/upload_csv"', body)
+        self.assertIn('action="/upload_winnerbet_csv"', body)
+        self.assertIn('enctype="multipart/form-data"', body)
+
+    def test_admin_page_section_headings_use_rules_style(self):
+        admin = self.make_admin()
+        with app.test_client() as client:
+            self.login(client, admin)
+            body = client.get('/admin').data.decode('utf-8')
+        for heading in ('Game Results', 'Admins', 'Users', 'Tournament Winner Team', 'Game Schedule'):
+            self.assertIn(f'<h4>{heading}</h4>', body)
+
+    def test_add_admin_promotes_user(self):
+        admin = self.make_admin()
+        player = self.make_user('player')
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post('/admin', data={
+                'add-users': player.id,
+                'add-submit': 'Save',
+            }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(player)
+        self.assertTrue(player.is_admin)
+
+    def test_remove_admin_revokes_user(self):
+        admin = self.make_admin()
+        other_admin = self.make_admin('other')
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post('/admin', data={
+                'remove-users': other_admin.id,
+                'remove-submit': 'Save',
+            }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(other_admin)
+        self.assertFalse(other_admin.is_admin)
+
+    def test_hide_user_from_standings(self):
+        admin = self.make_admin()
+        player = self.make_user('player')
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post('/admin', data={
+                'remove_user-users': player.id,
+                'remove_user-submit': 'Save',
+            }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(player)
+        self.assertFalse(player.is_shown)
+
+    def test_set_tbd_game_updates_teams(self):
+        admin = self.make_admin()
+        game = Game(team_a='TBD', team_b='TBD',
+                    starts_at=utcnow() + timedelta(days=1))
+        db.session.add(game)
+        db.session.commit()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post('/admin', data={
+                'set_game-game_id': game.id,
+                'set_game-team_a': 'CAN',
+                'set_game-team_b': 'USA',
+                'set_game-submit': 'Set Game',
+            }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(game)
+        self.assertEqual(game.team_a, 'CAN')
+        self.assertEqual(game.team_b, 'USA')
+
+    def test_submit_game_score_saves_result(self):
+        admin = self.make_admin()
+        game = Game(team_a='CAN', team_b='USA',
+                    starts_at=utcnow() - timedelta(hours=1))
+        db.session.add(game)
+        db.session.commit()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post('/admin', data={
+                'upload_game_score-game_id': game.id,
+                'upload_game_score-score_a': 2,
+                'upload_game_score-score_b': 1,
+                'upload_game_score-first_goal': 1,
+                'upload_game_score-submit': 'Upload Result',
+            }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(game)
+        self.assertEqual(game.score_a, 2)
+        self.assertEqual(game.score_b, 1)
+        self.assertEqual(game.first_goal, 1)
+
+    def test_correct_game_score_updates_result(self):
+        admin = self.make_admin()
+        game = Game(team_a='CAN', team_b='USA',
+                    starts_at=utcnow() - timedelta(hours=1),
+                    score_a=1, score_b=0, first_goal=1)
+        db.session.add(game)
+        db.session.commit()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post('/admin', data={
+                'correct_game_score-game_id': game.id,
+                'correct_game_score-score_a': 3,
+                'correct_game_score-score_b': 2,
+                'correct_game_score-first_goal': 2,
+                'correct_game_score-submit': 'Upload Result',
+            }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(game)
+        self.assertEqual(game.score_a, 3)
+        self.assertEqual(game.score_b, 2)
+        self.assertEqual(game.first_goal, 2)
+
+    def test_submit_winner_team_awards_points(self):
+        admin = self.make_admin()
+        player = self.make_user('player', overall_points=0, final_winner_points=0)
+        player.final_winner = 'CAN'
+        player.final_winner_timestamp = utcnow() - timedelta(hours=1)
+        db.session.add(Game(team_a='CAN', team_b='USA',
+                            starts_at=utcnow() + timedelta(days=1)))
+        db.session.add(Winnerbet(description='Early',
+                                 last_bet=utcnow() + timedelta(days=1),
+                                 bet_points=12))
+        db.session.commit()
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post('/admin', data={
+                'final_winner': 'CAN',
+                'submit': 'Submit',
+            }, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        db.session.refresh(player)
+        self.assertEqual(player.final_winner_points, 12)
+        self.assertEqual(player.overall_points, 12)
+
+    def test_upload_game_schedule_csv(self):
+        admin = self.make_admin()
+        csv_content = (
+            'team_a,team_b,stage,starts_at\n'
+            'CAN,USA,Group,2026-07-01 15:00:00\n'
+        ).encode('utf-8')
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post(
+                '/upload_csv',
+                data={
+                    'upload_game_schedule-csv_file': (
+                        io.BytesIO(csv_content), 'schedule.csv'),
+                    'upload_game_schedule-submit': 'Upload',
+                },
+                content_type='multipart/form-data',
+                follow_redirects=True,
+            )
+        self.assertEqual(response.status_code, 200)
+        game = Game.query.filter_by(team_a='CAN', team_b='USA').first()
+        self.assertIsNotNone(game)
+        self.assertEqual(game.stage, 'Group')
+
+    def test_upload_winnerbet_csv(self):
+        admin = self.make_admin()
+        csv_content = (
+            'description,last_bet,bet_points\n'
+            'Final day,2026-08-01 12:00:00,15\n'
+        ).encode('utf-8')
+        with app.test_client() as client:
+            self.login(client, admin)
+            response = client.post(
+                '/upload_winnerbet_csv',
+                data={
+                    'upload_winner_bet_points-csv_file': (
+                        io.BytesIO(csv_content), 'winnerbet.csv'),
+                    'upload_winner_bet_points-submit': 'Upload',
+                },
+                content_type='multipart/form-data',
+                follow_redirects=True,
+            )
+        self.assertEqual(response.status_code, 200)
+        row = Winnerbet.query.filter_by(description='Final day').first()
+        self.assertIsNotNone(row)
+        self.assertEqual(row.bet_points, 15)
 
 
 class SecurityHookCase(unittest.TestCase):
