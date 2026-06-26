@@ -1747,21 +1747,13 @@ button {
   height: 320px;
 }
 
-.home-heatmap-panel {
-  max-height: 22rem;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 .home-heatmap {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .home-heatmap thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
   font-weight: 600;
   background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
 }
@@ -1770,15 +1762,7 @@ button {
   background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
 }
 
-.home-heatmap thead th:first-child {
-  left: 0;
-  z-index: 3;
-}
-
 .home-heatmap tbody th {
-  position: sticky;
-  left: 0;
-  z-index: 1;
   text-align: left;
   white-space: nowrap;
   background: color-mix(in srgb, var(--color-bg) 92%, var(--color-primary));

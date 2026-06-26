@@ -951,7 +951,7 @@ class HomeChartsCase(TestCaseBase):
         self.assertIn('chart-points-race', body)
         self.assertIn('chart-rank-over-time', body)
         self.assertIn('HOME_CHART_DATA', body)
-        self.assertIn('home-heatmap-panel', body)
+        self.assertIn('home-heatmap', body)
         self.assertIn('Top 10 plus you', body)
         self.assertIn('Chat', body)
 

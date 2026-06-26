@@ -47,7 +47,12 @@
     };
   }
 
-  function mountLineChart(canvasId, labels, chartData, yTitle, invertY) {
+  function mountLineChart(canvasId, labels, chartData, yTitle, chartOptions) {
+    chartOptions = chartOptions || {};
+    var invertY = !!chartOptions.invertY;
+    var beginAtZero = chartOptions.beginAtZero !== undefined
+      ? chartOptions.beginAtZero
+      : !invertY;
     var canvas = document.getElementById(canvasId);
     if (!canvas || !labels || !labels.length || !chartData) {
       return;
@@ -89,8 +94,9 @@
             },
           },
           y: {
-            reverse: !!invertY,
-            beginAtZero: !invertY,
+            reverse: invertY,
+            beginAtZero: beginAtZero,
+            grace: chartOptions.grace || '0%',
             title: { display: !!yTitle, text: yTitle || '' },
             ticks: invertY ? { stepSize: 1 } : {},
           },
@@ -99,6 +105,11 @@
     });
   }
 
-  mountLineChart('chart-points-race', data.labels, data.points_race, 'Cumulative points');
-  mountLineChart('chart-rank-over-time', data.labels, data.rank_over_time, 'Rank', true);
+  mountLineChart('chart-points-race', data.labels, data.points_race, 'Cumulative points', {
+    beginAtZero: false,
+    grace: '5%',
+  });
+  mountLineChart('chart-rank-over-time', data.labels, data.rank_over_time, 'Rank', {
+    invertY: true,
+  });
 })();
