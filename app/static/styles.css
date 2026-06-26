@@ -1677,6 +1677,14 @@ button {
   .left-section {
     flex: 1; /* this section narrower */
   }
+
+  .home-charts-columns .left-section {
+    flex: 2;
+  }
+
+  .home-charts-columns .right-section {
+    flex: 1;
+  }
 }
 
 .box {
@@ -1686,6 +1694,143 @@ button {
   padding: 20px;
   margin: 10px 0;
   color: var(--color-text);
+}
+
+.home-charts-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.home-charts-columns {
+  margin-top: 0;
+}
+
+.home-chart-card {
+  border: 1px solid transparent;
+}
+
+.home-chart-card--primary {
+  background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.home-chart-card--secondary {
+  background: color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color-secondary) 40%, transparent);
+}
+
+.home-chart-card--accent {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.home-chart-card h4 {
+  margin-top: 0;
+}
+
+.home-chart-caption {
+  margin: 0 0 0.75rem;
+  color: color-mix(in srgb, var(--color-text) 65%, transparent);
+}
+
+.home-chart-canvas-wrap {
+  position: relative;
+  height: 220px;
+}
+
+.home-chart-canvas-wrap--medium {
+  height: 260px;
+}
+
+.home-chart-canvas-wrap--tall {
+  height: 320px;
+}
+
+.home-heatmap-panel {
+  max-height: 22rem;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.home-heatmap {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.home-heatmap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+}
+
+.home-chart-card--accent .home-heatmap thead th {
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+}
+
+.home-heatmap thead th:first-child {
+  left: 0;
+  z-index: 3;
+}
+
+.home-heatmap tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--color-bg) 92%, var(--color-primary));
+}
+
+.home-chart-card--accent .home-heatmap tbody th {
+  background: color-mix(in srgb, var(--color-bg) 92%, var(--color-accent));
+}
+
+.home-heatmap-row--you th {
+  background: color-mix(in srgb, var(--color-bright) 18%, var(--color-bg));
+}
+
+.home-heatmap th,
+.home-heatmap td {
+  padding: 0.35rem 0.4rem;
+  text-align: center;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.home-chart-card--accent .home-heatmap th,
+.home-chart-card--accent .home-heatmap td {
+  border-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
+.home-heatmap td {
+  background: color-mix(
+    in srgb,
+    var(--color-primary) calc(var(--heat, 0) * 72%),
+    var(--color-bg)
+  );
+  font-weight: 600;
+}
+
+.home-chart-card--accent .home-heatmap td {
+  background: color-mix(
+    in srgb,
+    var(--color-accent) calc(var(--heat, 0) * 72%),
+    var(--color-bg)
+  );
+}
+
+.home-heatmap-row--you th,
+.home-heatmap-row--you td {
+  outline: 2px solid var(--color-bright);
+  outline-offset: -2px;
+}
+
+@media (max-width: 767px) {
+  .home-chart-canvas-wrap--tall {
+    height: 260px;
+  }
 }
 
 .admin-page {

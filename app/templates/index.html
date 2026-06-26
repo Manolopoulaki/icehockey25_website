@@ -33,9 +33,10 @@
       </div>
     </div>
   {% endif %}
-     
-<div class="content-columns">
-    <div class="left-section">
+
+  <section class="home-charts-dashboard">
+    <div class="content-columns home-charts-columns">
+      <div class="left-section">
         <h2>{{ _('Leaderboard') }}</h2>
         <table style="width:100%; border-collapse: collapse; text-align: center;">
         <tr style="vertical-align: bottom;">
@@ -49,19 +50,66 @@
             <img src="/static/leader_icons/leader_outcomes.png" width="70"><br>{{ leaders['leader_outcomes'].username }}
             </td>
             <td style="padding: 10px; width: 25%;"><strong>{{ _('First Goals') }}</strong><br>
-            {% if sport == "hockey": %}
+            {% if sport == "hockey" %}
                 <img src="/static/leader_icons/leader_first_goals.png" width="70"><br>
-            {% elif sport == "football": %}
+            {% elif sport == "football" %}
                 <img src="/static/leader_icons/leader_first_goals_football.png" width="70"><br>
             {% endif %}
             {{ leaders['leader_first_goals'].username }}
             </td>
         </tr>
         </table>
+
+        <div class="box home-chart-card home-chart-card--primary">
+          <h4>{{ _('Points Race') }}</h4>
+          <p class="home-chart-caption">{{ _('Top %(top)s plus you. Last %(count)s finished games.', top=chart_data.chart_top_users, count=chart_data.labels|length) }}</p>
+          <div class="home-chart-canvas-wrap home-chart-canvas-wrap--tall">
+            <canvas id="chart-points-race" aria-label="{{ _('Cumulative points line chart') }}"></canvas>
+          </div>
+        </div>
+
+        <div class="box home-chart-card home-chart-card--secondary">
+          <h4>{{ _('Rank Over Time') }}</h4>
+          <p class="home-chart-caption">{{ _('Top %(top)s plus you. Last %(count)s finished games.', top=chart_data.chart_top_users, count=chart_data.labels|length) }}</p>
+          <div class="home-chart-canvas-wrap home-chart-canvas-wrap--medium">
+            <canvas id="chart-rank-over-time" aria-label="{{ _('Rank over time chart') }}"></canvas>
+          </div>
+        </div>
+
+        {% if chart_data.heatmap.rows %}
+        <div class="box home-chart-card home-chart-card--accent">
+          <h4>{{ _('Points per Game') }}</h4>
+          <p class="home-chart-caption">{{ _('Top %(top)s plus you. Last %(count)s finished games. You are listed first.', top=chart_data.chart_top_users, count=chart_data.labels|length) }}</p>
+          <div class="home-heatmap-panel">
+            <table class="home-heatmap">
+              <thead>
+                <tr>
+                  <th>{{ _('User') }}</th>
+                  {% for label in chart_data.labels %}
+                  <th>{{ label }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in chart_data.heatmap.rows %}
+                <tr class="{% if row.is_current_user %}home-heatmap-row--you{% endif %}">
+                  <th scope="row">{{ row.username }}</th>
+                  {% for points in row.points %}
+                  <td style="--heat: {{ (points / chart_data.heatmap.max_points) if chart_data.heatmap.max_points else 0 }};">{{ points }}</td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="right-section">
         <h2>{{ _('Useful Links') }}</h2>
         <a href="https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026">{{ _('FIFA World Cup 2026 official page') }}</a>
-    </div>
-    <div class="right-section">
+
         <h2>{{ _('Chat') }}</h2>
             <form method="post" action="">
                 {{ form.hidden_tag() }}
@@ -80,6 +128,20 @@
             <a href="{{ next_url or '#' }}" class="button"><i class="fa-solid fa-arrow-right"></i></a>
             </li>
         </ul>
+      </div>
     </div>
-</div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    window.HOME_CHART_DATA = {{ {
+      'labels': chart_data.labels,
+      'points_race': chart_data.points_race,
+      'rank_over_time': chart_data.rank_over_time,
+    } | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='home_charts.js') }}"></script>
 {% endblock %}

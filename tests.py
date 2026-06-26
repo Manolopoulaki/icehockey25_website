@@ -24,6 +24,7 @@ from app.scoring import (
     apply_bet_scoring,
     point_values,
 )
+from app.chart_data import build_home_chart_data
 
 
 def _switch_db_uri(uri):
@@ -815,6 +816,144 @@ class SecurityHookCase(unittest.TestCase):
         self.assertIn('git config core.hooksPath .githooks', script_text)
         self.assertIn('scripts/setup-git-hooks.sh', readme_text)
         self.assertIn('.githooks/pre-push', readme_text)
+
+
+class HomeChartsCase(TestCaseBase):
+    def test_build_home_chart_data_with_games_and_bets(self):
+        self.set_sport('football')
+        leader = self.make_user('leader', is_shown=True, overall_points=20,
+                                total_points=20, total_score=3, total_score_diff=2,
+                                total_winner=4, total_first_goal=2, total_closed_bets=2)
+        runner = self.make_user('runner', is_shown=True, overall_points=12,
+                                total_points=12, total_score=2, total_score_diff=1,
+                                total_winner=2, total_first_goal=1, total_closed_bets=2)
+        hidden = self.make_user('hidden', is_shown=False, overall_points=99,
+                                total_points=99, total_closed_bets=2)
+        game1 = Game(team_a='GER', team_b='SCO', stage='Group', starts_at=utcnow(),
+                     score_a=2, score_b=1, first_goal=1)
+        game2 = Game(team_a='FRA', team_b='BEL', stage='Group',
+                     starts_at=utcnow() + timedelta(days=2))
+        db.session.add_all([game1, game2])
+        db.session.flush()
+
+        leader_bet1 = Bet(user_id=leader.id, game_id=game1.id, score_a=2, score_b=1,
+                          first_goal=1, is_default_bet=False)
+        leader_bet2 = Bet(user_id=leader.id, game_id=game2.id, score_a=1, score_b=1,
+                          first_goal=1, is_default_bet=False)
+        runner_bet1 = Bet(user_id=runner.id, game_id=game1.id, score_a=1, score_b=1,
+                          first_goal=1, is_default_bet=False)
+        apply_bet_scoring(leader_bet1, game1, 'football')
+        apply_bet_scoring(runner_bet1, game1, 'football')
+        db.session.add_all([leader_bet1, leader_bet2, runner_bet1])
+        db.session.commit()
+
+        client = app.test_client()
+        self.login(client, runner)
+
+        with app.test_request_context('/'):
+            from flask_login import login_user
+            login_user(runner)
+            data = build_home_chart_data(runner)
+
+        self.assertEqual(len(data['labels']), 1)
+        self.assertGreaterEqual(len(data['points_race']['datasets']), 1)
+        self.assertEqual(
+            len(data['points_race']['datasets']),
+            len(data['rank_over_time']['datasets']),
+        )
+        self.assertEqual(
+            len(data['points_race']['datasets']),
+            len(data['heatmap']['rows']),
+        )
+        self.assertEqual(len(data['heatmap']['rows']), 2)
+        self.assertEqual(data['heatmap']['rows'][0]['username'], 'runner')
+        self.assertEqual(data['heatmap']['rows'][1]['username'], 'leader')
+        self.assertEqual(len(data['labels']), 1)
+
+    def test_heatmap_shows_only_recent_games(self):
+        self.set_sport('football')
+        user = self.make_user('player', is_shown=True, overall_points=0, total_points=0,
+                              total_closed_bets=0)
+        games = []
+        for index in range(15):
+            games.append(Game(
+                team_a='GER',
+                team_b=f'T{index}',
+                stage='Group',
+                starts_at=utcnow() + timedelta(days=index),
+                score_a=1,
+                score_b=0,
+                first_goal=1,
+            ))
+        db.session.add_all(games)
+        db.session.commit()
+
+        with app.test_request_context('/'):
+            from flask_login import login_user
+            login_user(user)
+            data = build_home_chart_data(user)
+
+        self.assertEqual(len(data['labels']), 12)
+        self.assertEqual(data['labels'][0], 'GER-T3')
+        self.assertEqual(data['labels'][-1], 'GER-T14')
+
+    def test_charts_limit_users_to_top_ten_plus_current(self):
+        self.set_sport('football')
+        for index in range(11):
+            self.make_user(
+                f'topper{index}',
+                is_shown=True,
+                overall_points=100 - index,
+                total_points=100 - index,
+                total_closed_bets=1,
+            )
+        outsider = self.make_user(
+            'outsider',
+            is_shown=True,
+            overall_points=1,
+            total_points=1,
+            total_closed_bets=1,
+        )
+        game = Game(team_a='GER', team_b='SCO', stage='Group', starts_at=utcnow(),
+                    score_a=1, score_b=0, first_goal=1)
+        db.session.add(game)
+        db.session.commit()
+
+        with app.test_request_context('/'):
+            from flask_login import login_user
+            login_user(outsider)
+            data = build_home_chart_data(outsider)
+
+        self.assertEqual(data['chart_top_users'], 10)
+        self.assertEqual(len(data['points_race']['datasets']), 11)
+        self.assertEqual(len(data['rank_over_time']['datasets']), 11)
+        self.assertEqual(len(data['heatmap']['rows']), 11)
+        self.assertEqual(data['heatmap']['rows'][0]['username'], 'outsider')
+        usernames = {row['username'] for row in data['heatmap']['rows']}
+        self.assertIn('outsider', usernames)
+        self.assertNotIn('topper10', usernames)
+
+    def test_index_page_renders_home_charts(self):
+        self.set_sport('football')
+        user = self.make_user('viewer', is_shown=True, overall_points=5, total_points=5,
+                              total_closed_bets=0, default_score_a=1, default_score_b=0,
+                              default_first_goal=1, final_winner='GER')
+        game = Game(team_a='GER', team_b='SCO', stage='Group', starts_at=utcnow(),
+                    score_a=1, score_b=0, first_goal=1)
+        db.session.add(game)
+        db.session.commit()
+
+        client = app.test_client()
+        self.login(client, user)
+        response = client.get('/index')
+        self.assertEqual(response.status_code, 200)
+        body = response.get_data(as_text=True)
+        self.assertIn('chart-points-race', body)
+        self.assertIn('chart-rank-over-time', body)
+        self.assertIn('HOME_CHART_DATA', body)
+        self.assertIn('home-heatmap-panel', body)
+        self.assertIn('Top 10 plus you', body)
+        self.assertIn('Chat', body)
 
 
 if __name__ == '__main__':

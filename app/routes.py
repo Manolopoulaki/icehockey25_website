@@ -17,6 +17,7 @@ from io import TextIOWrapper
 from urllib.parse import urlsplit
 from app.teams import get_team_name
 from app.scoring import apply_bet_scoring
+from app.chart_data import build_home_chart_data
 
 def winner_team_choices():
     teams = Game.query.filter(Game.team_a != 'TBD').with_entities(Game.team_b.label('team')).union(
@@ -244,9 +245,11 @@ def index():
                     'leader_points':leader_points,
                     'leader_outcomes':leader_outcomes,
                     'leader_correct_scores':leader_correct_scores}
+    chart_data = build_home_chart_data(current_user)
 
     return render_template("index.html", title=_('Home'), sport=g.sport, form=form, posts=posts.items,
-    			    next_url=next_url, prev_url=prev_url, leaders=leaders_dict, game_id=get_next_game())
+    			    next_url=next_url, prev_url=prev_url, leaders=leaders_dict, game_id=get_next_game(),
+                            chart_data=chart_data)
 
 @app.route('/rules', methods=['GET', 'POST'])
 @login_required
