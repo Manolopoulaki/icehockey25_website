@@ -83,12 +83,19 @@
             position: 'bottom',
             labels: { boxWidth: 12, padding: 10 },
           },
+          tooltip: {
+            itemSort: function (a, b) {
+              return invertY
+                ? a.parsed.y - b.parsed.y
+                : b.parsed.y - a.parsed.y;
+            },
+          },
         },
         scales: {
           x: {
             ticks: {
-              maxTicksLimit: 12,
-              autoSkip: true,
+              autoSkip: labels.length > 12,
+              maxTicksLimit: labels.length,
               maxRotation: 45,
               minRotation: 0,
             },

@@ -9,6 +9,8 @@ from app.models import Bet, Game, User
 HOME_RECENT_GAMES = 12
 # Top N users by standings, plus the current user when not already included.
 HOME_CHART_TOP_USERS = 10
+# Matches finished-game checks elsewhere in the app (games.html, user.html).
+CLOSED_FIRST_GOAL_VALUES = (0, 1, 2)
 
 
 def _shown_users():
@@ -22,7 +24,11 @@ def _shown_users():
 
 
 def _closed_games():
-    return Game.query.filter(Game.first_goal > 0).order_by(Game.starts_at.asc()).all()
+    return (
+        Game.query.filter(Game.first_goal.in_(CLOSED_FIRST_GOAL_VALUES))
+        .order_by(Game.starts_at.asc(), Game.id.asc())
+        .all()
+    )
 
 
 def _recent_closed_games(limit=HOME_RECENT_GAMES):
@@ -81,30 +87,63 @@ def _game_label(game, index):
     return f'{game.team_a}-{game.team_b}'
 
 
-def _bet_points_map():
+def _bet_stats_map():
     rows = (
-        db.session.query(Bet.user_id, Bet.game_id, Bet.points)
+        db.session.query(
+            Bet.user_id,
+            Bet.game_id,
+            Bet.points,
+            Bet.score_correct,
+            Bet.score_diff_correct,
+            Bet.winner_correct,
+            Bet.first_goal_correct,
+        )
         .join(User)
         .filter(User.is_shown.is_(True))
         .all()
     )
-    return {(user_id, game_id): points or 0 for user_id, game_id, points in rows}
+    return {
+        (user_id, game_id): {
+            'points': points or 0,
+            'score': int(bool(score_correct)),
+            'score_diff': int(bool(score_diff_correct)),
+            'winner': int(bool(winner_correct)),
+            'first_goal': int(bool(first_goal_correct)),
+        }
+        for user_id, game_id, points, score_correct, score_diff_correct, winner_correct, first_goal_correct in rows
+    }
 
 
-def _rank_users_by_totals(user_totals, user_score_lookup):
+def _rank_users_by_standings(running_stats):
+    """Rank users using the same tie-breakers as the standings page."""
     ordered = sorted(
-        user_totals.items(),
-        key=lambda item: (-item[1], -user_score_lookup.get(item[0], 0)),
+        running_stats.items(),
+        key=lambda item: (
+            -item[1][0],
+            -item[1][1],
+            -item[1][2],
+            -item[1][3],
+            -item[1][4],
+        ),
     )
     ranks = {}
     rank = 0
-    prev_total = None
-    for position, (user_id, total) in enumerate(ordered, start=1):
-        if total != prev_total:
+    prev_stats = None
+    for position, (user_id, stats) in enumerate(ordered, start=1):
+        if stats != prev_stats:
             rank = position
-            prev_total = total
+            prev_stats = stats
         ranks[user_id] = rank
     return ranks
+
+
+def _apply_bet_stats_to_running(running_stats, user_id, bet_stats):
+    stats = running_stats[user_id]
+    stats[0] += bet_stats.get('points', 0)
+    stats[1] += bet_stats.get('score', 0)
+    stats[2] += bet_stats.get('score_diff', 0)
+    stats[3] += bet_stats.get('winner', 0)
+    stats[4] += bet_stats.get('first_goal', 0)
 
 
 def build_home_chart_data(current_user):
@@ -113,8 +152,7 @@ def build_home_chart_data(current_user):
     recent_games, game_label_offset = _recent_closed_games()
     recent_count = len(recent_games)
     recent_labels = _recent_labels(recent_games, game_label_offset)
-    points_map = _bet_points_map()
-    user_score_lookup = {user.id: user.total_score or 0 for user in users}
+    bet_stats_map = _bet_stats_map()
 
     chart_users = _chart_users(current_user, users)
     chart_user_ids = {user.id for user in chart_users}
@@ -124,7 +162,7 @@ def build_home_chart_data(current_user):
         running = 0
         series = []
         for game in games:
-            running += points_map.get((user.id, game.id), 0)
+            running += bet_stats_map.get((user.id, game.id), {}).get('points', 0)
             series.append(running)
         cumulative_by_user[user.id] = series
 
@@ -140,7 +178,10 @@ def build_home_chart_data(current_user):
     max_heatmap_points = 1
     heatmap_rows = []
     for user in heatmap_users:
-        row_points = [points_map.get((user.id, game.id), 0) for game in recent_games]
+        row_points = [
+            bet_stats_map.get((user.id, game.id), {}).get('points', 0)
+            for game in recent_games
+        ]
         max_heatmap_points = max(max_heatmap_points, max(row_points, default=0))
         heatmap_rows.append({
             'username': user.username,
@@ -148,15 +189,16 @@ def build_home_chart_data(current_user):
             'is_current_user': _is_current_user(current_user, user),
         })
 
-    running_totals = {user.id: 0 for user in users}
+    running_stats = {user.id: [0, 0, 0, 0, 0] for user in users}
     rank_history = defaultdict(list)
     for game in games:
         for user in users:
-            running_totals[user.id] += points_map.get((user.id, game.id), 0)
-        ranks = _rank_users_by_totals(running_totals, user_score_lookup)
+            bet_stats = bet_stats_map.get((user.id, game.id))
+            if bet_stats:
+                _apply_bet_stats_to_running(running_stats, user.id, bet_stats)
+        ranks = _rank_users_by_standings(running_stats)
         for user_id in chart_user_ids:
-            if user_id in ranks:
-                rank_history[user_id].append(ranks[user_id])
+            rank_history[user_id].append(ranks[user_id])
 
     rank_over_time_datasets = []
     for user in chart_users:
