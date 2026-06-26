@@ -83,6 +83,14 @@
             position: 'bottom',
             labels: { boxWidth: 12, padding: 10 },
           },
+          tooltip: {
+            itemSort: function (a, b) {
+              // Match tooltip order to top-to-bottom y-axis position.
+              return invertY
+                ? a.parsed.y - b.parsed.y
+                : b.parsed.y - a.parsed.y;
+            },
+          },
         },
         scales: {
           x: {

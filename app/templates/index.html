@@ -80,6 +80,7 @@
         <div class="box home-chart-card home-chart-card--accent">
           <h4>{{ _('Points per Game') }}</h4>
           <p class="home-chart-caption">{{ _('Top %(top)s plus you. Last %(count)s finished games. You are listed first.', top=chart_data.chart_top_users, count=chart_data.labels|length) }}</p>
+          <div class="home-heatmap-panel">
             <table class="home-heatmap">
               <thead>
                 <tr>
@@ -100,6 +101,7 @@
                 {% endfor %}
               </tbody>
             </table>
+          </div>
         </div>
         {% endif %}
       </div>

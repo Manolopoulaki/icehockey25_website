@@ -1747,13 +1747,22 @@ button {
   height: 320px;
 }
 
+.home-heatmap-panel {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
 .home-heatmap {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
 }
 
 .home-heatmap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   font-weight: 600;
   background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
 }
@@ -1763,6 +1772,9 @@ button {
 }
 
 .home-heatmap tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 2;
   text-align: left;
   white-space: nowrap;
   background: color-mix(in srgb, var(--color-bg) 92%, var(--color-primary));
@@ -1770,6 +1782,11 @@ button {
 
 .home-chart-card--accent .home-heatmap tbody th {
   background: color-mix(in srgb, var(--color-bg) 92%, var(--color-accent));
+}
+
+.home-heatmap thead th:first-child {
+  left: 0;
+  z-index: 3;
 }
 
 .home-heatmap-row--you th {
@@ -1781,6 +1798,7 @@ button {
   padding: 0.35rem 0.4rem;
   text-align: center;
   border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  white-space: nowrap;
 }
 
 .home-chart-card--accent .home-heatmap th,

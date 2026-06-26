@@ -933,6 +933,70 @@ class HomeChartsCase(TestCaseBase):
         self.assertIn('outsider', usernames)
         self.assertNotIn('topper10', usernames)
 
+    def test_rank_over_time_uses_full_season_not_recent_window(self):
+        self.set_sport('football')
+        early = self.make_user('early', is_shown=True, overall_points=0, total_points=0,
+                               total_closed_bets=0)
+        late = self.make_user('late', is_shown=True, overall_points=0, total_points=0,
+                              total_closed_bets=0)
+        games = []
+        for index in range(15):
+            games.append(Game(
+                team_a='GER',
+                team_b=f'T{index}',
+                stage='Group',
+                starts_at=utcnow() + timedelta(days=index),
+                score_a=1,
+                score_b=0,
+                first_goal=1,
+            ))
+        db.session.add_all(games)
+        db.session.flush()
+
+        bets = []
+        for index, game in enumerate(games):
+            if index < 3:
+                bets.append(Bet(
+                    user_id=late.id,
+                    game_id=game.id,
+                    score_a=1,
+                    score_b=0,
+                    first_goal=1,
+                    points=10,
+                    winner_correct=True,
+                    score_diff_correct=True,
+                    score_correct=True,
+                    is_default_bet=False,
+                ))
+            else:
+                bets.append(Bet(
+                    user_id=early.id,
+                    game_id=game.id,
+                    score_a=1,
+                    score_b=0,
+                    first_goal=1,
+                    points=5,
+                    winner_correct=True,
+                    score_diff_correct=False,
+                    score_correct=False,
+                    is_default_bet=False,
+                ))
+        db.session.add_all(bets)
+        db.session.commit()
+
+        with app.test_request_context('/'):
+            from flask_login import login_user
+            login_user(early)
+            data = build_home_chart_data(early)
+
+        late_ranks = next(
+            dataset['data']
+            for dataset in data['rank_over_time']['datasets']
+            if dataset['username'] == 'late'
+        )
+        self.assertEqual(len(late_ranks), 12)
+        self.assertEqual(late_ranks[0], 1)
+
     def test_index_page_renders_home_charts(self):
         self.set_sport('football')
         user = self.make_user('viewer', is_shown=True, overall_points=5, total_points=5,
@@ -951,7 +1015,7 @@ class HomeChartsCase(TestCaseBase):
         self.assertIn('chart-points-race', body)
         self.assertIn('chart-rank-over-time', body)
         self.assertIn('HOME_CHART_DATA', body)
-        self.assertIn('home-heatmap', body)
+        self.assertIn('home-heatmap-panel', body)
         self.assertIn('Top 10 plus you', body)
         self.assertIn('Chat', body)
 
