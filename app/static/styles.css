@@ -1680,10 +1680,12 @@ button {
 
   .home-charts-columns .left-section {
     flex: 2;
+    min-width: 0;
   }
 
   .home-charts-columns .right-section {
     flex: 1;
+    min-width: 0;
   }
 }
 
@@ -1736,7 +1738,6 @@ button {
 
 .home-chart-canvas-wrap {
   position: relative;
-  height: 220px;
 }
 
 .home-chart-canvas-wrap--medium {
@@ -1748,26 +1749,29 @@ button {
 }
 
 .home-heatmap-panel {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
-  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
 
 .home-heatmap {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
+  width: max-content;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .home-heatmap thead th {
   font-weight: 600;
+  white-space: nowrap;
   background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
 }
 
 .home-heatmap thead th:first-child {
   position: sticky;
   left: 0;
-  z-index: 2;
+  z-index: 3;
+  text-align: left;
 }
 
 .home-chart-card--accent .home-heatmap thead th {
@@ -1777,9 +1781,10 @@ button {
 .home-heatmap tbody th {
   position: sticky;
   left: 0;
-  z-index: 1;
+  z-index: 2;
   text-align: left;
   white-space: nowrap;
+  padding-right: 0.75rem;
   background: color-mix(in srgb, var(--color-bg) 92%, var(--color-primary));
 }
 
@@ -1793,8 +1798,9 @@ button {
 
 .home-heatmap th,
 .home-heatmap td {
-  padding: 0.35rem 0.4rem;
+  padding: 0.35rem 0.5rem;
   text-align: center;
+  white-space: nowrap;
   border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 

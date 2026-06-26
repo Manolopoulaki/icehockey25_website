@@ -157,20 +157,16 @@ def build_home_chart_data(current_user):
     chart_users = _chart_users(current_user, users)
     chart_user_ids = {user.id for user in chart_users}
 
-    cumulative_by_user = {}
+    points_race_datasets = []
     for user in chart_users:
         running = 0
         series = []
         for game in games:
             running += bet_stats_map.get((user.id, game.id), {}).get('points', 0)
             series.append(running)
-        cumulative_by_user[user.id] = series
-
-    points_race_datasets = []
-    for user in chart_users:
         points_race_datasets.append({
             'username': user.username,
-            'data': _tail(cumulative_by_user[user.id], recent_count),
+            'data': _tail(series, recent_count),
             'is_current_user': _is_current_user(current_user, user),
         })
 
